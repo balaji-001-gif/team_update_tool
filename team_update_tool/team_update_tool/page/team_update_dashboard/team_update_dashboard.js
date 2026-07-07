@@ -125,13 +125,13 @@ function render_dashboard($main, data) {
 	html += '<div class="tut-section-header"><h3>Dashboard Overview</h3></div>';
 
 	// 4. Stats Cards — Bootstrap 5 grid: 5 cols on lg, 3 on md, 2 on sm
-	html += '<div class="row g-3 mb-4">';
+	html += '<div class="container-fluid px-0"><div class="row g-3 mb-4">';
 	html += render_stats_row(data.stats);
-	html += '</div>';
+	html += '</div></div>';
 
 	// 5. Charts — 2 cols on lg, 1 on md/sm
-	html += '<div class="row g-3 mb-4" id="tut-charts-row">';
-	html += '</div>';
+	html += '<div class="container-fluid px-0"><div class="row g-3 mb-4" id="tut-charts-row">';
+	html += '</div></div>';
 
 	// 6. Recent Projects table — full width
 	if (data.recent_projects && data.recent_projects.length) {
@@ -139,24 +139,24 @@ function render_dashboard($main, data) {
 	}
 
 	// 7. Two-column grid: Teams + GitHub
-	html += '<div class="row g-3 mb-4">';
+	html += '<div class="container-fluid px-0"><div class="row g-3 mb-4">';
 	if (data.teams && data.teams.length) {
 		html += '<div class="col-lg-6 col-md-12">' + render_teams_table(data.teams) + '</div>';
 	}
 	if (data.github_projects && data.github_projects.length) {
 		html += '<div class="col-lg-6 col-md-12">' + render_github_projects(data.github_projects) + '</div>';
 	}
-	html += '</div>';
+	html += '</div></div>';
 
 	// 8. Two-column grid: Screenshots + Documents
-	html += '<div class="row g-3 mb-4">';
+	html += '<div class="container-fluid px-0"><div class="row g-3 mb-4">';
 	if (data.recent_screenshots && data.recent_screenshots.length) {
 		html += '<div class="col-lg-6 col-md-12">' + render_recent_screenshots(data.recent_screenshots) + '</div>';
 	}
 	if (data.recent_files && data.recent_files.length) {
 		html += '<div class="col-lg-6 col-md-12">' + render_recent_files(data.recent_files) + '</div>';
 	}
-	html += '</div>';
+	html += '</div></div>';
 
 	// 9. Notifications — full width
 	if (data.notifications && data.notifications.length) {
@@ -169,6 +169,29 @@ function render_dashboard($main, data) {
 	}
 
 	$main.html(html);
+
+	// ── Event Delegation ──
+	// Quick actions
+	$main.on('click', '.tut-quick-btn[data-key="new_task"]', function () { frappe.new_doc('Team Project Update'); });
+	$main.on('click', '.tut-quick-btn[data-key="all_tasks"]', function () { frappe.set_route('list', 'Team Project Update'); });
+	$main.on('click', '.tut-quick-btn[data-key="teams"]', function () { frappe.set_route('list', 'Team'); });
+	$main.on('click', '.tut-quick-btn[data-key="report"]', function () { frappe.set_route('query-report', 'Project Status Summary'); });
+	$main.on('click', '.tut-quick-btn[data-key="settings"]', function () { frappe.set_route('Form', 'Team Update Settings'); });
+
+	// Notification rows (data stored in HTML attributes)
+	var notifData = data.notifications || [];
+	notifData.forEach(function (n) {
+		if (n.document_name) {
+			var $row = $main.find('.tut-activity-row[data-docname="' + n.document_name + '"]');
+			if ($row.length) {
+				$row.css('cursor', 'pointer').addClass('tut-notif-clickable');
+			}
+		}
+	});
+	$main.on('click', '.tut-activity-row.tut-notif-clickable', function () {
+		var docname = $(this).data('docname');
+		if (docname) frappe.set_route('Form', 'Team Project Update', docname);
+	});
 }
 
 // ══════════════════════════════════════════════════════════
@@ -214,13 +237,6 @@ function render_quick_actions() {
 			frappe.utils.icon(a.icon, 'sm') + ' ' + a.label + '</button>';
 	});
 	html += '</div>';
-	// Delegate click events
-	setTimeout(function () {
-		actions.forEach(function (a) {
-			var $btn = $('.tut-quick-btn[data-key="' + a.key + '"]');
-			if ($btn.length) $btn.click(action_map[a.key]);
-		});
-	}, 0);
 	return html;
 }
 
@@ -378,23 +394,13 @@ function render_notifications(notifications) {
 		'<div class="tut-card-header"><h4>Recent Notifications</h4><a href="/app/notification-log">View All</a></div>' +
 		'<div class="tut-card-body">';
 	notifications.forEach(function (n) {
-		html += '<div class="tut-activity-row" data-name="' + (n.document_name || '') + '">' +
+		html += '<div class="tut-activity-row" data-docname="' + (n.document_name || '') + '">' +
 			'<span class="tut-activity-icon">🔔</span>' +
 			'<span class="tut-activity-text">' + (n.subject || '') + '</span>' +
 			'<span class="tut-activity-meta">' + fraetime(n.creation) + '</span>' +
 		'</div>';
 	});
 	html += '</div></div>';
-	// Delegate click events for notifications
-	setTimeout(function () {
-		notifications.forEach(function (n) {
-			if (n.document_name) {
-				$('.tut-activity-row[data-name="' + n.document_name + '"]').css('cursor', 'pointer').click(function () {
-					frappe.set_route('Form', 'Team Project Update', n.document_name);
-				});
-			}
-		});
-	}, 0);
 	return html;
 }
 
