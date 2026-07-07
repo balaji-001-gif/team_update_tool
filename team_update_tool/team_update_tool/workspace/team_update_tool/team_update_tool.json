@@ -147,8 +147,8 @@
    "roles": []
   },
   {
-   "label": "Team Members",
-   "document_type": "Team Member",
+   "label": "All Teams",
+   "document_type": "Team",
    "function": "Count",
    "aggregate_function_based_on": "",
    "color": "cyan",

@@ -15,7 +15,7 @@ app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 # Home Pages
 # ----------
 # Opens the Team Update Tool workspace when users access the Desk
-home_page = "workspace/team-update-tool"
+home_page = "workspace/Team Update Tool"
 
 # Installation
 # ------------
@@ -32,10 +32,6 @@ fixtures = [
 			"Team Update Team Member",
 			"Team Update Viewer"
 		]]],
-	},
-	{
-		"dt": "Workspace",
-		"filters": [["name", "=", "Team Update Tool"]],
 	},
 ]
 
