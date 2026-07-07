@@ -14,8 +14,9 @@ app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 
 # Home Pages
 # ----------
-# Opens the Team Update Tool workspace when users access the Desk
-home_page = "workspace/Team Update Tool"
+# Opens the default Desk page. Access the Team Update Tool workspace
+# from the Workspace dropdown in the top navbar.
+# home_page = "workspace"
 
 # Installation
 # ------------
