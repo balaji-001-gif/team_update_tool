@@ -14,15 +14,14 @@ app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 
 # Home Pages
 # ----------
-# Opens the custom Team Update Dashboard as the default landing page after login.
-# Users land on /app/team_update_dashboard when they log in or visit /app directly.
-home_page = "team_update_dashboard"
+# home_page is not set - users land on the default Frappe Desk.
+# The Vue 3 SPA frontend is served from /team-update via Frappe web routes.
+# Build command: cd frontend && npm run build
 
 # Website route rules
 # --------------------
-website_route_rules = [
-	{"from_route": "/dashboard", "to_route": "/app/team_update_dashboard"},
-]
+# Website routing is handled by the Vue 3 SPA.
+website_route_rules = []
 
 # Installation
 # ------------
