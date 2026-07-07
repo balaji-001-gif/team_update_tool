@@ -1,0 +1,35 @@
+{
+ "creation": "2026-01-01 10:00:00",
+ "docstatus": 0,
+ "doctype": "Page",
+ "icon": "octicon octicon-home",
+ "idx": 0,
+ "modified": "2026-01-01 10:00:00",
+ "modified_by": "Administrator",
+ "module": "Team Update Tool",
+ "name": "dashboard",
+ "owner": "Administrator",
+ "page_name": "dashboard",
+ "roles": [
+  {
+   "role": "Team Update Admin"
+  },
+  {
+   "role": "Team Update Team Leader"
+  },
+  {
+   "role": "Team Update Team Member"
+  },
+  {
+   "role": "Team Update Viewer"
+  },
+  {
+   "role": "System Manager"
+  }
+ ],
+ "script": null,
+ "standard": "Yes",
+ "style": null,
+ "system_page": 0,
+ "title": "Dashboard"
+}
