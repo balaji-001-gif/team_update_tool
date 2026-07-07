@@ -1,0 +1,86 @@
+<nav class="tut-nav-bar">
+    <div class="tut-nav-inner">
+        <div class="tut-nav-brand">
+            <a href="/dashboard">📊 Team Update Tool</a>
+        </div>
+        <div class="tut-nav-menu">
+            <a href="/dashboard" class="tut-nav-item">Dashboard</a>
+            <a href="/projects" class="tut-nav-item">Projects</a>
+            <a href="/tasks" class="tut-nav-item">Tasks</a>
+            <a href="/teams" class="tut-nav-item">Teams</a>
+            <a href="/reports" class="tut-nav-item">Reports</a>
+            <a href="/notifications" class="tut-nav-item">Notifications</a>
+            <a href="/profile" class="tut-nav-item">Profile</a>
+        </div>
+        <div class="tut-nav-actions">
+            <a href="/desk" class="tut-nav-btn">⚙️ Desk</a>
+            <a href="/logout" class="tut-nav-btn tut-nav-logout">🚪 Logout</a>
+        </div>
+    </div>
+</nav>
+<style>
+.tut-nav-bar {
+    background: #fff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 20px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.tut-nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+    gap: 20px;
+}
+.tut-nav-brand a {
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--text-color);
+    text-decoration: none;
+    white-space: nowrap;
+}
+.tut-nav-menu {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: center;
+}
+.tut-nav-item {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.tut-nav-item:hover {
+    background: var(--bg-light-gray);
+    color: var(--text-color);
+}
+.tut-nav-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.tut-nav-btn {
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    background: var(--bg-light-gray);
+    color: var(--text-color);
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+.tut-nav-btn:hover { background: var(--gray-200); }
+.tut-nav-logout { color: var(--red-600); }
+</style>

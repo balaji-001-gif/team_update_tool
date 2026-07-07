@@ -1,0 +1,82 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Reports - Team Update Tool{% endblock %}
+
+{% block page_content %}
+<div class="tut-page">
+    <div class="tut-page-header">
+        <h2>📊 Reports</h2>
+        <a href="/dashboard" class="tut-btn tut-btn-secondary">← Dashboard</a>
+    </div>
+
+    <!-- Status Breakdown -->
+    <div class="tut-section">
+        <h3 class="tut-section-title">📈 Project Status Overview</h3>
+        <div class="tut-stats-row">
+            {% if stats.total is defined %}
+            <div class="tut-stat-card tut-stat-blue">
+                <div class="tut-stat-icon">📋</div>
+                <div class="tut-stat-info">
+                    <span class="tut-stat-number">{{ stats.total }}</span>
+                    <span class="tut-stat-label">Total</span>
+                </div>
+            </div>
+            {% endif %}
+            {% if stats.draft is defined %}
+            <div class="tut-stat-card">
+                <div class="tut-stat-icon">📄</div>
+                <div class="tut-stat-info">
+                    <span class="tut-stat-number" style="color:var(--gray-600)">{{ stats.draft }}</span>
+                    <span class="tut-stat-label">Draft</span>
+                </div>
+            </div>
+            {% endif %}
+            {% if stats.in_progress is defined %}
+            <div class="tut-stat-card tut-stat-orange">
+                <div class="tut-stat-icon">⏳</div>
+                <div class="tut-stat-info">
+                    <span class="tut-stat-number">{{ stats.in_progress }}</span>
+                    <span class="tut-stat-label">In Progress</span>
+                </div>
+            </div>
+            {% endif %}
+            {% if stats.completed is defined %}
+            <div class="tut-stat-card tut-stat-green">
+                <div class="tut-stat-icon">✅</div>
+                <div class="tut-stat-info">
+                    <span class="tut-stat-number">{{ stats.completed }}</span>
+                    <span class="tut-stat-label">Completed</span>
+                </div>
+            </div>
+            {% endif %}
+            {% if stats.approved is defined %}
+            <div class="tut-stat-card tut-stat-green">
+                <div class="tut-stat-icon">👍</div>
+                <div class="tut-stat-info">
+                    <span class="tut-stat-number">{{ stats.approved }}</span>
+                    <span class="tut-stat-label">Approved</span>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Available Reports -->
+    <div class="tut-section">
+        <h3 class="tut-section-title">📑 Available Reports</h3>
+        <div class="tut-card-grid">
+            {% for report in reports %}
+            <a href="{{ report.route }}" class="tut-card">
+                <div class="tut-card-header">
+                    <span class="tut-card-title">{{ report.title }}</span>
+                    <span class="tut-badge">Report</span>
+                </div>
+                <div class="tut-card-body">
+                    <div class="tut-card-meta">{{ report.description }}</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

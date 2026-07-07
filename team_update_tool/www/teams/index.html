@@ -1,0 +1,75 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="tut-page">
+    <div class="tut-page-header">
+        <h2>👥 Teams</h2>
+        <div class="tut-header-actions">
+            {% if is_admin %}
+            <a href="/desk#List/Team/New" class="tut-btn tut-btn-primary">+ New Team</a>
+            {% endif %}
+            <a href="/dashboard" class="tut-btn tut-btn-secondary">← Dashboard</a>
+        </div>
+    </div>
+
+    {% if is_detail and team %}
+    <div class="tut-detail-card">
+        <div class="tut-detail-header">
+            <h3>{{ team.team_name }}</h3>
+            <span class="tut-badge">{{ team.team_type }}</span>
+        </div>
+        {% if team.team_lead %}<p><strong>Team Lead:</strong> {{ team.team_lead }}</p>{% endif %}
+        {% if team.description %}<p>{{ team.description }}</p>{% endif %}
+
+        {% if members %}
+        <h4 style="margin-top:20px;">👤 Members ({{ members|length }})</h4>
+        <table class="tut-table">
+            <tr><th>User</th><th>Role</th></tr>
+            {% for m in members %}
+            <tr><td>{{ m.user }}</td><td>{{ m.role_in_team or '-' }}</td></tr>
+            {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if projects %}
+        <h4 style="margin-top:20px;">📁 Team Projects ({{ projects|length }})</h4>
+        <div class="tut-card-grid">
+            {% for p in projects %}
+            <a href="/projects?name={{ p.name }}" class="tut-card">
+                <div class="tut-card-header">
+                    <span>{{ p.project_title }}</span>
+                    <span class="tut-status-badge tut-status-{{ p.status|lower|replace(' ', '-') }}">{{ p.status }}</span>
+                </div>
+                <div class="tut-card-footer">
+                    <div class="tut-progress-bar"><div class="tut-progress-fill" style="width:{{ p.progress_percent or 0 }}%"></div></div>
+                    <span>{{ p.progress_percent or 0 }}%</span>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    {% else %}
+    <div class="tut-card-grid">
+        {% if teams %}
+            {% for team in teams %}
+            <a href="/teams?name={{ team.name }}" class="tut-card tut-team-card">
+                <div class="tut-card-header">
+                    <span class="tut-card-title">{{ team.team_name }}</span>
+                    <span class="tut-badge">{{ team.team_type }}</span>
+                </div>
+                <div class="tut-card-body">
+                    {% if team.team_lead %}<div class="tut-card-meta">👤 Lead: {{ team.team_lead }}</div>{% endif %}
+                    {% if team.description %}<div class="tut-card-meta">{{ team.description[:100] }}{% if team.description|length > 100 %}...{% endif %}</div>{% endif %}
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="tut-empty-state"><p>No teams found.</p></div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

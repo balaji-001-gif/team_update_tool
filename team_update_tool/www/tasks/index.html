@@ -1,0 +1,85 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="tut-page">
+    <div class="tut-page-header">
+        <h2>✅ Tasks</h2>
+        <div class="tut-header-actions">
+            {% if is_admin %}
+            <a href="/desk#List/Team Project Update/New" class="tut-btn tut-btn-primary">+ New Task</a>
+            {% endif %}
+            <a href="/dashboard" class="tut-btn tut-btn-secondary">← Dashboard</a>
+        </div>
+    </div>
+
+    {% if is_detail and task %}
+    <div class="tut-detail-card">
+        <div class="tut-detail-header">
+            <h3>{{ task.project_title }}</h3>
+            <span class="tut-status-badge tut-status-{{ task.status|lower|replace(' ', '-') }}">{{ task.status }}</span>
+        </div>
+        <div class="tut-detail-grid">
+            <div class="tut-detail-section">
+                <h4>📋 Task Info</h4>
+                <table class="tut-info-table">
+                    <tr><td>Team</td><td>{{ task.team }}</td></tr>
+                    <tr><td>Priority</td><td><span class="tut-priority tut-priority-{{ task.priority|lower }}">{{ task.priority }}</span></td></tr>
+                    <tr><td>Progress</td><td>{{ task.progress_percent or 0 }}%</td></tr>
+                    <tr><td>Due Date</td><td>{{ task.due_date or '-' }}</td></tr>
+                </table>
+            </div>
+            <div class="tut-detail-section">
+                <h4>👥 Assignment</h4>
+                <table class="tut-info-table">
+                    <tr><td>Team Leader</td><td>{{ task.assigned_team_leader or '-' }}</td></tr>
+                    <tr><td>Assigned To</td><td>{{ task.assigned_to or '-' }}</td></tr>
+                </table>
+            </div>
+        </div>
+        <div class="tut-detail-actions" style="margin-top:20px;">
+            <a href="/projects?name={{ task.name }}" class="tut-btn tut-btn-primary">View Full Details</a>
+            <a href="/desk#Form/Team Project Update/{{ task.name }}" class="tut-btn tut-btn-secondary">Open in Desk</a>
+        </div>
+    </div>
+    {% else %}
+    <div class="tut-filters-bar">
+        <form method="GET" class="tut-search-form">
+            <input type="text" name="search" class="tut-search-input" placeholder="Search tasks..." value="{{ search_query }}">
+            <button type="submit" class="tut-btn tut-btn-secondary">Search</button>
+        </form>
+        <div class="tut-status-filters">
+            <a href="/tasks" class="tut-filter-chip {% if not active_status %}tut-filter-active{% endif %}">All</a>
+            {% for s in statuses %}
+            <a href="/tasks?status={{ s }}" class="tut-filter-chip {% if active_status == s %}tut-filter-active{% endif %}">{{ s }}</a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="tut-card-grid">
+        {% if tasks %}
+            {% for task in tasks %}
+            <a href="/tasks?name={{ task.name }}" class="tut-card">
+                <div class="tut-card-header">
+                    <span class="tut-card-title">{{ task.project_title }}</span>
+                    <span class="tut-status-badge tut-status-{{ task.status|lower|replace(' ', '-') }}">{{ task.status }}</span>
+                </div>
+                <div class="tut-card-body">
+                    <div class="tut-card-meta">🏢 {{ task.team }}</div>
+                    <div class="tut-card-meta">🎯 {{ task.priority }}</div>
+                    {% if task.due_date %}<div class="tut-card-meta">📅 {{ task.due_date }}</div>{% endif %}
+                </div>
+                <div class="tut-card-footer">
+                    <div class="tut-progress-bar"><div class="tut-progress-fill" style="width:{{ task.progress_percent or 0 }}%"></div></div>
+                    <span class="tut-progress-text">{{ task.progress_percent or 0 }}%</span>
+                </div>
+            </a>
+            {% endfor %}
+        {% else %}
+            <div class="tut-empty-state"><p>No tasks found.</p></div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

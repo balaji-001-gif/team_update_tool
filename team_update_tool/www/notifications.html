@@ -1,0 +1,37 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="tut-page">
+    <div class="tut-page-header">
+        <h2>🔔 Notifications</h2>
+        <a href="/dashboard" class="tut-btn tut-btn-secondary">← Dashboard</a>
+    </div>
+
+    <div class="tut-notifications-full-list">
+        {% if notifications %}
+            {% for note in notifications %}
+            <div class="tut-notif-card">
+                <div class="tut-notif-icon">📩</div>
+                <div class="tut-notif-content">
+                    <div class="tut-notif-subject">{{ note.subject }}</div>
+                    <div class="tut-notif-meta">
+                        <span>📅 {{ frappe.utils.pretty_date(note.creation) }}</span>
+                        {% if note.from_user %}<span>👤 From: {{ note.from_user }}</span>{% endif %}
+                        {% if note.document_name %}
+                        <a href="/desk#Form/{{ note.document_type }}/{{ note.document_name }}">🔗 View Document</a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="tut-empty-state" style="text-align:center;padding:60px 20px;">
+                <p style="font-size:24px;">🔔</p>
+                <p>No notifications yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

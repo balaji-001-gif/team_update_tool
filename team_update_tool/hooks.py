@@ -57,4 +57,35 @@ permission_query_conditions = {
 
 # Website route rules
 # --------------------
-website_route_rules = []
+# Frontend pages for Team Update Tool - accessible via URLs like /dashboard, /projects, etc.
+website_route_rules = [
+	# Dashboard - home page
+	{"from_route": "/dashboard", "to_route": "dashboard"},
+	{"from_route": "/team-update", "to_route": "dashboard"},
+
+	# Projects - list and detail
+	{"from_route": "/projects", "to_route": "projects/index"},
+	{"from_route": "/projects/<name>", "to_route": "projects/index"},
+
+	# Tasks - list and detail
+	{"from_route": "/tasks", "to_route": "tasks/index"},
+	{"from_route": "/tasks/<name>", "to_route": "tasks/index"},
+
+	# Teams - list and detail
+	{"from_route": "/teams", "to_route": "teams/index"},
+	{"from_route": "/teams/<name>", "to_route": "teams/index"},
+
+	# Notifications
+	{"from_route": "/notifications", "to_route": "notifications"},
+
+	# Profile
+	{"from_route": "/profile", "to_route": "profile"},
+
+	# Aliases
+	{"from_route": "/team-update/dashboard", "to_route": "dashboard"},
+	{"from_route": "/team-update/projects", "to_route": "projects/index"},
+	{"from_route": "/team-update/tasks", "to_route": "tasks/index"},
+	{"from_route": "/team-update/teams", "to_route": "teams/index"},
+	{"from_route": "/team-update/notifications", "to_route": "notifications"},
+	{"from_route": "/team-update/profile", "to_route": "profile"},
+]

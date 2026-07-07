@@ -1,0 +1,182 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="tut-page">
+    <!-- Header -->
+    <div class="tut-page-header">
+        <h2>📁 Projects</h2>
+        <div class="tut-header-actions">
+            {% if is_admin %}
+            <a href="/desk#List/Team Project Update/New" class="tut-btn tut-btn-primary">+ New Project</a>
+            {% endif %}
+            <a href="/dashboard" class="tut-btn tut-btn-secondary">← Dashboard</a>
+        </div>
+    </div>
+
+    {% if is_detail and project %}
+        <!-- DETAIL VIEW -->
+        <div class="tut-detail-card">
+            <div class="tut-detail-header">
+                <div>
+                    <h3>{{ project.project_title }}</h3>
+                    <span class="tut-status-badge tut-status-{{ project.status|lower|replace(' ', '-') }}">{{ project.status }}</span>
+                </div>
+                <div class="tut-detail-actions">
+                    <a href="/desk#Form/Team Project Update/{{ project.name }}" class="tut-btn tut-btn-secondary">Open in Desk</a>
+                </div>
+            </div>
+
+            <div class="tut-detail-grid">
+                <div class="tut-detail-section">
+                    <h4>📋 Basic Information</h4>
+                    <table class="tut-info-table">
+                        <tr><td>Team</td><td>{{ project.team }}</td></tr>
+                        <tr><td>Priority</td><td><span class="tut-priority tut-priority-{{ project.priority|lower }}">{{ project.priority }}</span></td></tr>
+                        <tr><td>Progress</td><td>{{ project.progress_percent or 0 }}%</td></tr>
+                        <tr><td>Start Date</td><td>{{ project.start_date or '-' }}</td></tr>
+                        <tr><td>Due Date</td><td>{{ project.due_date or '-' }}</td></tr>
+                        <tr><td>Completion Date</td><td>{{ project.completion_date or '-' }}</td></tr>
+                    </table>
+                </div>
+
+                <div class="tut-detail-section">
+                    <h4>👥 Assignment</h4>
+                    <table class="tut-info-table">
+                        <tr><td>Created By</td><td>{{ project.project_owner }}</td></tr>
+                        <tr><td>Team Leader</td><td>{{ project.assigned_team_leader or 'Not assigned' }}</td></tr>
+                        <tr><td>Assigned To</td><td>{{ project.assigned_to or 'Not assigned' }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Description -->
+            {% if project.project_description %}
+            <div class="tut-detail-section">
+                <h4>📝 Description</h4>
+                <div class="tut-description">{{ project.project_description }}</div>
+            </div>
+            {% endif %}
+
+            <!-- GitHub & Links -->
+            <div class="tut-detail-grid">
+                {% if project.github_repo_url %}
+                <div class="tut-detail-section">
+                    <h4>🔗 GitHub Repository</h4>
+                    <a href="{{ project.github_repo_url }}" target="_blank" class="tut-link">{{ project.github_repo_url }}</a>
+                </div>
+                {% endif %}
+                {% if project.live_demo_url %}
+                <div class="tut-detail-section">
+                    <h4>🌐 Live Demo</h4>
+                    <a href="{{ project.live_demo_url }}" target="_blank" class="tut-link">{{ project.live_demo_url }}</a>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Screenshots -->
+            {% if screenshots %}
+            <div class="tut-detail-section">
+                <h4>🖼️ Screenshots ({{ screenshots|length }})</h4>
+                <div class="tut-screenshot-grid">
+                    {% for ss in screenshots %}
+                    <div class="tut-screenshot-item">
+                        <a href="{{ ss.screenshot }}" target="_blank">
+                            <img src="{{ ss.screenshot }}" alt="{{ ss.caption or 'Screenshot' }}" class="tut-thumbnail">
+                        </a>
+                        {% if ss.caption %}<p class="tut-caption">{{ ss.caption }}</p>{% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Files -->
+            {% if project_files %}
+            <div class="tut-detail-section">
+                <h4>📎 Attached Files ({{ project_files|length }})</h4>
+                <ul class="tut-file-list">
+                    {% for f in project_files %}
+                    <li><a href="{{ f.file_attachment }}" target="_blank">📄 {{ f.file_description or 'Download File' }}</a></li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Review Section -->
+            {% if project.team_leader_review_status %}
+            <div class="tut-detail-section">
+                <h4>🔍 Team Leader Review</h4>
+                <table class="tut-info-table">
+                    <tr><td>Review Status</td><td>{{ project.team_leader_review_status }}</td></tr>
+                    <tr><td>Review Date</td><td>{{ project.team_leader_review_date or '-' }}</td></tr>
+                    <tr><td>Remarks</td><td>{{ project.team_leader_review_remarks or '-' }}</td></tr>
+                </table>
+            </div>
+            {% endif %}
+
+            <!-- Approval Section -->
+            {% if project.status == "Approved" or project.status == "Rejected" %}
+            <div class="tut-detail-section">
+                <h4>✅ Approval</h4>
+                <table class="tut-info-table">
+                    <tr><td>Approved By</td><td>{{ project.approved_by or '-' }}</td></tr>
+                    <tr><td>Approval Date</td><td>{{ project.approval_date or '-' }}</td></tr>
+                    <tr><td>Admin Remarks</td><td>{{ project.review_remarks or '-' }}</td></tr>
+                </table>
+            </div>
+            {% endif %}
+        </div>
+
+    {% else %}
+        <!-- LIST VIEW -->
+        <!-- Filters -->
+        <div class="tut-filters-bar">
+            <form method="GET" class="tut-search-form">
+                <input type="text" name="search" class="tut-search-input" placeholder="Search projects..." value="{{ search_query }}">
+                <button type="submit" class="tut-btn tut-btn-secondary">Search</button>
+            </form>
+            <div class="tut-status-filters">
+                <a href="/projects" class="tut-filter-chip {% if not active_status %}tut-filter-active{% endif %}">All</a>
+                {% for s in statuses %}
+                <a href="/projects?status={{ s }}" class="tut-filter-chip {% if active_status == s %}tut-filter-active{% endif %}">{{ s }}</a>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Project Cards -->
+        <div class="tut-card-grid">
+            {% if projects %}
+                {% for project in projects %}
+                <a href="/projects?name={{ project.name }}" class="tut-card">
+                    <div class="tut-card-header">
+                        <span class="tut-card-title">{{ project.project_title }}</span>
+                        <span class="tut-status-badge tut-status-{{ project.status|lower|replace(' ', '-') }}">{{ project.status }}</span>
+                    </div>
+                    <div class="tut-card-body">
+                        <div class="tut-card-meta">🏢 {{ project.team }}</div>
+                        <div class="tut-card-meta">🎯 {{ project.priority }}</div>
+                        {% if project.due_date %}
+                        <div class="tut-card-meta">📅 Due: {{ project.due_date }}</div>
+                        {% endif %}
+                        {% if project.assigned_to %}
+                        <div class="tut-card-meta">👤 {{ project.assigned_to }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="tut-card-footer">
+                        <div class="tut-progress-bar"><div class="tut-progress-fill" style="width:{{ project.progress_percent or 0 }}%"></div></div>
+                        <span class="tut-progress-text">{{ project.progress_percent or 0 }}%</span>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="tut-empty-state">
+                    <p>No projects found.</p>
+                    {% if is_admin %}<a href="/desk#List/Team Project Update/New" class="tut-btn tut-btn-primary">Create First Project</a>{% endif %}
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

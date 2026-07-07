@@ -1,0 +1,140 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Team Update Tool - Dashboard{% endblock %}
+
+{% block page_content %}
+<div class="tut-dashboard">
+    <!-- Header -->
+    <div class="tut-header">
+        <h2 class="tut-title">📊 Team Update Tool Dashboard</h2>
+        <p class="tut-subtitle">Welcome, {{ user_fullname or user_email }}</p>
+    </div>
+
+    <!-- Stats Cards Row -->
+    <div class="tut-stats-row">
+        <div class="tut-stat-card tut-stat-blue">
+            <div class="tut-stat-icon">📋</div>
+            <div class="tut-stat-info">
+                <span class="tut-stat-number">{{ stats.total_projects }}</span>
+                <span class="tut-stat-label">Total Projects</span>
+            </div>
+        </div>
+        <div class="tut-stat-card tut-stat-green">
+            <div class="tut-stat-icon">✅</div>
+            <div class="tut-stat-info">
+                <span class="tut-stat-number">{{ stats.completed_projects }}</span>
+                <span class="tut-stat-label">Completed</span>
+            </div>
+        </div>
+        <div class="tut-stat-card tut-stat-orange">
+            <div class="tut-stat-icon">⏳</div>
+            <div class="tut-stat-info">
+                <span class="tut-stat-number">{{ stats.pending_tasks }}</span>
+                <span class="tut-stat-label">Pending Tasks</span>
+            </div>
+        </div>
+        <div class="tut-stat-card tut-stat-purple">
+            <div class="tut-stat-icon">👥</div>
+            <div class="tut-stat-info">
+                <span class="tut-stat-number">{{ stats.active_teams }}</span>
+                <span class="tut-stat-label">Active Teams</span>
+            </div>
+        </div>
+        <div class="tut-stat-card tut-stat-red">
+            <div class="tut-stat-icon">👤</div>
+            <div class="tut-stat-info">
+                <span class="tut-stat-number">{{ stats.total_members }}</span>
+                <span class="tut-stat-label">Team Members</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="tut-section">
+        <h3 class="tut-section-title">⚡ Quick Actions</h3>
+        <div class="tut-actions-row">
+            <a href="/projects" class="tut-action-btn">
+                <span class="tut-action-icon">📁</span>
+                <span>View All Projects</span>
+            </a>
+            <a href="/tasks" class="tut-action-btn">
+                <span class="tut-action-icon">✅</span>
+                <span>View All Tasks</span>
+            </a>
+            <a href="/teams" class="tut-action-btn">
+                <span class="tut-action-icon">👥</span>
+                <span>View Teams</span>
+            </a>
+            {% if is_admin %}
+            <a href="/desk#List/Team Project Update/New" class="tut-action-btn tut-action-primary">
+                <span class="tut-action-icon">➕</span>
+                <span>New Task</span>
+            </a>
+            <a href="/desk#List/Team/New" class="tut-action-btn tut-action-primary">
+                <span class="tut-action-icon">➕</span>
+                <span>New Team</span>
+            </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Projects -->
+    <div class="tut-section">
+        <h3 class="tut-section-title">📂 Recent Projects</h3>
+        <div class="tut-projects-list">
+            {% if recent_projects %}
+                {% for project in recent_projects %}
+                <a href="/projects?name={{ project.name }}" class="tut-project-card">
+                    <div class="tut-project-header">
+                        <span class="tut-project-title">{{ project.project_title }}</span>
+                        <span class="tut-status-badge tut-status-{{ project.status|lower|replace(' ', '-') }}">{{ project.status }}</span>
+                    </div>
+                    <div class="tut-project-meta">
+                        <span>🏢 {{ project.team }}</span>
+                        <span>📅 {{ frappe.utils.format_date(project.modified) }}</span>
+                    </div>
+                    <div class="tut-project-progress">
+                        <div class="tut-progress-bar">
+                            <div class="tut-progress-fill" style="width: {{ project.progress_percent or 0 }}%;"></div>
+                        </div>
+                        <span class="tut-progress-text">{{ project.progress_percent or 0 }}%</span>
+                    </div>
+                    {% if project.assigned_to %}
+                    <div class="tut-project-assignee">👤 Assigned to: {{ project.assigned_to }}</div>
+                    {% endif %}
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="tut-empty-state">
+                    <p>No projects found. {% if is_admin %}<a href="/desk#List/Team Project Update/New">Create your first project</a>{% endif %}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recent Notifications -->
+    <div class="tut-section">
+        <h3 class="tut-section-title">🔔 Recent Notifications</h3>
+        <div class="tut-notifications-list">
+            {% if recent_notifications %}
+                {% for note in recent_notifications %}
+                <div class="tut-notification-item">
+                    <span class="tut-notif-text">{{ note.subject }}</span>
+                    <span class="tut-notif-date">{{ frappe.utils.pretty_date(note.creation) }}</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="tut-empty-state">
+                    <p>No recent notifications.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block style %}
+<style>
+    /* All styles included in CSS file */
+</style>
+{% endblock %}

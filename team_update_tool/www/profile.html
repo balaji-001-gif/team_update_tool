@@ -1,0 +1,58 @@
+{% extends "templates/web.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block page_content %}
+<div class="tut-page">
+    <div class="tut-page-header">
+        <h2>👤 My Profile</h2>
+        <a href="/dashboard" class="tut-btn tut-btn-secondary">← Dashboard</a>
+    </div>
+
+    <div class="tut-profile-grid">
+        <div class="tut-detail-card">
+            <h3>👤 User Info</h3>
+            <table class="tut-info-table">
+                <tr><td>Name</td><td>{{ user_profile.full_name or user_profile.first_name }}</td></tr>
+                <tr><td>Email</td><td>{{ user_profile.email }}</td></tr>
+                <tr><td>Last Login</td><td>{{ frappe.utils.format_date(user_profile.last_login) if user_profile.last_login else '-' }}</td></tr>
+            </table>
+        </div>
+
+        <div class="tut-detail-card">
+            <h3>📊 My Stats</h3>
+            <table class="tut-info-table">
+                <tr><td>Total Tasks</td><td>{{ my_tasks }}</td></tr>
+                <tr><td>Completed</td><td>{{ completed_tasks }}</td></tr>
+                <tr><td>Pending</td><td>{{ my_tasks - completed_tasks }}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <div class="tut-detail-card" style="margin-top:20px;">
+        <h3>🎭 My Roles</h3>
+        <div class="tut-roles-list">
+            {% for role in user_roles %}
+                {% if role not in ['All', 'Guest', 'Desktop', 'System Manager'] %}
+                <span class="tut-role-badge">{{ role }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if user_teams %}
+    <div class="tut-detail-card" style="margin-top:20px;">
+        <h3>👥 My Teams</h3>
+        <table class="tut-table">
+            <tr><th>Team</th><th>Role</th></tr>
+            {% for t in user_teams %}
+            <tr>
+                <td><a href="/teams?name={{ t.parent }}">{{ t.parent }}</a></td>
+                <td>{{ t.role_in_team or 'Member' }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
