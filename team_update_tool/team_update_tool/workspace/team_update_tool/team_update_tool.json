@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Team Update Tool</span>\",\"col\":12}},{\"id\":\"desc\",\"type\":\"paragraph\",\"data\":{\"text\":\"Upload completed projects (GitHub links + workflow screenshots). Admins can manage everything, Viewers get read-only access.\",\"col\":12}},{\"id\":\"shortcuts_section\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"sc1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Project Update\",\"col\":3}},{\"id\":\"sc2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"All Projects\",\"col\":3}},{\"id\":\"sc3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Teams\",\"col\":3}},{\"id\":\"sc4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project Status Summary\",\"col\":3}},{\"id\":\"sc5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team Update Settings\",\"col\":3}}]",
+ "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Team Update Tool</span>\",\"col\":12}},{\"id\":\"desc\",\"type\":\"paragraph\",\"data\":{\"text\":\"Role-based task management workflow. Admins create and assign tasks to Team Leaders, who assign to Team Members. Team Members complete tasks and upload work. Viewers can view approved projects only.\",\"col\":12}},{\"id\":\"shortcuts_section\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"sc1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Task\",\"col\":3}},{\"id\":\"sc2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"All Tasks\",\"col\":3}},{\"id\":\"sc3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"My Tasks\",\"col\":3}},{\"id\":\"sc4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Teams\",\"col\":3}},{\"id\":\"sc5\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project Status Summary\",\"col\":3}},{\"id\":\"sc6\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Team Update Settings\",\"col\":3}}]",
  "creation": "2026-01-01 10:00:00",
  "docstatus": 0,
  "doctype": "Workspace",
@@ -14,7 +14,7 @@
   {
    "hidden": 0,
    "is_query_report": 0,
-   "label": "All Project Updates",
+   "label": "All Tasks",
    "link_to": "Team Project Update",
    "type": "DocType"
   },
@@ -53,6 +53,12 @@
    "role": "Team Update Admin"
   },
   {
+   "role": "Team Update Team Leader"
+  },
+  {
+   "role": "Team Update Team Member"
+  },
+  {
    "role": "Team Update Viewer"
   },
   {
@@ -64,14 +70,21 @@
   {
    "color": "Green",
    "doc_view": "New",
-   "label": "New Project Update",
+   "label": "New Task",
    "link_to": "Team Project Update",
    "type": "DocType"
   },
   {
    "color": "Blue",
    "doc_view": "List",
-   "label": "All Projects",
+   "label": "All Tasks",
+   "link_to": "Team Project Update",
+   "type": "DocType"
+  },
+  {
+   "color": "Purple",
+   "doc_view": "List",
+   "label": "My Tasks",
    "link_to": "Team Project Update",
    "type": "DocType"
   },

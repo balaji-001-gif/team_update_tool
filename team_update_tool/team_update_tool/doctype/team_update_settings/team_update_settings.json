@@ -57,6 +57,18 @@
    "email": 1,
    "print": 1,
    "read": 1,
+   "role": "Team Update Team Leader"
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "Team Update Team Member"
+  },
+  {
+   "email": 1,
+   "print": 1,
+   "read": 1,
    "role": "Team Update Viewer"
   },
   {

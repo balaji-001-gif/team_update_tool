@@ -14,13 +14,15 @@ def execute(filters=None):
 
 def get_columns():
 	return [
-		{"label": _("Team"), "fieldname": "team", "fieldtype": "Link", "options": "Team", "width": 180},
-		{"label": _("Total Projects"), "fieldname": "total", "fieldtype": "Int", "width": 120},
-		{"label": _("Draft"), "fieldname": "draft", "fieldtype": "Int", "width": 90},
-		{"label": _("In Progress"), "fieldname": "in_progress", "fieldtype": "Int", "width": 100},
-		{"label": _("Completed"), "fieldname": "completed", "fieldtype": "Int", "width": 100},
-		{"label": _("On Hold"), "fieldname": "on_hold", "fieldtype": "Int", "width": 90},
-		{"label": _("Approved"), "fieldname": "approved", "fieldtype": "Int", "width": 90},
+		{"label": _("Project"), "fieldname": "project_title", "fieldtype": "Data", "width": 200},
+		{"label": _("Team"), "fieldname": "team", "fieldtype": "Link", "options": "Team", "width": 150},
+		{"label": _("Team Leader"), "fieldname": "assigned_team_leader", "fieldtype": "Link", "options": "User", "width": 150},
+		{"label": _("Assigned To"), "fieldname": "assigned_to", "fieldtype": "Link", "options": "User", "width": 150},
+		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 120},
+		{"label": _("Priority"), "fieldname": "priority", "fieldtype": "Data", "width": 90},
+		{"label": _("Progress"), "fieldname": "progress_percent", "fieldtype": "Percent", "width": 90},
+		{"label": _("Review Status"), "fieldname": "team_leader_review_status", "fieldtype": "Data", "width": 120},
+		{"label": _("Completion Date"), "fieldname": "completion_date", "fieldtype": "Date", "width": 120},
 	]
 
 
@@ -31,6 +33,10 @@ def get_data(filters):
 	if filters.get("team"):
 		conditions.append("team = %(team)s")
 		values["team"] = filters.get("team")
+
+	if filters.get("assigned_to"):
+		conditions.append("assigned_to = %(assigned_to)s")
+		values["assigned_to"] = filters.get("assigned_to")
 
 	if filters.get("from_date"):
 		conditions.append("completion_date >= %(from_date)s")
@@ -45,40 +51,21 @@ def get_data(filters):
 	rows = frappe.db.sql(
 		f"""
 		SELECT
+			project_title,
 			team,
+			assigned_team_leader,
+			assigned_to,
 			status,
-			COUNT(name) as count
+			priority,
+			progress_percent,
+			team_leader_review_status,
+			completion_date
 		FROM `tabTeam Project Update`
 		{where_clause}
-		GROUP BY team, status
+		ORDER BY modified DESC
 		""",
 		values,
 		as_dict=True,
 	)
 
-	summary = {}
-	for row in rows:
-		team = row.team
-		if team not in summary:
-			summary[team] = {
-				"team": team,
-				"total": 0,
-				"draft": 0,
-				"in_progress": 0,
-				"completed": 0,
-				"on_hold": 0,
-				"approved": 0,
-			}
-		key_map = {
-			"Draft": "draft",
-			"In Progress": "in_progress",
-			"Completed": "completed",
-			"On Hold": "on_hold",
-			"Approved": "approved",
-		}
-		field = key_map.get(row.status)
-		if field:
-			summary[team][field] += row.count
-		summary[team]["total"] += row.count
-
-	return list(summary.values())
+	return rows

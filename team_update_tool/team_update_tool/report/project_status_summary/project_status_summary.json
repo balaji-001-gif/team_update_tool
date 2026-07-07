@@ -13,6 +13,12 @@
    "options": "Team"
   },
   {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To",
+   "options": "User"
+  },
+  {
    "fieldname": "from_date",
    "fieldtype": "Date",
    "label": "Completed From"
@@ -37,6 +43,12 @@
  "roles": [
   {
    "role": "Team Update Admin"
+  },
+  {
+   "role": "Team Update Team Leader"
+  },
+  {
+   "role": "Team Update Team Member"
   },
   {
    "role": "Team Update Viewer"

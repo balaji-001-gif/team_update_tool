@@ -13,13 +13,22 @@
   "project_type",
   "status",
   "priority",
+  "section_break_assignment",
+  "assigned_team_leader",
+  "assigned_by_admin",
+  "column_break_assignment",
+  "assigned_to",
+  "assigned_by_team_leader",
   "section_break_dates",
   "start_date",
+  "due_date",
   "column_break_dates",
   "completion_date",
   "section_break_desc",
   "project_description",
   "tags",
+  "section_break_progress",
+  "progress_percent",
   "section_break_github",
   "github_repo_url",
   "live_demo_url",
@@ -28,7 +37,15 @@
   "section_break_screens",
   "screenshots",
   "section_break_review",
+  "team_leader_review_status",
+  "team_leader_review_date",
+  "column_break_review",
+  "team_leader_review_remarks",
+  "section_break_approval",
   "reviewed_by",
+  "approved_by",
+  "column_break_approval",
+  "approval_date",
   "review_remarks"
  ],
  "fields": [
@@ -56,7 +73,7 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "in_standard_filter": 1,
-   "label": "Uploaded By",
+   "label": "Created By",
    "options": "User",
    "read_only": 1,
    "reqd": 1
@@ -78,7 +95,7 @@
    "in_list_view": 1,
    "in_standard_filter": 1,
    "label": "Status",
-   "options": "Draft\nIn Progress\nCompleted\nOn Hold\nApproved",
+   "options": "Draft\nAssigned\nIn Progress\nCompleted\nUnder Review\nApproved\nRejected",
    "reqd": 1
   },
   {
@@ -87,7 +104,42 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Priority",
-   "options": "Low\nMedium\nHigh"
+   "options": "Low\nMedium\nHigh\nUrgent"
+  },
+  {
+   "fieldname": "section_break_assignment",
+   "fieldtype": "Section Break",
+   "label": "Task Assignment"
+  },
+  {
+   "fieldname": "assigned_team_leader",
+   "fieldtype": "Link",
+   "label": "Assigned Team Leader",
+   "options": "User"
+  },
+  {
+   "default": "0",
+   "fieldname": "assigned_by_admin",
+   "fieldtype": "Check",
+   "label": "Assigned by Admin",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_assignment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "assigned_to",
+   "fieldtype": "Link",
+   "label": "Assigned To (Team Member)",
+   "options": "User"
+  },
+  {
+   "default": "0",
+   "fieldname": "assigned_by_team_leader",
+   "fieldtype": "Check",
+   "label": "Assigned by Team Leader",
+   "read_only": 1
   },
   {
    "fieldname": "section_break_dates",
@@ -97,6 +149,11 @@
    "fieldname": "start_date",
    "fieldtype": "Date",
    "label": "Start Date"
+  },
+  {
+   "fieldname": "due_date",
+   "fieldtype": "Date",
+   "label": "Due Date"
   },
   {
    "fieldname": "column_break_dates",
@@ -122,6 +179,17 @@
    "fieldname": "tags",
    "fieldtype": "Data",
    "label": "Tags (comma separated)"
+  },
+  {
+   "fieldname": "section_break_progress",
+   "fieldtype": "Section Break",
+   "label": "Progress"
+  },
+  {
+   "default": "0",
+   "fieldname": "progress_percent",
+   "fieldtype": "Percent",
+   "label": "Progress (%)"
   },
   {
    "collapsible": 0,
@@ -163,10 +231,38 @@
    "options": "Project Screenshot"
   },
   {
-   "collapsible": 1,
+   "collapsible": 0,
    "fieldname": "section_break_review",
    "fieldtype": "Section Break",
-   "label": "Review"
+   "label": "Team Leader Review"
+  },
+  {
+   "default": "Pending Review",
+   "fieldname": "team_leader_review_status",
+   "fieldtype": "Select",
+   "label": "Team Leader Review",
+   "options": "Pending Review\nReviewed\nChanges Requested"
+  },
+  {
+   "fieldname": "team_leader_review_date",
+   "fieldtype": "Date",
+   "label": "Review Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_review",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "team_leader_review_remarks",
+   "fieldtype": "Small Text",
+   "label": "Review Remarks"
+  },
+  {
+   "collapsible": 0,
+   "fieldname": "section_break_approval",
+   "fieldtype": "Section Break",
+   "label": "Admin Approval"
   },
   {
    "fieldname": "reviewed_by",
@@ -176,9 +272,26 @@
    "read_only": 1
   },
   {
+   "fieldname": "approved_by",
+   "fieldtype": "Link",
+   "label": "Approved By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_approval",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "approval_date",
+   "fieldtype": "Date",
+   "label": "Approval Date",
+   "read_only": 1
+  },
+  {
    "fieldname": "review_remarks",
    "fieldtype": "Small Text",
-   "label": "Review Remarks"
+   "label": "Admin Remarks"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -203,6 +316,26 @@
    "write": 1
   },
   {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Team Update Team Leader",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Team Update Team Member",
+   "write": 1
+  },
+  {
    "email": 1,
    "export": 1,
    "print": 1,
@@ -223,7 +356,7 @@
    "write": 1
   }
  ],
- "search_fields": "project_title,team,status",
+ "search_fields": "project_title,team,status,assigned_to,assigned_team_leader",
  "show_name_in_global_search": 1,
  "sort_field": "modified",
  "sort_order": "DESC",

@@ -1,24 +1,21 @@
 {
  "attach_print": 0,
  "channel": "System Notification",
- "condition": "",
+ "condition": "doc.status == \"Approved\"",
  "creation": "2026-01-01 10:00:00",
  "days_in_advance": 0,
  "disabled": 0,
  "doctype": "Notification",
  "document_type": "Team Project Update",
- "event": "New Record",
+ "event": "Value Change",
  "is_standard": 1,
- "message": "<p>A new task <b>{{ doc.project_title }}</b> has been created by {{ doc.project_owner }} for team {{ doc.team }}.</p>{% if doc.assigned_team_leader %}<p><b>Assigned Team Leader:</b> {{ doc.assigned_team_leader }}</p>{% endif %}<p><b>Status:</b> {{ doc.status }} | <b>Priority:</b> {{ doc.priority }}</p>",
+ "message": "<p>Task <b>{{ doc.project_title }}</b> has been <b>Approved</b>!</p><p><b>Team:</b> {{ doc.team }}<br>{% if doc.assigned_team_leader %}<b>Team Leader:</b> {{ doc.assigned_team_leader }}<br>{% endif %}{% if doc.assigned_to %}<b>Completed By:</b> {{ doc.assigned_to }}<br>{% endif %}{% if doc.github_repo_url %}<b>GitHub:</b> {{ doc.github_repo_url }}{% endif %}</p>",
  "modified": "2026-01-01 10:00:00",
  "modified_by": "Administrator",
  "module": "Team Update Tool",
- "name": "New Project Uploaded",
+ "name": "Project Approved",
  "owner": "Administrator",
  "recipients": [
-  {
-   "receiver_by_role": "Team Update Admin"
-  },
   {
    "receiver_by_role": "Team Update Team Leader"
   },
@@ -30,5 +27,6 @@
   }
  ],
  "send_system_notification": 1,
- "subject": "New Task: {{ doc.project_title }}"
+ "subject": "Task Approved: {{ doc.project_title }}",
+ "value_changed": "status"
 }

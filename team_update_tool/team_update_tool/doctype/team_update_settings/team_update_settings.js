@@ -3,6 +3,6 @@
 
 frappe.ui.form.on("Team Update Settings", {
 	refresh: function (frm) {
-		team_update_tool.show_viewer_banner(frm);
+		team_update_tool.show_role_banner(frm);
 	},
 });

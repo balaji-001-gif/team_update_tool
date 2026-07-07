@@ -4,7 +4,7 @@
 **Version:** 1.0.0  
 **Compatibility:** Frappe Framework v15+ / ERPNext v15+  
 **Repository:** https://github.com/Sudhakar1110/team_update_tool.git  
-**Document Version:** 1.0  
+**Document Version:** 2.0  
 **Last Updated:** July 7, 2026
 
 ---
@@ -14,41 +14,44 @@
 1. [Purpose & Scope](#1-purpose--scope)
 2. [System Requirements](#2-system-requirements)
 3. [Installation Procedure](#3-installation-procedure)
-4. [Post-Installation Configuration](#4-post-installation-configuration)
-5. [Role & Permission Management](#5-role--permission-management)
-6. [Creating & Managing Teams](#6-creating--managing-teams)
-7. [Uploading a Project Update (Admin)](#7-uploading-a-project-update-admin)
-8. [Viewing Projects (Viewer)](#8-viewing-projects-viewer)
-9. [Project Status Report](#9-project-status-report)
-10. [Notification System](#10-notification-system)
-11. [Workspace Usage Guide](#11-workspace-usage-guide)
-12. [Troubleshooting](#12-troubleshooting)
-13. [Backup & Restore](#13-backup--restore)
-14. [Appendix: Doctype Reference](#14-appendix-doctype-reference)
+4. [User Roles & Responsibilities](#4-user-roles--responsibilities)
+5. [Role Permissions Matrix](#5-role-permissions-matrix)
+6. [Team Creation Process](#6-team-creation-process)
+7. [Task Assignment Workflow](#7-task-assignment-workflow)
+8. [Admin Task Creation & Assignment](#8-admin-task-creation--assignment)
+9. [Team Leader Task Assignment](#9-team-leader-task-assignment)
+10. [Team Member Task Completion](#10-team-member-task-completion)
+11. [GitHub Repository & File Upload](#11-github-repository--file-upload)
+12. [Screenshot & Documentation Upload](#12-screenshot--documentation-upload)
+13. [Team Leader Review Process](#13-team-leader-review-process)
+14. [Admin Approval Process](#14-admin-approval-process)
+15. [Viewer Access](#15-viewer-access)
+16. [Notification Flow](#16-notification-flow)
+17. [Workspace Usage Guide](#17-workspace-usage-guide)
+18. [Project Status Report](#18-project-status-report)
+19. [Complete End-to-End Workflow](#19-complete-end-to-end-workflow)
+20. [Troubleshooting](#20-troubleshooting)
+21. [Backup & Restore](#21-backup--restore)
+22. [Appendix: Doctype Reference](#22-appendix-doctype-reference)
 
 ---
 
 ## 1. Purpose & Scope
 
 ### 1.1 Purpose
-The Team Update Tool enables teams (e.g., Developers, Designers, QA) to upload completed project details — including GitHub repository links, source files, and workflow/UI screenshots — so that other teams (e.g., Marketing, Management) can browse and review completed work with strict role-based access control.
+The Team Update Tool enables role-based task management where:
+- **Admins** create tasks, assign to Team Leaders, and provide final approval
+- **Team Leaders** assign tasks to Team Members, monitor progress, and review completed work
+- **Team Members** work on assigned tasks, upload GitHub repositories, screenshots, and documentation
+- **Viewers** browse approved projects in read-only mode
 
 ### 1.2 Scope
 This SOP covers:
 - Installation and setup on a Frappe/ERPNext v15+ bench
 - Configuration of teams, members, and notification recipients
-- Daily operations: uploading projects, viewing projects, generating reports
-- Role management: Admin (full access) vs Viewer (read-only access)
+- Complete task workflow: creation → assignment → completion → review → approval
+- Role management: Admin, Team Leader, Team Member, Viewer
 - Troubleshooting common issues
-
-### 1.3 Key Features
-- **Two access roles:** Team Update Admin (full CRUD) and Team Update Viewer (read-only)
-- **Project uploads:** GitHub repo URLs, live demo URLs, zipped source files, screenshots
-- **Team management:** Create teams with members and team leads
-- **Status tracking:** Draft → In Progress → Completed → On Hold → Approved
-- **Script report:** Project Status Summary with filters by team and date range
-- **Notifications:** In-app and optional email alerts for new/completed projects
-- **Workspace:** Dedicated workspace with shortcuts and card navigation
 
 ---
 
@@ -77,14 +80,9 @@ This SOP covers:
 
 ### 3.1 Get the App
 ```bash
-# Navigate to your bench directory
 cd ~/frappe-bench
-
-# Download the app from GitHub
 bench get-app https://github.com/Sudhakar1110/team_update_tool.git
 ```
-
-**Expected output:** The app clones successfully with no errors.
 
 ### 3.2 Install on a Site
 ```bash
@@ -92,20 +90,16 @@ bench --site your-site-name install-app team_update_tool
 ```
 
 **What this does:**
-- Runs `after_install` which automatically creates two roles:
+- Runs `after_install` which automatically creates four roles:
   - `Team Update Admin` — Full access
+  - `Team Update Team Leader` — Can assign tasks, monitor, and review
+  - `Team Update Team Member` — Can work on assigned tasks
   - `Team Update Viewer` — Read-only access
-- Registers the app module
 
 ### 3.3 Run Migration
 ```bash
 bench --site your-site-name migrate
 ```
-
-**What this does:**
-- Creates all database tables for the doctypes
-- Imports workspace, report, and notification definitions
-- Applies any pending patches
 
 ### 3.4 Build Assets
 ```bash
@@ -119,356 +113,541 @@ bench restart
 
 ### 3.6 Verify Installation
 1. Log in to your Frappe site
-2. You should see **Team Update Tool** in the module list (Workspace dropdown)
-3. Click on it to open the Team Update Tool workspace
-4. Verify you can see the workspace with shortcuts
+2. You should see **Team Update Tool** in the Workspace dropdown
+3. Click to open the workspace with shortcuts
 
 ---
 
-## 4. Post-Installation Configuration
+## 4. User Roles & Responsibilities
 
-### Step 1: Create Teams
-1. Go to **Team Update Tool > Teams** (or use the workspace)
+### 4.1 Team Update Admin
+| Attribute | Description |
+|-----------|-------------|
+| **Who** | Project Managers, IT Admins, Department Heads |
+| **Can Do** | Create, edit, assign, reassign, approve, reject, and delete tasks |
+| **Can Do** | Create and manage Teams and Team Leaders |
+| **Can Do** | View all teams, projects, tasks, and users |
+| **Can Do** | Manage user roles and permissions |
+| **Can Do** | View all reports and dashboards |
+| **Can Do** | Configure application settings |
+| **UI Banner** | ⚙️ Admin - Full access to all tasks |
+
+### 4.2 Team Update Team Leader
+| Attribute | Description |
+|-----------|-------------|
+| **Who** | Team Leads, Senior Developers |
+| **Can Do** | View tasks assigned by Admin |
+| **Can Do** | Assign tasks to Team Members within their team |
+| **Can Do** | Monitor task progress |
+| **Can Do** | Review completed tasks |
+| **Can Do** | Update task status |
+| **Cannot** | Delete projects or modify system settings |
+| **Cannot** | Modify approval fields |
+| **UI Banner** | 👥 Team Leader - You can assign tasks and review work |
+
+### 4.3 Team Update Team Member
+| Attribute | Description |
+|-----------|-------------|
+| **Who** | Developers, Designers, QA Engineers |
+| **Can Do** | View only the tasks assigned to them |
+| **Can Do** | Update task progress and status |
+| **Can Do** | Upload completed project files |
+| **Can Do** | Upload GitHub repository links |
+| **Can Do** | Upload project screenshots and documentation |
+| **Can Do** | Mark tasks as completed |
+| **Cannot** | Assign tasks to other users |
+| **Cannot** | Change review or approval fields |
+| **UI Banner** | 🔧 Team Member - You can update progress and upload files |
+
+### 4.4 Team Update Viewer
+| Attribute | Description |
+|-----------|-------------|
+| **Who** | Marketing, Stakeholders, Management |
+| **Can Do** | View approved projects only |
+| **Can Do** | View GitHub repositories, screenshots, documentation |
+| **Can Do** | View reports |
+| **Cannot** | Create, edit, assign, submit, cancel, delete, or modify any records |
+| **UI Banner** | 👁 View Only Access - Editing is disabled |
+
+---
+
+## 5. Role Permissions Matrix
+
+### 5.1 Team Project Update Permissions
+| Permission | Admin | Team Leader | Team Member | Viewer |
+|------------|-------|-------------|-------------|--------|
+| Create | ✅ | ✅ | ✅ | ❌ |
+| Read | ✅ | ✅ (own team) | ✅ (own tasks) | ✅ (approved only) |
+| Write | ✅ | ✅ (own team tasks) | ✅ (own tasks) | ❌ |
+| Delete | ✅ | ❌ | ❌ | ❌ |
+| Export | ✅ | ✅ | ✅ | ✅ |
+| Print | ✅ | ✅ | ✅ | ✅ |
+| Share | ✅ | ❌ | ❌ | ❌ |
+
+### 5.2 Team Permissions
+| Permission | Admin | Team Leader | Team Member | Viewer |
+|------------|-------|-------------|-------------|--------|
+| Create | ✅ | ❌ | ❌ | ❌ |
+| Read | ✅ | ✅ | ✅ | ✅ |
+| Write | ✅ | ❌ | ❌ | ❌ |
+| Delete | ✅ | ❌ | ❌ | ❌ |
+
+### 5.3 Team Update Settings Permissions
+| Permission | Admin | Team Leader | Team Member | Viewer |
+|------------|-------|-------------|-------------|--------|
+| Full Access | ✅ | ❌ | ❌ | ❌ |
+| Read Only | ✅ | ✅ | ✅ | ✅ |
+
+### 5.4 Permission Query Conditions (List View Visibility)
+| Role | Can See |
+|------|---------|
+| Admin / System Manager | All records |
+| Team Leader | Tasks where they are the `assigned_team_leader` |
+| Team Member | Tasks where they are the `assigned_to` |
+| Viewer | Only tasks with status = "Approved" |
+
+---
+
+## 6. Team Creation Process
+
+### 6.1 Who Can Create Teams
+Only **Team Update Admin** can create and manage teams.
+
+### 6.2 Create a New Team
+1. Go to **Team Update Tool > Teams**
 2. Click **+ Add Team**
-3. Enter:
-   - **Team Name:** e.g., "Development Team"
-   - **Team Type:** Select from dropdown (Development, Marketing, Design, QA, etc.)
-   - **Team Lead:** Select a user (optional)
-   - **Is Active:** Checked (default)
-   - **Description:** Brief description (optional)
-4. In the **Members** child table, add team members:
-   - **User:** Select a user
-   - **Role in Team:** e.g., "Senior Developer" (optional)
+3. Fill in:
+   - **Team Name:** Unique name (e.g., "Development Team")
+   - **Team Type:** Select from options
+   - **Team Lead:** Select a user (this user should have Team Leader role)
+   - **Is Active:** Checked
+   - **Description:** Optional
+4. Add **Members** in the child table:
+   - **User:** Select user
+   - **Role in Team:** e.g., "Frontend Developer"
 5. Save
 
-**Create separate teams for each department:**
-- Development Team
-- Marketing Team
-- Design Team
-- QA Team
-
-### Step 2: Configure Team Update Settings
-1. Go to **Team Update Tool > Team Update Settings**
-2. Configure:
-   - **Enable Email Notification:** Check to send email alerts
-   - **Default Team:** Select a default team (optional)
-   - **Notify Recipients:** Add users who should receive notifications when projects are uploaded or completed
-3. Save
-
-### Step 3: Assign Roles to Users
-See Section 5 for detailed instructions.
+### 6.3 Important Notes
+- A user cannot be added more than once to the same team
+- The Team Lead should be assigned the **Team Update Team Leader** role in their User record
+- Team Members should be assigned the **Team Update Team Member** role
 
 ---
 
-## 5. Role & Permission Management
+## 7. Task Assignment Workflow
 
-### 5.1 Role Overview
+### 7.1 Complete Workflow Diagram
+```
+Admin → Create Task → Assign to Team Leader
+                          ↓
+              Team Leader → Assign to Team Member
+                          ↓
+              Team Member → Work on Task
+                          ↓
+              Upload GitHub Repo, Screenshots, Files
+                          ↓
+              Team Member → Mark Task as Completed
+                          ↓
+              Team Leader → Review Task
+                          ↓
+              Admin → Approve or Reject
+                          ↓
+              Project Published (Viewers can see)
+```
 
-| Role | Permissions | Intended For |
-|------|-------------|--------------|
-| **Team Update Admin** | Full: Create, Read, Write, Delete, Export, Print, Share, Report | Developers, Project Managers, IT Admins |
-| **Team Update Viewer** | Read-only: Read, Export, Print, Report, Email | Marketing, Stakeholders, Management |
-| **System Manager** | Full access (Frappe built-in) | IT Administrators |
-
-### 5.2 How to Assign Roles
-
-**Via User form:**
-1. Go to **Users** (search in the Awesome Bar)
-2. Open the user you want to assign a role to
-3. Scroll to the **Roles & Permissions** section
-4. Click **+ Add Row**
-5. Select the role: `Team Update Admin` or `Team Update Viewer`
-6. Save
-
-**Via Bulk Assignment:**
-1. Go to **Users > List View**
-2. Select multiple users
-3. Click **Actions > Assign Role**
-4. Select the role and apply
-
-### 5.3 Permission Enforcement Layers
-
-Permissions are enforced at THREE layers for security:
-
-| Layer | Mechanism | What it does |
-|-------|-----------|-------------|
-| **1. DocType Permissions** | `team_project_update.json`, `team.json`, etc. | Viewer role has only `read`, `report`, `print`, `email`, `export` |
-| **2. Server-Side Guard** | `validate()` and `on_trash()` in Python controller | Throws `frappe.PermissionError` if a Viewer attempts create/edit/delete |
-| **3. Client-Side UX** | `team_update_tool.js` and doctype JS files | Shows "View Only" banner and disables form for Viewers |
-
-### 5.4 Important Notes
-- A user with **both** Admin and Viewer roles will have Admin access (Admin takes precedence)
-- **System Manager** always has full access to all doctypes
-- Permission changes take effect on next page refresh (no need to logout)
+### 7.2 Status Flow
+```
+Draft → Assigned → In Progress → Completed → Under Review → Approved
+                                                               ↓
+                                                          Rejected
+```
 
 ---
 
-## 6. Creating & Managing Teams
+## 8. Admin Task Creation & Assignment
 
-### 6.1 Create a New Team
-1. Navigate to **Team Update Tool > Teams**
-2. Click **+ Add Team**
-3. Fill in the following fields:
+### 8.1 Who Can Do This
+**Team Update Admin** only.
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| Team Name | Yes | Unique name for the team (e.g., "Development Team") |
-| Team Type | Yes | Select: Development, Marketing, Design, QA, Product, DevOps, Other |
-| Team Lead | No | Link to a User who leads this team |
-| Is Active | No | Checked by default. Uncheck to deactivate a team |
-| Description | No | Brief description of the team's role |
+### 8.2 Create a New Task
+1. Go to **Team Update Tool > New Task**
+2. Fill in:
+   | Field | Required | Description |
+   |-------|----------|-------------|
+   | Project Title | Yes | Name of the project/task |
+   | Team | Yes | Select the team |
+   | Project Type | No | Type of project |
+   | Status | Yes | Default: "Draft" |
+   | Priority | No | Low, Medium, High, Urgent |
+   | Assigned Team Leader | Yes | Select the team leader |
+   | Start Date | No | When work should begin |
+   | Project Description | No | Detailed description |
+   | Tags | No | Comma-separated tags |
 
-### 6.2 Add Team Members
-1. In the **Members** child table, click **+ Add Row**
-2. Select a **User** from the dropdown
-3. Optionally enter their **Role in Team** (e.g., "Frontend Developer")
-4. Repeat for each member
-5. Save
+3. When you select **Assigned Team Leader**:
+   - The `assigned_by_admin` checkbox is automatically checked
+   - The status changes from "Draft" to "Assigned"
+   - The Team Leader receives a **notification**
 
-> **Note:** A user cannot be added more than once to the same team. The system will display an error if you try.
+4. Click **Save**
 
-### 6.3 Edit or Deactivate a Team
-- **Edit:** Open the Team record, make changes, and Save
-- **Deactivate:** Uncheck **Is Active** and Save
-- **Delete:** Only Team Update Admin or System Manager can delete teams
-
----
-
-## 7. Uploading a Project Update (Admin)
-
-### 7.1 Who can do this?
-Users with the **Team Update Admin** or **System Manager** role.
-
-### 7.2 Procedure
-1. Go to **Team Update Tool > New Project Update** (shortcut in workspace)
-2. Fill in the following fields:
-
-#### Section: Basic Information
-| Field | Required | Description |
-|-------|----------|-------------|
-| **Project Title** | Yes | Name of the project |
-| **Team** | Yes | Select the team that completed this project |
-| **Project Type** | No | Select from: Web Application, Mobile Application, API/Integration, Automation Script, ERPNext Customization, Other |
-| **Status** | Yes | Select: Draft, In Progress, Completed, On Hold, Approved |
-| **Priority** | No | Select: Low, Medium, High |
-
-#### Section: Dates
-| Field | Required | Description |
-|-------|----------|-------------|
-| **Start Date** | No | When the project started |
-| **Completion Date** | No | When the project was completed |
-
-#### Section: Project Details
-| Field | Required | Description |
-|-------|----------|-------------|
-| **Project Description** | No | Detailed description using the rich text editor |
-| **Tags** | No | Comma-separated tags (e.g., "ERPNext, UI, Customization") |
-
-#### Section: Source Code & Links
-| Field | Required | Description |
-|-------|----------|-------------|
-| **GitHub Repository URL** | No | URL to the GitHub repository (e.g., https://github.com/username/repo) |
-| **Live / Demo URL** | No | URL to the live demo or staging site |
-| **Uploaded Project Files** | No | Attach zip/tar files of the project source code |
-
-#### Section: Screenshots
-| Field | Required | Description |
-|-------|----------|-------------|
-| **Workflow / UI Screenshots** | No | Upload screenshots showing the project workflow or UI |
-
-> For each screenshot, you can add:
-> - **Screenshot:** Image file (JPG, PNG, GIF)
-> - **Caption:** Brief description of the screenshot
-> - **Type:** Workflow, Dashboard, UI Screen, Database/ERD, Other
-
-#### Section: Review (Admin only)
-| Field | Required | Description |
-|-------|----------|-------------|
-| **Reviewed By** | No | Auto-populated when status changes to "Approved" |
-| **Review Remarks** | No | Any remarks or notes about the project |
-
-### 7.3 Upload GitHub Files
-1. In the **Uploaded Project Files** section, click **+ Add Row**
-2. Click the **Attach** button to select and upload a file
-3. Optionally add a **Description** for the file
-4. Repeat for multiple files if needed
-
-### 7.4 Upload Screenshots
-1. In the **Workflow / UI Screenshots** section, click **+ Add Row**
-2. Click the **Attach** button to select and upload a screenshot image
-3. Add a **Caption** (e.g., "Dashboard View after login")
-4. Select the **Type** (Workflow, Dashboard, UI Screen, etc.)
-5. Repeat for multiple screenshots
-
-### 7.5 Save and Submit
-1. After filling in all details, click **Save**
-2. The system will auto-generate a name like `TUT-2026-00001`
-3. You can update the status later as the project progresses
+### 8.3 Notifications Triggered
+- Team Leader receives in-app notification: "New Task Assigned: [Project Title]"
+- Email notification sent if email is configured in settings
 
 ---
 
-## 8. Viewing Projects (Viewer)
+## 9. Team Leader Task Assignment
 
-### 8.1 Who can do this?
-Users with the **Team Update Viewer** role.
+### 9.1 Who Can Do This
+**Team Update Team Leader** (for tasks assigned to them by Admin).
 
-### 8.2 What Viewers Can Do
-- ✅ View all project updates across all teams
-- ✅ View project details, descriptions, GitHub links
-- ✅ View and download uploaded files
-- ✅ View screenshots (images displayed inline)
-- ✅ View the Project Status Summary report
-- ✅ Export data to CSV/Excel
-- ✅ Print records
-- ✅ Receive notifications (in-app and email)
-
-### 8.3 What Viewers CANNOT Do
-- ❌ Create new project updates
-- ❌ Edit existing project updates
-- ❌ Delete project updates
-- ❌ Create or edit teams
-- ❌ Access Team Update Settings
-- ❌ Change any data
-
-### 8.4 Viewer Experience
-When a Viewer opens a project update form:
-- They see a **yellow banner**: "👁 View Only Access — Editing is disabled for your role"
-- All form fields are **disabled** (cannot be edited)
-- No **Save** or **Delete** buttons are visible
-- They can still:
-  - Click **"View on GitHub"** button to open the GitHub repo
-  - Click **"Open Live Demo"** button to visit the demo URL
-  - View all screenshots inline
-  - Download attached files
-
-### 8.5 How Viewers Browse Projects
-1. Go to **Team Update Tool > All Projects** (from workspace shortcuts)
-2. Use filters to narrow down:
-   - **Filter by Team:** Select a specific team
-   - **Filter by Status:** Select Draft, Completed, etc.
-   - **Search:** Search by project title
-3. Click on any project to view full details
-4. Open GitHub links or demo URLs directly from the form
-
----
-
-## 9. Project Status Report
-
-### 9.1 Accessing the Report
-1. Go to **Team Update Tool > Project Status Summary** (from workspace)
-
-### 9.2 Report Description
-The **Project Status Summary** is a Script Report that shows a count of projects per team, broken down by status.
-
-### 9.3 Report Columns
-| Column | Description |
-|--------|-------------|
-| **Team** | Team name (linked to Team doctype) |
-| **Total Projects** | Total number of projects |
-| **Draft** | Count of Draft projects |
-| **In Progress** | Count of In Progress projects |
-| **Completed** | Count of Completed projects |
-| **On Hold** | Count of On Hold projects |
-| **Approved** | Count of Approved projects |
-
-### 9.4 Filters
-| Filter | Description |
-|--------|-------------|
-| **Team** | Filter by a specific team (optional) |
-| **Completed From** | Show projects completed on or after this date (optional) |
-| **Completed To** | Show projects completed on or before this date (optional) |
-
-### 9.5 Generating the Report
-1. Open the report
-2. Optionally set filters and click **Refresh**
-3. View the summary data
-4. Use the **Export** button to download as CSV or Excel
-
----
-
-## 10. Notification System
-
-### 10.1 Types of Notifications
-
-| Notification | Trigger | Recipients |
-|-------------|---------|------------|
-| **New Project Uploaded** | When a new Team Project Update is created | All users with Team Update Viewer + Team Update Admin roles |
-| **Project Completed** | When a project's status changes to "Completed" | All users with Team Update Viewer + Team Update Admin roles |
-
-### 10.2 In-App Notifications
-- Notifications appear in the **bell icon** (Notification Log) in the Frappe toolbar
-- Users see a red badge with unread count
-- Click the bell to view all notifications
-
-### 10.3 Email Notifications (Optional)
-1. Go to **Team Update Settings**
-2. Check **Enable Email Notification**
-3. Add recipients in the **Notify Recipients** table
+### 9.2 Assign Task to Team Member
+1. Open the task assigned to you (find it from **All Tasks** or **My Tasks**)
+2. In the **Assigned To (Team Member)** field, select a team member
+3. When you select **Assigned To**:
+   - The `assigned_by_team_leader` checkbox is automatically checked
+   - The status changes from "Assigned" to "In Progress"
+   - The Team Member receives a **notification**
 4. Save
 
-When enabled, emails are sent to configured recipients for:
-- New project uploads
-- Projects marked as Completed
-
-### 10.4 Notification Log Entries
-In addition to Frappe's Notification system, the app also creates Notification Log entries for users configured in **Team Update Settings > Notify Recipients**. These appear in the bell icon tray.
+### 9.3 Notifications Triggered
+- Team Member receives: "New Task Assigned: [Project Title] (as Team Member)"
+- Admin is notified of the assignment
 
 ---
 
-## 11. Workspace Usage Guide
+## 10. Team Member Task Completion
 
-### 11.1 Accessing the Workspace
+### 10.1 Who Can Do This
+**Team Update Team Member** (for tasks assigned to them).
+
+### 10.2 Work on the Task
+1. Open your assigned task from **All Tasks** or **My Tasks**
+2. Update the following as you work:
+   - **Progress (%)** — Update this as you make progress
+   - **Project Description** — Detailed description of what was done
+   - **Tags** — Comma-separated tags
+
+### 10.3 Mark Task as Completed
+When the task is complete:
+
+**Method 1:** Set **Progress (%)** to **100** — status auto-changes to "Completed"
+
+**Method 2:** Click the **"Mark 100% Complete"** button in the Actions menu
+
+### 10.4 Before Marking Complete
+Make sure you have uploaded:
+- ✅ GitHub Repository URL (see Section 11)
+- ✅ Project Screenshots (see Section 12)
+- ✅ Project Files (if applicable)
+- ✅ Documentation (if applicable)
+
+### 10.5 Notifications Triggered
+- Team Leader receives: "Task Completed: [Project Title]"
+- Admin receives notification
+- The Team Leader Review section becomes active
+
+---
+
+## 11. GitHub Repository & File Upload
+
+### 11.1 Who Can Upload
+**Team Update Team Member** on their assigned tasks.
+
+### 11.2 Upload GitHub Repository
+1. Open your assigned task
+2. In the **Source Code & Links** section:
+   - **GitHub Repository URL:** Enter the full URL (e.g., https://github.com/username/repo-name)
+   - **Live / Demo URL:** Enter the demo URL if available
+
+### 11.3 Upload Project Files
+1. In the **Uploaded Project Files** section, click **+ Add Row**
+2. Click **Attach** to upload files (zip, tar, or source files)
+3. Add a **Description** for each file
+4. Save
+
+### 11.4 URL Validation
+If the GitHub URL does not contain "github.com", a warning message appears. Double-check the URL.
+
+---
+
+## 12. Screenshot & Documentation Upload
+
+### 12.1 Upload Screenshots
+1. In the **Screenshots** section, click **+ Add Row**
+2. Click **Attach** to upload an image
+3. Add a **Caption** (e.g., "Dashboard view after implementation")
+4. Select the **Type**:
+   - Workflow
+   - Dashboard
+   - UI Screen
+   - Database / ERD
+   - Other
+5. Repeat for multiple screenshots
+6. Save
+
+### 12.2 Supported Formats
+- Images: JPG, PNG, GIF
+- Max size: As configured in Frappe System Settings
+
+---
+
+## 13. Team Leader Review Process
+
+### 13.1 Who Can Do This
+**Team Update Team Leader** (for completed tasks in their team).
+
+### 13.2 Review Completed Task
+1. Open the completed task
+2. Go to the **Team Leader Review** section
+3. Review the work, screenshots, GitHub repo, and files
+4. Set **Team Leader Review** to:
+   - **Reviewed** — If everything looks good
+   - **Changes Requested** — If changes are needed
+5. Add **Review Remarks** with feedback
+
+### 13.3 Mark as Reviewed
+Click the **"Mark Reviewed"** button in the Actions menu. This:
+- Sets the review date automatically
+- Changes status to "Under Review"
+- Notifies Admin
+
+### 13.4 Notifications Triggered
+- Admin receives: "Task Reviewed: [Project Title]"
+- Admin can now Approve or Reject
+
+---
+
+## 14. Admin Approval Process
+
+### 14.1 Who Can Do This
+**Team Update Admin** only.
+
+### 14.2 Approve or Reject Task
+1. Open the task (status should be "Under Review" or "Completed")
+2. Review the work, screenshots, GitHub repo, and Team Leader review
+
+**To Approve:**
+- Click **"Approve Task"** in the Actions menu
+- Status changes to "Approved"
+- Approval date is auto-set
+- Approver name is auto-set
+
+**To Reject:**
+- Click **"Reject Task"** in the Actions menu
+- Status changes to "Rejected"
+- Add **Admin Remarks** explaining why
+
+### 14.3 Notifications Triggered on Approval
+- **Team Leader** receives: "Task Approved: [Project Title]"
+- **Team Member** receives: "Task Approved: [Project Title]"
+- **Viewers** can now see the project as it is published
+
+### 14.4 Notifications Triggered on Rejection
+- **Team Leader** receives: "Task Rejected: [Project Title]"
+- **Team Member** receives: "Task Rejected: [Project Title]"
+
+---
+
+## 15. Viewer Access
+
+### 15.1 Who Can Do This
+**Team Update Viewer** role.
+
+### 15.2 What Viewers Can See
+- ✅ Only tasks with status = **"Approved"**
+- ✅ GitHub repository URLs
+- ✅ Screenshots (displayed inline)
+- ✅ Uploaded files (downloadable)
+- ✅ Project descriptions
+- ✅ Team information
+- ✅ Project Status Summary report
+
+### 15.3 What Viewers CANNOT Do
+- ❌ Create new tasks
+- ❌ Edit any records
+- ❌ Delete any records
+- ❌ Assign tasks
+- ❌ Review or approve tasks
+- ❌ Access Team Update Settings
+
+### 15.4 Viewer Experience
+- A yellow banner shows: **"👁 View Only Access - Editing is disabled for your role"**
+- All form fields are disabled
+- No Save or Delete buttons
+- Can still view GitHub links, demo links, screenshots, and files
+
+### 15.5 List View
+Viewers only see tasks with **status = "Approved"** in the list view. This is enforced by server-side permission query conditions.
+
+---
+
+## 16. Notification Flow
+
+### 16.1 Complete Notification Map
+
+| Event | Sender | Recipient(s) | Channel |
+|-------|--------|--------------|---------|
+| Task Created | System | All roles | In-app Notification |
+| Task Assigned to Team Leader | Admin | Team Leader | In-app + Email (if enabled) |
+| Task Assigned to Team Member | Team Leader | Team Member | In-app + Email (if enabled) |
+| Progress Updated (> previous) | Team Member | Team Leader | In-app |
+| Task Completed | Team Member | Team Leader + Admin | In-app + Email |
+| Task Under Review | System | Admin | In-app |
+| Task Reviewed | Team Leader | Admin | In-app |
+| Task Approved | Admin | Team Leader + Team Member + Viewer | In-app + Email |
+| Task Rejected | Admin | Team Leader + Team Member | In-app |
+
+### 16.2 Notification Channels
+| Channel | Description |
+|---------|-------------|
+| **In-App Notification** | Appears in the bell icon (Notification Log) in Frappe toolbar |
+| **Email** | Sent if **Team Update Settings > Enable Email Notification** is checked |
+
+### 16.3 Configure Email Notifications
+1. Go to **Team Update Settings**
+2. Check **Enable Email Notification**
+3. Add recipients in **Notify Recipients** table
+4. Save
+
+### 16.4 Frappe Notification Doctypes
+| Notification | Event | Recipients |
+|-------------|-------|------------|
+| New Project Uploaded | New Record | All roles |
+| Project Completed | Status → Completed | Admin, Team Leader |
+| Project Approved | Status → Approved | Team Leader, Team Member, Viewer |
+
+---
+
+## 17. Workspace Usage Guide
+
+### 17.1 Accessing the Workspace
 - **Method 1:** Click the **Team Update Tool** module in the workspace dropdown
 - **Method 2:** Search "Team Update Tool" in the Awesome Bar (Ctrl+G)
 
-### 11.2 Workspace Layout
-
-**Top Section — Shortcuts (Quick Actions):**
+### 17.2 Workspace Shortcuts
 | Shortcut | Action | Who Can Use |
 |----------|--------|-------------|
-| **New Project Update** | Opens a new Team Project Update form | Admin only |
-| **All Projects** | Opens list of all project updates | Admin + Viewer |
-| **Teams** | Opens list of teams | Admin only |
-| **Project Status Summary** | Opens the status report | Admin + Viewer |
-| **Team Update Settings** | Opens settings (notification config) | Admin only |
-
-**Bottom Section — Card Links:**
-| Card | Action | Who Can Use |
-|------|--------|-------------|
-| **All Project Updates** | Opens list view | Admin + Viewer |
-| **Teams** | Opens team list | Admin + Viewer |
-| **Project Status Summary** | Opens report | Admin + Viewer |
+| **New Task** | Opens a new Team Project Update form | Admin, Team Leader, Team Member |
+| **All Tasks** | Opens list of all tasks (filtered by role) | All |
+| **My Tasks** | Opens list filtered to current user | All |
+| **Teams** | Opens list of teams | Admin, Team Leader, Team Member, Viewer |
+| **Project Status Summary** | Opens the task report | All |
 | **Team Update Settings** | Opens settings | Admin only |
 
-### 11.3 Awesome Bar Shortcuts
+### 17.3 Awesome Bar Shortcuts
 Type these in the Awesome Bar (Ctrl+G):
-- `Team Project Update` → Opens list of project updates
+- `Team Project Update` → Opens list of tasks
 - `Team` → Opens list of teams
 - `Project Status Summary` → Opens the report
 - `Team Update Settings` → Opens settings
 
 ---
 
-## 12. Troubleshooting
+## 18. Project Status Report
 
-### 12.1 Installation Errors
+### 18.1 Accessing the Report
+1. Go to **Team Update Tool > Project Status Summary**
 
-**Error:** `No such file or directory: 'setup.py'`  
-**Cause:** App structure is incorrect in the repository  
-**Solution:** Ensure you're using the latest version from GitHub:
-```bash
-bench get-app https://github.com/Sudhakar1110/team_update_tool.git
-```
+### 18.2 Report Description
+The **Project Status Summary** report shows all tasks with their current status, assignments, progress, and review status.
 
-**Error:** `gunicorn was included as a URL dependency`  
-**Cause:** Old requirements.txt listed `frappe` as a pip dependency  
-**Solution:** This is already fixed. Run:
+### 18.3 Report Columns
+| Column | Description |
+|--------|-------------|
+| **Project** | Project title |
+| **Team** | Team name |
+| **Team Leader** | Assigned team leader |
+| **Assigned To** | Assigned team member |
+| **Status** | Current status (Draft, Assigned, In Progress, Completed, Under Review, Approved, Rejected) |
+| **Priority** | Priority level |
+| **Progress** | Progress percentage |
+| **Review Status** | Team Leader review status |
+| **Completion Date** | Date of completion |
+
+### 18.4 Filters
+| Filter | Description |
+|--------|-------------|
+| **Team** | Filter by team |
+| **Assigned To** | Filter by assigned user |
+| **Completed From** | Filter by completion start date |
+| **Completed To** | Filter by completion end date |
+
+---
+
+## 19. Complete End-to-End Workflow
+
+### 19.1 Step-by-Step Walkthrough
+
+**Step 1: Admin creates a Team**
+- Go to Teams → Create "Development Team"
+- Add members
+- Assign Team Lead
+
+**Step 2: Admin assigns Roles**
+- Go to Users → Edit user → Add role:
+  - Team Lead user → `Team Update Team Leader`
+  - Developer users → `Team Update Team Member`
+  - Marketing users → `Team Update Viewer`
+
+**Step 3: Admin creates a Task**
+- Go to New Task
+- Fill in project details
+- Select Assigned Team Leader
+- Save → Task is now "Assigned"
+- Team Leader gets notification
+
+**Step 4: Team Leader assigns to Team Member**
+- Open the task
+- Select Assigned To (Team Member)
+- Save → Status changes to "In Progress"
+- Team Member gets notification
+
+**Step 5: Team Member works on Task**
+- Update progress percentage
+- Add description and tags
+- Upload GitHub repo URL
+- Upload screenshots
+- Upload project files
+
+**Step 6: Team Member completes Task**
+- Set Progress to 100%
+- Or click "Mark 100% Complete"
+- Status changes to "Completed"
+- Team Leader + Admin get notification
+
+**Step 7: Team Leader reviews**
+- Open completed task
+- Review screenshots, GitHub, files
+- Click "Mark Reviewed"
+- Status changes to "Under Review"
+- Admin gets notification
+
+**Step 8: Admin approves**
+- Open task (Under Review)
+- Click "Approve Task"
+- Status changes to "Approved"
+- Team Leader, Team Member, Viewer get notification
+
+**Step 9: Viewer views approved project**
+- Open task list (sees only Approved tasks)
+- View GitHub, screenshots, files
+- Cannot edit anything
+
+---
+
+## 20. Troubleshooting
+
+### 20.1 Installation Errors
+
+**Error:** `setup.py` not found  
+**Solution:** Use the latest version:
 ```bash
 bench get-app https://github.com/Sudhakar1110/team_update_tool.git --overwrite
 ```
 
-**Error:** `Module Not Found: team_update_tool`  
-**Cause:** App not properly installed  
+**Error:** Module not found  
 **Solution:**
 ```bash
 bench --site your-site install-app team_update_tool
@@ -476,18 +655,50 @@ bench --site your-site migrate
 bench restart
 ```
 
-### 12.2 Runtime Errors
+### 20.2 Permission Errors
 
-**Error:** "You have View Only access" when trying to save  
-**Cause:** User has Team Update Viewer role without Admin role  
-**Solution:** Assign the **Team Update Admin** role to the user if they need to edit
+**Error:** "You have View Only access"  
+**Cause:** User has Viewer role  
+**Solution:** Assign appropriate role (Admin/Team Leader/Team Member) if editing is required
 
-**Error:** "User X is added more than once in the Members table"  
-**Cause:** Duplicate user entry in team members  
-**Solution:** Remove the duplicate entry and save
+**Error:** "You can only update tasks assigned to you"  
+**Cause:** Team Member trying to edit another's task  
+**Solution:** Only edit tasks where you are the `assigned_to`
 
-**Error:** Workspace not showing up  
-**Cause:** Assets not built or site not migrated  
+**Error:** "Only Team Update Admin can delete"  
+**Cause:** Non-admin trying to delete  
+**Solution:** Only Admin/System Manager can delete records
+
+### 20.3 Workflow Issues
+
+**Issue:** Team Leader cannot see tasks  
+**Solution:** Ensure tasks have the Team Leader set as `assigned_team_leader`
+
+**Issue:** Team Member cannot see tasks  
+**Solution:** Ensure tasks have the Team Member set as `assigned_to`
+
+**Issue:** Viewer sees no tasks  
+**Solution:** Ensure tasks have status = "Approved"
+
+**Issue:** Progress not updating  
+**Solution:** Team Members can only update progress on their own assigned tasks
+
+### 20.4 Notification Issues
+
+**Issue:** Notifications not appearing  
+**Solution:**
+1. Check that background jobs are running: `bench doctor`
+2. Check Notification Log in Frappe toolbar bell icon
+
+**Issue:** Emails not sending  
+**Solution:**
+1. Verify email setup in System Settings
+2. Check Team Update Settings > Enable Email Notification
+3. Verify recipients have valid email addresses
+
+### 20.5 Workspace Issues
+
+**Issue:** Workspace not showing up  
 **Solution:**
 ```bash
 bench build --app team_update_tool
@@ -495,110 +706,73 @@ bench --site your-site migrate
 bench restart
 ```
 
-### 12.3 Permission Issues
-
-**Issue:** Viewer can see the New button in List View  
-**Explanation:** The New button may appear but clicking it will throw a PermissionError due to server-side enforcement. This is by design — the server always validates permissions.
-
-**Issue:** Admin cannot see a doctype  
-**Solution:** Check if the user has both Admin and Viewer roles. If so, Admin takes precedence. Ensure the user does not have any permission restrictions set on their user record.
-
-### 12.4 Notification Issues
-
-**Issue:** Notifications not appearing  
-**Solution:**
-1. Check that **Team Update Settings > Enable Email Notification** is checked
-2. Verify recipients are added in **Notify Recipients** table
-3. Check that Frappe background jobs are running:
-```bash
-bench doctor
-```
-
-**Issue:** Emails not sending  
-**Solution:**
-1. Verify email setup in **System Settings > Email**
-2. Check **Team Update Settings > Enable Email Notification** is checked
-3. Verify recipients have valid email addresses in their User record
-4. Check the scheduler log: `bench --site your-site show-scheduler-log`
-
-### 12.5 Report Issues
-
-**Issue:** Report shows no data  
-**Solution:**
-1. Ensure there are Team Project Update records created
-2. Clear filters and try again
-3. Check if any records exist: `Select * from tabTeam Project Update`
-
-### 12.6 Migration Issues
-
-**Error:** Migration fails with `Table already exists`  
-**Solution:**
-```bash
-bench --site your-site migrate --force
-```
-
-**Error:** Patch not applied  
-**Solution:**
-```bash
-bench --site your-site console
-```
-Then check `tabPatch Log` for failed patches.
-
 ---
 
-## 13. Backup & Restore
+## 21. Backup & Restore
 
-### 13.1 Backup the Site
-```bash
-bench --site your-site backup
-```
-
-### 13.2 Backup Only the App Data
-The Team Update Tool data is stored in your site's database. Regular site backups are sufficient:
+### 21.1 Backup the Site
 ```bash
 bench --site your-site backup --with-files
 ```
 
-### 13.3 Restore from Backup
+### 21.2 Restore from Backup
 ```bash
 bench --site your-site restore /path/to/backup/file
 ```
 
 ---
 
-## 14. Appendix: Doctype Reference
+## 22. Appendix: Doctype Reference
 
-### 14.1 Complete List of Doctypes
-
+### 22.1 Complete List of Doctypes
 | Doctype | Type | Purpose |
 |---------|------|---------|
-| **Team** | Master | Stores team information (name, type, lead, members) |
-| **Team Member** | Child Table | List of users in a team (linked to Team) |
-| **Team Project Update** | Master | Stores project details, GitHub links, files, screenshots |
-| **Project File** | Child Table | Uploaded project files (linked to Team Project Update) |
-| **Project Screenshot** | Child Table | Uploaded screenshots (linked to Team Project Update) |
+| **Team** | Master | Stores team information |
+| **Team Member** | Child Table | Users in a team |
+| **Team Project Update** | Master | Task management with full workflow |
+| **Project File** | Child Table | Uploaded project files |
+| **Project Screenshot** | Child Table | Uploaded screenshots |
 | **Team Update Settings** | Single | Global settings for notifications |
-| **Notification Recipient** | Child Table | Users to notify (linked to Team Update Settings) |
+| **Notification Recipient** | Child Table | Users to notify |
 
-### 14.2 Reports
+### 22.2 Task Status Options
+| Status | Description |
+|--------|-------------|
+| Draft | Initial state when Admin creates a task |
+| Assigned | Admin has assigned to Team Leader |
+| In Progress | Team Leader has assigned to Team Member |
+| Completed | Team Member has finished work |
+| Under Review | Team Leader is reviewing |
+| Approved | Admin has approved (published) |
+| Rejected | Admin has rejected (returned for changes) |
 
+### 22.3 Reports
 | Report | Type | Purpose |
 |--------|------|---------|
-| **Project Status Summary** | Script Report | Count of projects per team by status |
+| **Project Status Summary** | Script Report | Task list with assignments, progress, and review status |
 
-### 14.3 Notifications
-
+### 22.4 Notifications
 | Notification | Event | Document Type |
 |-------------|-------|---------------|
 | **New Project Uploaded** | New Record | Team Project Update |
-| **Project Completed** | Value Change (status → Completed) | Team Project Update |
+| **Project Completed** | Status → Completed | Team Project Update |
+| **Project Approved** | Status → Approved | Team Project Update |
 
-### 14.4 Roles
-
+### 22.5 Roles
 | Role | Desk Access | Description |
 |------|-------------|-------------|
-| **Team Update Admin** | Yes | Full access (create, edit, delete, modify) |
-| **Team Update Viewer** | Yes | Read-only access. Cannot create, edit or delete records |
+| **Team Update Admin** | Yes | Full access (create, edit, delete, assign, approve) |
+| **Team Update Team Leader** | Yes | Assign tasks to members, monitor, review |
+| **Team Update Team Member** | Yes | Work on assigned tasks, upload files |
+| **Team Update Viewer** | Yes | Read-only access to approved projects |
+
+### 22.6 Permission Query Conditions
+| Role | List View Visibility |
+|------|---------------------|
+| Admin / System Manager | All tasks |
+| Team Leader | Tasks where assigned_team_leader = current user |
+| Team Member | Tasks where assigned_to = current user |
+| Viewer | Tasks where status = "Approved" |
 
 ---
 
@@ -606,6 +780,7 @@ bench --site your-site restore /path/to/backup/file
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 2.0 | July 7, 2026 | System | Complete rewrite for role-based task management workflow with 4 roles |
 | 1.0 | July 7, 2026 | System | Initial SOP document created |
 
 ---

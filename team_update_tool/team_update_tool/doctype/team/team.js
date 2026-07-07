@@ -3,7 +3,7 @@
 
 frappe.ui.form.on("Team", {
 	refresh: function (frm) {
-		team_update_tool.show_viewer_banner(frm);
+		team_update_tool.show_role_banner(frm);
 
 		if (!frm.is_new()) {
 			frm.add_custom_button(__("View Projects"), function () {
