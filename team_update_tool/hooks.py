@@ -18,6 +18,12 @@ app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 # from the Workspace dropdown in the top navbar.
 # home_page = "workspace"
 
+# Website route rules
+# --------------------
+website_route_rules = [
+	{"from_route": "/dashboard", "to_route": "/app"},
+]
+
 # Installation
 # ------------
 after_install = "team_update_tool.install.after_install"
