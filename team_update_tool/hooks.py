@@ -21,7 +21,7 @@ app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 # Website route rules
 # --------------------
 website_route_rules = [
-	{"from_route": "/dashboard", "to_route": "/app"},
+	{"from_route": "/dashboard", "to_route": "/app/team-update-dashboard"},
 ]
 
 # Installation
