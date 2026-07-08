@@ -7,12 +7,6 @@ from frappe.model.document import Document
 
 
 class Project(Document):
-	def before_insert(self):
-		"""Generate naming series reliably to avoid literal format string being used as name."""
-		from frappe.model.naming import make_autoname
-		if not self.name or self.name.startswith("PRJ-.YYYY"):
-			self.name = make_autoname("PRJ-.YYYY.-.#####")
-
 	def validate(self):
 		self.validate_role_permissions()
 		self.validate_duplicate_project()
