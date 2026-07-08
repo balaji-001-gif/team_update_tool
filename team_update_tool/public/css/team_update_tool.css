@@ -11,7 +11,7 @@
 	align-items: center;
 	justify-content: center;
 	overflow: hidden;
-	padding: 3rem 1rem;
+	padding: calc(56px + 3rem) 1rem 3rem;
 }
 
 .tut-hero-bg {
