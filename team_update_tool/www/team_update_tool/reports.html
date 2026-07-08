@@ -2,88 +2,105 @@
 
 {% block title %}Reports - Team Update Tool{% endblock %}
 
+{% block style %}
+<link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+{% endblock %}
+
 {% block page_content %}
 <div class="tut-page-header">
 	<div class="container">
-		<div class="tut-page-header-content">
-			<h1 class="tut-page-title">Reports</h1>
-			<p class="tut-page-desc">Project analytics and summaries</p>
+		<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+			<div>
+				<h1 class="m-0">Reports</h1>
+				<p class="m-0">Project analytics and summaries</p>
+			</div>
 		</div>
 	</div>
 </div>
 
-<div class="container tut-page-body">
-	<div class="tut-loading" id="reportsLoading">
-		<div class="tut-spinner"></div>
-		<p>Loading reports...</p>
-	</div>
-	<div id="reportsContent" style="display:none;">
-		<!-- Summary Cards -->
-		<div class="tut-stats-grid" id="reportSummaryCards"></div>
+<div class="tut-main-area">
+	<div class="container py-4">
+		<div class="tut-loading" id="reportsLoading">
+			<div class="spinner-border text-success" role="status"></div>
+			<p class="text-muted mt-2">Loading reports...</p>
+		</div>
 
-		<!-- Status Summary -->
-		<section class="tut-detail-section" id="statusReportSection">
-			<h2 class="tut-section-title-sm">Project Status Summary</h2>
-			<div class="tut-table-responsive">
-				<table class="tut-table" id="statusTable">
-					<thead><tr><th>Status</th><th>Count</th><th></th></tr></thead>
-					<tbody id="statusTableBody"></tbody>
-				</table>
-			</div>
-		</section>
+		<div id="reportsContent" style="display:none;">
+			<div class="row g-3 mb-4" id="reportSummaryCards"></div>
 
-		<!-- Category Summary -->
-		<section class="tut-detail-section" id="categoryReportSection" style="display:none;">
-			<h2 class="tut-section-title-sm">Projects by Category</h2>
-			<div class="tut-table-responsive">
-				<table class="tut-table" id="categoryTable">
-					<thead><tr><th>Category</th><th>Count</th></tr></thead>
-					<tbody id="categoryTableBody"></tbody>
-				</table>
-			</div>
-		</section>
+			<div class="row g-4">
+				<div class="col-lg-6">
+					<div class="card border-0 shadow-sm rounded-4">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Project Status Summary</h5>
+							<div class="table-responsive">
+								<table class="table table-borderless table-sm mb-0" id="statusTable">
+									<thead><tr><th class="small text-muted fw-semibold">Status</th><th class="small text-muted fw-semibold">Count</th><th></th></tr></thead>
+									<tbody id="statusTableBody"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 
-		<!-- Team Summary -->
-		<section class="tut-detail-section" id="teamReportSection" style="display:none;">
-			<h2 class="tut-section-title-sm">Projects by Team</h2>
-			<div class="tut-table-responsive">
-				<table class="tut-table" id="teamTable">
-					<thead><tr><th>Team</th><th>Count</th></tr></thead>
-					<tbody id="teamTableBody"></tbody>
-				</table>
-			</div>
-		</section>
+					<div class="card border-0 shadow-sm rounded-4 mt-4" id="categoryReportSection" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Projects by Category</h5>
+							<div class="table-responsive">
+								<table class="table table-borderless table-sm mb-0" id="categoryTable">
+									<thead><tr><th class="small text-muted fw-semibold">Category</th><th class="small text-muted fw-semibold">Count</th></tr></thead>
+									<tbody id="categoryTableBody"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 
-		<!-- Completed Projects -->
-		<section class="tut-detail-section" id="completedSection" style="display:none;">
-			<h2 class="tut-section-title-sm">Approved Projects</h2>
-			<div class="tut-table-responsive">
-				<table class="tut-table" id="completedTable">
-					<thead><tr><th>Project</th><th>Team</th><th>Completed</th><th>Priority</th></tr></thead>
-					<tbody id="completedTableBody"></tbody>
-				</table>
-			</div>
-		</section>
+				<div class="col-lg-6">
+					<div class="card border-0 shadow-sm rounded-4" id="teamReportSection" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Projects by Team</h5>
+							<div class="table-responsive">
+								<table class="table table-borderless table-sm mb-0" id="teamTable">
+									<thead><tr><th class="small text-muted fw-semibold">Team</th><th class="small text-muted fw-semibold">Count</th></tr></thead>
+									<tbody id="teamTableBody"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
 
-		<!-- GitHub Report -->
-		<section class="tut-detail-section" id="githubReportSection" style="display:none;">
-			<h2 class="tut-section-title-sm">GitHub Repositories</h2>
-			<div class="tut-table-responsive">
-				<table class="tut-table" id="githubTable">
-					<thead><tr><th>Repository</th><th>Branch</th><th>Languages</th><th></th></tr></thead>
-					<tbody id="githubTableBody"></tbody>
-				</table>
+					<div class="card border-0 shadow-sm rounded-4 mt-4" id="completedSection" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Approved Projects</h5>
+							<div class="table-responsive">
+								<table class="table table-sm table-hover mb-0" id="completedTable">
+									<thead><tr><th class="small text-muted fw-semibold">Project</th><th class="small text-muted fw-semibold">Team</th><th class="small text-muted fw-semibold">Completed</th><th class="small text-muted fw-semibold">Priority</th></tr></thead>
+									<tbody id="completedTableBody"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div class="card border-0 shadow-sm rounded-4 mt-4" id="githubReportSection" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">GitHub Repositories</h5>
+							<div class="table-responsive">
+								<table class="table table-sm table-hover mb-0" id="githubTable">
+									<thead><tr><th class="small text-muted fw-semibold">Repository</th><th class="small text-muted fw-semibold">Branch</th><th class="small text-muted fw-semibold">Languages</th><th></th></tr></thead>
+									<tbody id="githubTableBody"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-		</section>
+		</div>
 	</div>
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-frappe.ready(function() {
-	loadReports();
-});
+frappe.ready(function() { loadReports(); });
 
 function loadReports() {
 	fetch('/api/method/team_update_tool.api.projects.get_reports')
@@ -94,10 +111,8 @@ function loadReports() {
 
 			// Summary cards
 			var cardsHtml = '';
-			[
-				{icon:'green', label:'Total Projects', value:d.total_projects, svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'},
-			].forEach(function(s) {
-				cardsHtml += '<div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-' + s.icon + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + s.svg + '</svg></div><div class="tut-stat-number">' + s.value + '</div><div class="tut-stat-label">' + s.label + '</div></div>';
+			[{icon:'green', label:'Total Projects', value:d.total_projects || 0}].forEach(function(s) {
+				cardsHtml += '<div class="col-md-3 col-sm-6"><div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-' + s.icon + '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div><div class="tut-stat-number">' + s.value + '</div><div class="tut-stat-label">' + s.label + '</div></div></div></div>';
 			});
 			document.getElementById('reportSummaryCards').innerHTML = cardsHtml;
 
@@ -105,7 +120,7 @@ function loadReports() {
 			if (d.status_summary && d.status_summary.length) {
 				var bodyHtml = '';
 				d.status_summary.forEach(function(s) {
-					bodyHtml += '<tr><td><span class="tut-status-dot" style="background:' + s.color + '"></span> ' + s.status + '</td><td><strong>' + s.count + '</strong></td><td><div style="height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden;max-width:200px"><div style="height:100%;width:' + Math.min(100, s.count) + '%;background:' + s.color + ';border-radius:4px"></div></div></td></tr>';
+					bodyHtml += '<tr><td><span class="tut-status-dot d-inline-block me-1" style="background:' + s.color + '"></span>' + s.status + '</td><td class="fw-bold">' + s.count + '</td><td><div style="height:6px;background:#f1f5f9;border-radius:3px;max-width:160px"><div style="height:100%;width:' + Math.min(100, s.count * 10) + '%;background:' + s.color + ';border-radius:3px"></div></div></td></tr>';
 				});
 				document.getElementById('statusTableBody').innerHTML = bodyHtml;
 			}
@@ -113,9 +128,7 @@ function loadReports() {
 			// Category table
 			if (d.category_summary && d.category_summary.length) {
 				var catHtml = '';
-				d.category_summary.forEach(function(c) {
-					catHtml += '<tr><td>' + c.category + '</td><td><strong>' + c.count + '</strong></td></tr>';
-				});
+				d.category_summary.forEach(function(c) { catHtml += '<tr><td>' + c.category + '</td><td class="fw-bold">' + c.count + '</td></tr>'; });
 				document.getElementById('categoryTableBody').innerHTML = catHtml;
 				document.getElementById('categoryReportSection').style.display = 'block';
 			}
@@ -123,9 +136,7 @@ function loadReports() {
 			// Team table
 			if (d.team_summary && d.team_summary.length) {
 				var teamHtml = '';
-				d.team_summary.forEach(function(t) {
-					teamHtml += '<tr><td>' + t.team + '</td><td><strong>' + t.count + '</strong></td></tr>';
-				});
+				d.team_summary.forEach(function(t) { teamHtml += '<tr><td>' + t.team + '</td><td class="fw-bold">' + t.count + '</td></tr>'; });
 				document.getElementById('teamTableBody').innerHTML = teamHtml;
 				document.getElementById('teamReportSection').style.display = 'block';
 			}
@@ -134,7 +145,7 @@ function loadReports() {
 			if (d.completed_projects && d.completed_projects.length) {
 				var compHtml = '';
 				d.completed_projects.forEach(function(p) {
-					compHtml += '<tr><td><a href="/team_update_tool/project/' + p.name + '">' + escHtml(p.project_title) + '</a></td><td>' + escHtml(p.team || '-') + '</td><td>' + (p.completion_date || '-') + '</td><td>' + (p.priority ? '<span class="tut-priority tut-priority-' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : '-') + '</td></tr>';
+					compHtml += '<tr><td><a href="/team_update_tool/project/' + p.name + '" class="fw-medium text-decoration-none">' + escHtml(p.project_title) + '</a></td><td>' + escHtml(p.team || '-') + '</td><td class="small">' + (p.completion_date || '-') + '</td><td>' + (p.priority ? '<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 fw-semibold" style="font-size:0.7rem;">' + p.priority + '</span>' : '-') + '</td></tr>';
 				});
 				document.getElementById('completedTableBody').innerHTML = compHtml;
 				document.getElementById('completedSection').style.display = 'block';
@@ -144,7 +155,7 @@ function loadReports() {
 			if (d.github_repos && d.github_repos.length) {
 				var gitHtml = '';
 				d.github_repos.forEach(function(r) {
-					gitHtml += '<tr><td><a href="' + r.repository_url + '" target="_blank">' + escHtml(r.repository_name || 'Repository') + '</a></td><td>' + (r.default_branch || '-') + '</td><td>' + escHtml(r.languages || '-') + '</td><td><a href="' + r.repository_url + '" target="_blank" class="tut-btn tut-btn-ghost tut-btn-sm">Open</a></td></tr>';
+					gitHtml += '<tr><td><a href="' + r.repository_url + '" target="_blank" class="fw-medium text-decoration-none">' + escHtml(r.repository_name || 'Repository') + '</a></td><td class="small">' + (r.default_branch || '-') + '</td><td class="small">' + escHtml(r.languages || '-') + '</td><td><a href="' + r.repository_url + '" target="_blank" class="btn btn-outline-dark btn-sm rounded-pill px-3" style="font-size:0.75rem;">Open</a></td></tr>';
 				});
 				document.getElementById('githubTableBody').innerHTML = gitHtml;
 				document.getElementById('githubReportSection').style.display = 'block';
@@ -154,9 +165,8 @@ function loadReports() {
 			document.getElementById('reportsContent').style.display = 'block';
 		})
 		.catch(function() {
-			document.getElementById('reportsLoading').innerHTML = '<p class="text-center" style="color:#dc2626;">Failed to load reports.</p>';
+			document.getElementById('reportsLoading').innerHTML = '<p class="text-danger text-center">Failed to load reports.</p>';
 		});
 }
-
 </script>
 {% endblock %}

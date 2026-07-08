@@ -2,62 +2,63 @@
 
 {% block title %}My Projects - Team Update Tool{% endblock %}
 
+{% block style %}
+<link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+{% endblock %}
+
 {% block page_content %}
 <div class="tut-page-header">
 	<div class="container">
-		<div class="tut-page-header-content">
-			<h1 class="tut-page-title">My Projects</h1>
-			<p class="tut-page-desc">Projects you own — {{ full_name }}</p>
-		</div>
-		<div class="tut-page-header-actions">
-			<a href="/team_update_tool/create_project" class="tut-btn tut-btn-primary tut-btn-sm">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-					<line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-				</svg>
+		<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+			<div>
+				<h1 class="m-0">My Projects</h1>
+				<p class="m-0">Projects you own — {{ full_name }}</p>
+			</div>
+			<a href="/team_update_tool/create_project" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold">
+				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 				New Project
 			</a>
 		</div>
 	</div>
 </div>
 
-<div class="container tut-page-body">
-	{% if projects %}
-	<div class="tut-grid-3">
-		{% for p in projects %}
-		<a href="/team_update_tool/project?name={{ p.name }}" class="tut-card tut-card-hover">
-			<div class="tut-card-body">
-				<div class="tut-card-header">
-					<span class="tut-status-badge" style="--badge-color: {{ p.status_color or '#6b7280' }}">
-						{{ p.status_name or p.status }}
-					</span>
-					{% if p.priority %}
-					<span class="tut-priority tut-priority-{{ p.priority|lower }}">{{ p.priority }}</span>
-					{% endif %}
-				</div>
-				<h3 class="tut-card-title">{{ p.project_title }}</h3>
-				<div class="tut-card-meta">
-					<span>{{ p.team }}</span>
-					{% if p.project_category %}
-					<span>{{ p.project_category }}</span>
-					{% endif %}
-				</div>
-				<div class="tut-card-footer">
-					<span>Created {{ frappe.utils.format_date(p.creation) }}</span>
-				</div>
+<div class="tut-main-area">
+	<div class="container py-4">
+		{% if projects %}
+		<div class="row g-3">
+			{% for p in projects %}
+			<div class="col-md-4 col-sm-6">
+				<a href="/team_update_tool/project/{{ p.name }}" class="tut-project-card h-100">
+					<div class="tut-project-card-body">
+						<div class="d-flex align-items-center gap-2 mb-1">
+							<span class="tut-status-badge" style="background:{{ p.status_color or '#6b7280' }}15;color:{{ p.status_color or '#6b7280' }};border:1px solid {{ p.status_color or '#6b7280' }}30;">
+								{{ p.status_name or p.status }}
+							</span>
+							{% if p.priority %}
+							<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 fw-semibold" style="font-size:0.7rem;">{{ p.priority }}</span>
+							{% endif %}
+						</div>
+						<h6 class="fw-semibold mb-1" style="color:#0f172a;">{{ p.project_title }}</h6>
+						<div class="d-flex align-items-center gap-2 text-muted small mb-2">
+							<span>{{ p.team }}</span>
+							{% if p.project_category %}<span>·</span><span>{{ p.project_category }}</span>{% endif %}
+						</div>
+						<div class="text-muted" style="font-size:0.75rem;">Created {{ p.get_formatted('creation') }}</div>
+					</div>
+				</a>
 			</div>
-		</a>
-		{% endfor %}
+			{% endfor %}
+		</div>
+		{% else %}
+		<div class="tut-empty-state">
+			<div class="empty-icon mx-auto mb-2">
+				<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+			</div>
+			<h4>No Projects Yet</h4>
+			<p>You haven't created any projects. Start by creating your first project!</p>
+			<a href="/team_update_tool/create_project" class="btn btn-success rounded-pill px-4">Create Project</a>
+		</div>
+		{% endif %}
 	</div>
-	{% else %}
-	<div class="tut-empty-state">
-		<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9ca3af;">
-			<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
-			<rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
-		</svg>
-		<h3>No Projects Yet</h3>
-		<p>You haven't created any projects. Start by creating your first project!</p>
-		<a href="/team_update_tool/create_project" class="tut-btn tut-btn-primary">Create Project</a>
-	</div>
-	{% endif %}
 </div>
 {% endblock %}
