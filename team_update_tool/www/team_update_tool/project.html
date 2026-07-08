@@ -49,16 +49,28 @@ function loadProject(name) {
 		.then(function(data) {
 			if (data.message) {
 				renderProject(data.message);
+			} else if (data.exc) {
+				// Show actual server error
+				document.getElementById('projectLoading').style.display = 'none';
+				document.getElementById('projectError').style.display = 'block';
+				var errMsg = 'Error loading project.';
+				try {
+					var exc = JSON.parse(data.exc);
+					if (exc && exc[0] && exc[0].indexOf) {
+						errMsg = exc[0].indexOf('Error loading project') !== -1 ? exc[0].split(':').slice(1).join(':').trim() : exc[0];
+					}
+				} catch(e) {}
+				document.getElementById('errorMsg').textContent = errMsg;
 			} else {
 				document.getElementById('projectLoading').style.display = 'none';
 				document.getElementById('projectError').style.display = 'block';
 				document.getElementById('errorMsg').textContent = 'Project not found.';
 			}
 		})
-		.catch(function() {
+		.catch(function(err) {
 			document.getElementById('projectLoading').style.display = 'none';
 			document.getElementById('projectError').style.display = 'block';
-			document.getElementById('errorMsg').textContent = 'Error loading project.';
+			document.getElementById('errorMsg').textContent = 'Network error: ' + err.message;
 		});
 }
 
