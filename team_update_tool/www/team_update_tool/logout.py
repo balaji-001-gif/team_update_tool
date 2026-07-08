@@ -10,10 +10,10 @@ def get_context(context):
 	context.no_breadcrumbs = 1
 	context.title = "Sign Out"
 
-	# Logout via Frappe's standard logout
 	if frappe.session.user != "Guest":
 		frappe.local.login_manager.logout()
 		frappe.db.commit()
-
-	frappe.local.flags.redirect_location = "/team_update_tool"
-	raise frappe.Redirect
+		context.logged_out = True
+	else:
+		context.logged_out = True
+		context.already_guest = True

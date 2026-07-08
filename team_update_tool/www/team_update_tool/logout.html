@@ -6,12 +6,18 @@
 <div class="tut-auth-page">
 	<div class="tut-auth-card" style="text-align: center;">
 		<div class="tut-auth-header">
-			<h1 class="tut-auth-title">Signed Out</h1>
-			<p class="tut-auth-desc">You have been successfully signed out.</p>
+			<h1 class="tut-auth-title">{% if already_guest %}Already Signed Out{% else %}Signed Out{% endif %}</h1>
+			<p class="tut-auth-desc">
+				{% if already_guest %}
+					You are not currently signed in.
+				{% else %}
+					You have been successfully signed out of your account.
+				{% endif %}
+			</p>
 		</div>
-		<a href="/team_update_tool" class="tut-btn tut-btn-primary tut-btn-full">Return Home</a>
-		<div class="tut-auth-footer">
-			<p><a href="/team_update_tool/login">Sign back in</a></p>
+		<div style="display: flex; flex-direction: column; gap: 10px;">
+			<a href="/team_update_tool" class="tut-btn tut-btn-primary tut-btn-full">Return Home</a>
+			<a href="/team_update_tool/login" class="tut-btn tut-btn-secondary tut-btn-full">Sign In Again</a>
 		</div>
 	</div>
 </div>
