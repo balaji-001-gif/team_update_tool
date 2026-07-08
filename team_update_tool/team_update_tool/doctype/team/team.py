@@ -7,11 +7,6 @@ from frappe.model.document import Document
 
 class Team(Document):
 	def validate(self):
-		self.validate_unique_members()
-
-	def validate_unique_members(self):
-		seen = set()
-		for row in self.members:
-			if row.user in seen:
-				frappe.throw(f"User {row.user} is added more than once in the Members table.")
-			seen.add(row.user)
+		if self.team_lead and not frappe.db.exists("User", self.team_lead):
+			from frappe import _
+			frappe.throw(_("Team Lead must be a valid User."))

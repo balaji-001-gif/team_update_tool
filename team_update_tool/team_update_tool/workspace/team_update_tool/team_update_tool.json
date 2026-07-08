@@ -1,48 +1,11 @@
 {
  "charts": [
-  {
-   "chart_name": "Project Status",
-   "label": "Project Status",
-   "chart_type": "Group By",
-   "document_type": "Team Project Update",
-   "group_by_type": "Count",
-   "group_by_based_on": "status",
-   "number_of_groups": 7,
-   "type": "Donut",
-   "color": "#2E8B57",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "chart_name": "Projects Over Time",
-   "label": "Projects Over Time",
-   "chart_type": "Count",
-   "document_type": "Team Project Update",
-   "based_on": "modified",
-   "timespan": "Last 6 Months",
-   "time_interval": "Monthly",
-   "timeseries_based_on": "modified",
-   "type": "Line",
-   "color": "#2E8B57",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "chart_name": "Team Performance",
-   "label": "Team Performance",
-   "chart_type": "Group By",
-   "document_type": "Team Project Update",
-   "group_by_type": "Count",
-   "group_by_based_on": "team",
-   "number_of_groups": 10,
-   "type": "Bar",
-   "color": "#8b5cf6",
-   "is_public": 1,
-   "roles": []
-  }
+  {"chart_name": "Project Status", "label": "Project Status", "chart_type": "Group By", "document_type": "Project Submission", "group_by_type": "Count", "group_by_based_on": "status", "number_of_groups": 7, "type": "Donut", "color": "#2E8B57", "is_public": 1, "roles": []},
+  {"chart_name": "Projects Over Time", "label": "Projects Over Time", "chart_type": "Count", "document_type": "Project Submission", "based_on": "modified", "timespan": "Last 6 Months", "time_interval": "Monthly", "timeseries_based_on": "modified", "type": "Line", "color": "#2E8B57", "is_public": 1, "roles": []},
+  {"chart_name": "Team Performance", "label": "Team Performance", "chart_type": "Group By", "document_type": "Project Submission", "group_by_type": "Count", "group_by_based_on": "team", "number_of_groups": 10, "type": "Bar", "color": "#8b5cf6", "is_public": 1, "roles": []}
  ],
- "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Team Update Tool</span>\",\"col\":12}},{\"id\":\"desc\",\"type\":\"paragraph\",\"data\":{\"text\":\"Role-based task management workflow. Admins create and assign tasks to Team Leaders, who assign to Team Members. Team Members complete tasks and upload work. Viewers can view approved projects only.\\n\\nTo get started, create a Team first, then create Tasks and assign them through the workflow.\",\"col\":12}},{\"id\":\"shortcuts_section\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"sc_dashboard\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Open Dashboard\",\"col\":3}},{\"id\":\"sc_new_task\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Task\",\"col\":3}},{\"id\":\"sc_all_tasks\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"All Tasks\",\"col\":3}},{\"id\":\"sc_teams\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Teams\",\"col\":3}},{\"id\":\"sc_report\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Project Status Summary\",\"col\":3}},{\"id\":\"cards_section\",\"type\":\"spacer\",\"data\":{\"col\":12}}]",
- "creation": "2026-01-01 10:00:00",
+ "content": "[{\"id\":\"header\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Team Update Tool</span>\",\"col\":12}}]",
+ "creation": "2026-07-08 10:00:00",
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
@@ -52,232 +15,37 @@
  "is_hidden": 0,
  "label": "Team Update Tool",
  "links": [
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Dashboard",
-   "link_to": "team-update-dashboard",
-   "type": "Page"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "All Tasks (Projects)",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "My Tasks",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Teams",
-   "link_to": "Team",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Team Leaders",
-   "link_to": "Team",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Team Members",
-   "link_to": "Team",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Daily Updates",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "GitHub Repositories",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Screenshots",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Documents",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 1,
-   "label": "Project Status Summary",
-   "link_to": "Project Status Summary",
-   "type": "Report"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Notifications",
-   "link_to": "Notification Log",
-   "type": "DocType"
-  },
-  {
-   "hidden": 0,
-   "is_query_report": 0,
-   "label": "Team Update Settings",
-   "link_to": "Team Update Settings",
-   "type": "DocType"
-  }
+  {"hidden": 0, "is_query_report": 0, "label": "Dashboard", "link_to": "team-update-dashboard", "type": "Page"},
+  {"hidden": 0, "is_query_report": 0, "label": "All Projects", "link_to": "Project Submission", "type": "DocType"},
+  {"hidden": 0, "is_query_report": 0, "label": "My Projects", "link_to": "Project Submission", "type": "DocType"},
+  {"hidden": 0, "is_query_report": 0, "label": "Teams", "link_to": "Team", "type": "DocType"},
+  {"hidden": 0, "is_query_report": 0, "label": "GitHub Repositories", "link_to": "Project Submission", "type": "DocType"},
+  {"hidden": 0, "is_query_report": 0, "label": "Settings", "link_to": "Team Update Settings", "type": "DocType"}
  ],
- "modified": "2026-01-01 10:00:00",
+ "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
  "module": "Team Update Tool",
  "name": "Team Update Tool",
  "number_cards": [
-  {
-   "label": "Total Projects",
-   "document_type": "Team Project Update",
-   "function": "Count",
-   "filter_conditions": "",
-   "aggregate_function_based_on": "",
-   "color": "blue",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "label": "Completed",
-   "document_type": "Team Project Update",
-   "function": "Count",
-   "filter_conditions": "status = 'Approved'",
-   "aggregate_function_based_on": "",
-   "color": "green",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "label": "In Progress",
-   "document_type": "Team Project Update",
-   "function": "Count",
-   "filter_conditions": "status = 'In Progress'",
-   "aggregate_function_based_on": "",
-   "color": "orange",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "label": "Pending Review",
-   "document_type": "Team Project Update",
-   "function": "Count",
-   "filter_conditions": "status = 'Under Review'",
-   "aggregate_function_based_on": "",
-   "color": "red",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "label": "Active Teams",
-   "document_type": "Team",
-   "function": "Count",
-   "filter_conditions": "is_active = 1",
-   "aggregate_function_based_on": "",
-   "color": "purple",
-   "is_public": 1,
-   "roles": []
-  },
-  {
-   "label": "All Teams",
-   "document_type": "Team",
-   "function": "Count",
-   "aggregate_function_based_on": "",
-   "color": "cyan",
-   "is_public": 1,
-   "roles": []
-  }
+  {"label": "Total Projects", "document_type": "Project Submission", "function": "Count", "color": "blue", "is_public": 1, "roles": []},
+  {"label": "Completed", "document_type": "Project Submission", "function": "Count", "filter_conditions": "status = 'Approved'", "color": "green", "is_public": 1, "roles": []},
+  {"label": "Under Review", "document_type": "Project Submission", "function": "Count", "filter_conditions": "status = 'Under Review'", "color": "orange", "is_public": 1, "roles": []},
+  {"label": "Active Teams", "document_type": "Team", "function": "Count", "filter_conditions": "is_active = 1", "color": "purple", "is_public": 1, "roles": []}
  ],
  "owner": "Administrator",
  "public": 1,
- "quick_lists": [
-  {
-   "document_type": "Team Project Update",
-   "label": "Quick Task Entry",
-   "roles": []
-  }
- ],
  "roles": [
-  {
-   "role": "Team Update Admin"
-  },
-  {
-   "role": "Team Update Team Leader"
-  },
-  {
-   "role": "Team Update Team Member"
-  },
-  {
-   "role": "Team Update Viewer"
-  },
-  {
-   "role": "System Manager"
-  }
+  {"role": "Project Admin"},
+  {"role": "Project Contributor"},
+  {"role": "Project Viewer"},
+  {"role": "System Manager"}
  ],
  "sequence_id": 1.0,
  "shortcuts": [
-  {
-   "color": "Green",
-   "doc_view": "New",
-   "label": "Dashboard",
-   "link_to": "team-update-dashboard",
-   "type": "Page"
-  },
-  {
-   "color": "Green",
-   "doc_view": "New",
-   "label": "New Task",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "color": "Blue",
-   "doc_view": "List",
-   "label": "All Tasks",
-   "link_to": "Team Project Update",
-   "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "Teams",
-   "link_to": "Team",
-   "type": "DocType"
-  },
-  {
-   "color": "Orange",
-   "label": "Project Status Summary",
-   "link_to": "Project Status Summary",
-   "type": "Report"
-  },
-  {
-   "color": "Red",
-   "doc_view": "List",
-   "label": "Notifications",
-   "link_to": "Notification Log",
-   "type": "DocType"
-  }
+  {"color": "Green", "doc_view": "New", "label": "Dashboard", "link_to": "team-update-dashboard", "type": "Page"},
+  {"color": "Green", "doc_view": "New", "label": "New Project", "link_to": "Project Submission", "type": "DocType"},
+  {"color": "Blue", "doc_view": "List", "label": "All Projects", "link_to": "Project Submission", "type": "DocType"},
+  {"color": "Grey", "doc_view": "List", "label": "Teams", "link_to": "Team", "type": "DocType"}
  ],
  "title": "Team Update Tool"
 }

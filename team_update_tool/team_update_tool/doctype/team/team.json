@@ -5,130 +5,35 @@
  "creation": "2026-01-01 10:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
- "field_order": [
-  "team_name",
-  "team_type",
-  "team_lead",
-  "column_break_1",
-  "is_active",
-  "description",
-  "section_break_members",
-  "members"
- ],
+ "field_order": ["team_name", "team_type", "team_lead", "column_break_1", "description", "is_active", "section_break_members", "members"],
  "fields": [
-  {
-   "fieldname": "team_name",
-   "fieldtype": "Data",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Team Name",
-   "reqd": 1,
-   "unique": 1
-  },
-  {
-   "fieldname": "team_type",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "in_standard_filter": 1,
-   "label": "Team Type",
-   "options": "Development\nMarketing\nDesign\nQA\nProduct\nDevOps\nOther",
-   "reqd": 1
-  },
-  {
-   "fieldname": "team_lead",
-   "fieldtype": "Link",
-   "in_list_view": 1,
-   "label": "Team Lead",
-   "options": "User"
-  },
-  {
-   "fieldname": "column_break_1",
-   "fieldtype": "Column Break"
-  },
-  {
-   "default": "1",
-   "fieldname": "is_active",
-   "fieldtype": "Check",
-   "in_list_view": 1,
-   "label": "Is Active"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Small Text",
-   "label": "Description"
-  },
-  {
-   "fieldname": "section_break_members",
-   "fieldtype": "Section Break",
-   "label": "Team Members"
-  },
-  {
-   "fieldname": "members",
-   "fieldtype": "Table",
-   "label": "Members",
-   "options": "Team Member"
-  }
+  {"fieldname": "team_name", "fieldtype": "Data", "in_list_view": 1, "in_standard_filter": 1, "label": "Team Name", "reqd": 1, "unique": 1},
+  {"fieldname": "team_type", "fieldtype": "Select", "in_list_view": 1, "in_standard_filter": 1, "label": "Team Type", "options": "Development\nDesign\nQA\nProduct\nMarketing\nDevOps\nOther", "reqd": 1},
+  {"fieldname": "team_lead", "fieldtype": "Link", "in_list_view": 1, "label": "Team Lead", "options": "User"},
+  {"fieldname": "column_break_1", "fieldtype": "Column Break"},
+  {"fieldname": "description", "fieldtype": "Small Text", "label": "Description"},
+  {"fieldname": "is_active", "fieldtype": "Check", "default": 1, "in_list_view": 1, "label": "Is Active"},
+  {"fieldname": "section_break_members", "fieldtype": "Section Break", "label": "Team Members"},
+  {"fieldname": "members", "fieldtype": "Table", "label": "Members", "options": "Team Member"}
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2026-01-01 10:00:00",
+ "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
  "module": "Team Update Tool",
  "name": "Team",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
  "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Team Update Admin",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Team Update Team Leader"
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Team Update Team Member"
-  },
-  {
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Team Update Viewer"
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  }
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Project Admin", "share": 1, "write": 1},
+  {"email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Project Contributor"},
+  {"email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Project Viewer"},
+  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1}
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
+ "search_fields": "team_name,team_lead,team_type",
  "states": [],
+ "title_field": "team_name",
  "track_changes": 1
 }

@@ -6,7 +6,6 @@ from frappe import _
 
 
 def execute(filters=None):
-	filters = filters or {}
 	columns = get_columns()
 	data = get_data(filters)
 	return columns, data
@@ -15,57 +14,48 @@ def execute(filters=None):
 def get_columns():
 	return [
 		{"label": _("Project"), "fieldname": "project_title", "fieldtype": "Data", "width": 200},
-		{"label": _("Team"), "fieldname": "team", "fieldtype": "Link", "options": "Team", "width": 150},
-		{"label": _("Team Leader"), "fieldname": "assigned_team_leader", "fieldtype": "Link", "options": "User", "width": 150},
-		{"label": _("Assigned To"), "fieldname": "assigned_to", "fieldtype": "Link", "options": "User", "width": 150},
-		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 120},
-		{"label": _("Priority"), "fieldname": "priority", "fieldtype": "Data", "width": 90},
-		{"label": _("Progress"), "fieldname": "progress_percent", "fieldtype": "Percent", "width": 90},
-		{"label": _("Review Status"), "fieldname": "team_leader_review_status", "fieldtype": "Data", "width": 120},
-		{"label": _("Completion Date"), "fieldname": "completion_date", "fieldtype": "Date", "width": 120},
+		{"label": _("Team"), "fieldname": "team", "fieldtype": "Link", "options": "Team", "width": 120},
+		{"label": _("Status"), "fieldname": "status", "fieldtype": "Data", "width": 100},
+		{"label": _("Priority"), "fieldname": "priority", "fieldtype": "Data", "width": 80},
+		{"label": _("Progress"), "fieldname": "progress_percent", "fieldtype": "Percent", "width": 80},
+		{"label": _("Submitted By"), "fieldname": "submitted_by", "fieldtype": "Link", "options": "User", "width": 120},
+		{"label": _("GitHub URL"), "fieldname": "github_repo_url", "fieldtype": "Data", "width": 200},
+		{"label": _("Approved By"), "fieldname": "approved_by", "fieldtype": "Link", "options": "User", "width": 120},
+		{"label": _("Completion Date"), "fieldname": "completion_date", "fieldtype": "Date", "width": 100},
 	]
 
 
 def get_data(filters):
 	conditions = []
-	values = {}
+	params = {}
 
-	if filters.get("team"):
-		conditions.append("team = %(team)s")
-		values["team"] = filters.get("team")
+	if filters:
+		if filters.get("team"):
+			conditions.append("team = %(team)s")
+			params["team"] = filters["team"]
 
-	if filters.get("assigned_to"):
-		conditions.append("assigned_to = %(assigned_to)s")
-		values["assigned_to"] = filters.get("assigned_to")
+		if filters.get("submitted_by"):
+			conditions.append("submitted_by = %(submitted_by)s")
+			params["submitted_by"] = filters["submitted_by"]
 
-	if filters.get("from_date"):
-		conditions.append("completion_date >= %(from_date)s")
-		values["from_date"] = filters.get("from_date")
+		if filters.get("from_date"):
+			conditions.append("completion_date >= %(from_date)s")
+			params["from_date"] = filters["from_date"]
 
-	if filters.get("to_date"):
-		conditions.append("completion_date <= %(to_date)s")
-		values["to_date"] = filters.get("to_date")
+		if filters.get("to_date"):
+			conditions.append("completion_date <= %(to_date)s")
+			params["to_date"] = filters["to_date"]
 
-	where_clause = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+	where_clause = " AND ".join(conditions) if conditions else "1=1"
 
-	rows = frappe.db.sql(
-		f"""
-		SELECT
-			project_title,
-			team,
-			assigned_team_leader,
-			assigned_to,
-			status,
-			priority,
-			progress_percent,
-			team_leader_review_status,
-			completion_date
-		FROM `tabTeam Project Update`
-		{where_clause}
-		ORDER BY modified DESC
-		""",
-		values,
-		as_dict=True,
+	data = frappe.db.sql(
+		f"""SELECT project_title, team, status, priority, progress_percent,
+			submitted_by, github_repo_url, approved_by, completion_date
+		FROM `tabProject Submission`
+		WHERE {where_clause}
+		ORDER BY modified DESC""",
+		params,
+		as_dict=1,
 	)
 
-	return rows
+	return data

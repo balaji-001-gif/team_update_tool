@@ -1,251 +1,105 @@
-/* ============================================
-   Team Update Dashboard - Page Styles
-   ============================================ */
+/* Team Update Dashboard CSS */
+.tud-welcome {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+	border-radius: 12px;
+	padding: 28px 32px;
+	margin-bottom: 20px;
+	color: white;
+}
+.tud-welcome h2 { margin: 0 0 4px; font-size: 22px; font-weight: 600; }
+.tud-welcome p { margin: 0; opacity: 0.85; font-size: 14px; }
 
-/* Loading */
-.tud-loading { padding: 20px 0; }
-.tud-loading-grid {
+.tud-stats-grid {
 	display: grid;
-	grid-template-columns: repeat(5, 1fr);
+	grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
 	gap: 12px;
 	margin-bottom: 20px;
 }
-.tud-loading-row {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 16px;
-}
-.tud-skeleton {
-	height: 80px;
-	background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
-	background-size: 200% 100%;
-	animation: tud-shimmer 1.5s infinite;
-	border-radius: 12px;
-}
-.tud-skeleton-lg { height: 260px; }
-@keyframes tud-shimmer {
-	0% { background-position: 200% 0; }
-	100% { background-position: -200% 0; }
-}
-
-/* Error */
-.tud-error {
-	text-align: center;
-	padding: 60px 20px;
-}
-.tud-error-icon { font-size: 48px; margin-bottom: 12px; }
-.tud-error h3 { color: #374151; margin-bottom: 8px; }
-.tud-error p { color: #6b7280; margin-bottom: 16px; }
-
-/* Welcome Banner */
-.tud-welcome {
-	background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
-	border-radius: 16px;
-	padding: 28px 32px;
-	margin-bottom: 24px;
-	position: relative;
-	overflow: hidden;
-}
-.tud-welcome::before {
-	content: "";
-	position: absolute;
-	top: -30%;
-	right: -5%;
-	width: 200px;
-	height: 200px;
-	background: rgba(255, 255, 255, 0.08);
-	border-radius: 50%;
-}
-.tud-welcome::after {
-	content: "";
-	position: absolute;
-	bottom: -40%;
-	right: 10%;
-	width: 150px;
-	height: 150px;
-	background: rgba(255, 255, 255, 0.05);
-	border-radius: 50%;
-}
-.tud-welcome-content { position: relative; z-index: 1; }
-.tud-welcome h2 {
-	color: #ffffff;
-	font-size: 22px;
-	font-weight: 700;
-	margin: 0 0 6px;
-	letter-spacing: -0.3px;
-}
-.tud-welcome p {
-	color: rgba(255, 255, 255, 0.8);
-	font-size: 14px;
-	margin: 0;
-}
-
-/* Stats Grid */
-.tud-stats-grid {
-	display: grid;
-	grid-template-columns: repeat(5, 1fr);
-	gap: 12px;
-	margin-bottom: 24px;
-}
 .tud-stat-card {
-	background: #ffffff;
+	background: #fff;
 	border: 1px solid #e5e7eb;
-	border-radius: 12px;
+	border-radius: 10px;
 	padding: 16px;
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	transition: all 0.2s ease;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	transition: all 0.2s;
 }
-.tud-stat-card:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.tud-stat-icon { font-size: 24px; flex-shrink: 0; }
-.tud-stat-value {
-	font-size: 22px;
-	font-weight: 700;
-	color: #111827;
-	line-height: 1.2;
-}
-.tud-stat-label {
-	font-size: 11px;
-	color: #6b7280;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	font-weight: 500;
-}
+.tud-stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-2px); }
+.tud-stat-icon { font-size: 28px; line-height: 1; }
+.tud-stat-value { font-size: 24px; font-weight: 700; line-height: 1.2; }
+.tud-stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; }
+.tud-stat-blue .tud-stat-value { color: #3b82f6; }
+.tud-stat-green .tud-stat-value { color: #22c55e; }
+.tud-stat-orange .tud-stat-value { color: #f59e0b; }
+.tud-stat-yellow .tud-stat-value { color: #eab308; }
+.tud-stat-red .tud-stat-value { color: #ef4444; }
+.tud-stat-cyan .tud-stat-value { color: #06b6d4; }
+.tud-stat-gray .tud-stat-value { color: #6b7280; }
 
-/* Stat color accents */
-.tud-stat-blue { border-left: 3px solid #3b82f6; }
-.tud-stat-green { border-left: 3px solid #22c55e; }
-.tud-stat-orange { border-left: 3px solid #f59e0b; }
-.tud-stat-yellow { border-left: 3px solid #eab308; }
-.tud-stat-purple { border-left: 3px solid #8b5cf6; }
-.tud-stat-red { border-left: 3px solid #ef4444; }
-.tud-stat-cyan { border-left: 3px solid #06b6d4; }
-.tud-stat-gray { border-left: 3px solid #6b7280; }
-.tud-stat-indigo { border-left: 3px solid #6366f1; }
-.tud-stat-teal { border-left: 3px solid #14b8a6; }
+.tud-charts-row {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+@media (max-width: 768px) { .tud-charts-row { grid-template-columns: 1fr; } }
 
-/* Card */
 .tud-card {
-	background: #ffffff;
+	background: #fff;
 	border: 1px solid #e5e7eb;
-	border-radius: 12px;
-	margin-bottom: 20px;
-	box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+	border-radius: 10px;
 	overflow: hidden;
+	margin-bottom: 16px;
 }
 .tud-card-header {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
-	padding: 16px 20px;
+	padding: 14px 20px;
 	border-bottom: 1px solid #f3f4f6;
 }
-.tud-card-header h3 {
-	font-size: 14px;
-	font-weight: 600;
-	color: #111827;
-	margin: 0;
-}
+.tud-card-header h3 { margin: 0; font-size: 15px; font-weight: 600; color: #374151; }
 .tud-card-body { padding: 16px 20px; }
 .tud-no-padding { padding: 0; }
+.tud-link { font-size: 13px; color: #3b82f6; text-decoration: none; }
+.tud-link:hover { text-decoration: underline; }
 
-/* Charts Row */
-.tud-charts-row {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
-	margin-bottom: 4px;
-}
-
-/* Two Column Layout */
-.tud-two-col {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
-	gap: 20px;
-	margin-bottom: 4px;
-}
-
-/* Table */
-.tud-table {
-	width: 100%;
-	border-collapse: collapse;
-}
-.tud-table-head {
-	text-align: left;
-	padding: 10px 16px;
-	font-size: 11px;
-	font-weight: 600;
-	color: #6b7280;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-	background: #f9fafb;
-	border-bottom: 1px solid #e5e7eb;
-}
-.tud-table-row { transition: background 0.15s; }
+.tud-table { width: 100%; border-collapse: collapse; }
+.tud-table-head { padding: 10px 16px; text-align: left; font-size: 11px; text-transform: uppercase; color: #6b7280; border-bottom: 2px solid #e5e7eb; }
+.tud-table-row { border-bottom: 1px solid #f3f4f6; }
 .tud-table-row:hover { background: #f9fafb; }
-.tud-table-cell {
-	padding: 12px 16px;
-	font-size: 13px;
-	color: #374151;
-	border-bottom: 1px solid #f3f4f6;
-	vertical-align: middle;
-}
+.tud-table-cell { padding: 10px 16px; font-size: 13px; }
 .tud-project-title { font-weight: 500; color: #111827; }
-.tud-text-muted { color: #9ca3af; }
 
-/* Badges */
 .tud-badge {
 	display: inline-block;
-	padding: 3px 10px;
-	border-radius: 20px;
+	padding: 2px 8px;
+	border-radius: 4px;
 	font-size: 11px;
 	font-weight: 600;
-	line-height: 1.4;
+	text-transform: uppercase;
 }
 .tud-badge-green { background: #dcfce7; color: #166534; }
-.tud-badge-blue { background: #dbeafe; color: #1e40af; }
-.tud-badge-orange { background: #ffedd5; color: #9a3412; }
 .tud-badge-yellow { background: #fef9c3; color: #854d0e; }
+.tud-badge-orange { background: #ffedd5; color: #9a3412; }
 .tud-badge-red { background: #fee2e2; color: #991b1b; }
-.tud-badge-purple { background: #f3e8ff; color: #6b21a8; }
+.tud-badge-blue { background: #dbeafe; color: #1e40af; }
 .tud-badge-gray { background: #f3f4f6; color: #374151; }
+.tud-badge-purple { background: #ede9fe; color: #5b21b6; }
 
-/* Progress Bar */
-.tud-progress-wrap {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-.tud-progress-bar {
-	flex: 1;
-	height: 6px;
-	background: #e5e7eb;
-	border-radius: 3px;
-	overflow: hidden;
-}
-.tud-progress-fill {
-	height: 100%;
-	border-radius: 3px;
-	transition: width 0.3s ease;
-}
+.tud-progress-wrap { display: flex; align-items: center; gap: 8px; }
+.tud-progress-bar { flex: 1; height: 6px; background: #e5e7eb; border-radius: 3px; overflow: hidden; }
+.tud-progress-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
 .tud-progress-green { background: #22c55e; }
 .tud-progress-blue { background: #3b82f6; }
 .tud-progress-orange { background: #f59e0b; }
 .tud-progress-red { background: #ef4444; }
-.tud-progress-text {
-	font-size: 11px;
-	color: #6b7280;
-	font-weight: 500;
-	min-width: 32px;
-	text-align: right;
-}
+.tud-progress-text { font-size: 12px; font-weight: 500; color: #6b7280; min-width: 30px; }
 
-/* List Items */
+.tud-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+@media (max-width: 768px) { .tud-two-col { grid-template-columns: 1fr; } }
+
 .tud-list-item {
 	display: flex;
 	justify-content: space-between;
@@ -254,123 +108,45 @@
 	border-bottom: 1px solid #f3f4f6;
 }
 .tud-list-item:last-child { border-bottom: none; }
-.tud-list-left {
-	display: flex;
-	align-items: center;
-	gap: 12px;
-}
-.tud-list-right {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-.tud-list-title {
-	font-size: 13px;
-	font-weight: 500;
-	color: #111827;
-}
-.tud-list-sub {
-	font-size: 11px;
-	color: #9ca3af;
-	margin-top: 2px;
-}
-
-/* Team Avatar */
+.tud-list-left { display: flex; align-items: center; gap: 10px; }
+.tud-list-right { display: flex; align-items: center; gap: 8px; }
+.tud-list-title { font-size: 13px; font-weight: 500; color: #111827; }
+.tud-list-sub { font-size: 12px; color: #9ca3af; }
 .tud-team-avatar {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
-	background: linear-gradient(135deg, #059669, #047857);
-	color: #ffffff;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 14px;
-	font-weight: 700;
-	flex-shrink: 0;
+	width: 36px; height: 36px; border-radius: 8px;
+	background: linear-gradient(135deg, #667eea, #764ba2);
+	color: white; display: flex; align-items: center; justify-content: center;
+	font-weight: 700; font-size: 14px;
 }
-
-/* GitHub Icon */
-.tud-github-icon {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
-	background: #1f2937;
-	color: #ffffff;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-}
-
-/* Notification Icon */
-.tud-notif-icon {
-	width: 36px;
-	height: 36px;
-	border-radius: 10px;
-	background: #fef3c7;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 16px;
-	flex-shrink: 0;
-}
-
-/* Status Dot */
-.tud-dot {
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	display: inline-block;
-}
+.tud-github-icon { color: #374151; }
+.tud-notif-icon { font-size: 18px; }
+.tud-link-btn { font-size: 12px; color: #3b82f6; text-decoration: none; padding: 4px 10px; border: 1px solid #dbeafe; border-radius: 4px; }
+.tud-link-btn:hover { background: #eff6ff; }
+.tud-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
 .tud-dot-green { background: #22c55e; }
 .tud-dot-gray { background: #d1d5db; }
 
-/* Links */
-.tud-link {
-	font-size: 12px;
-	color: #059669;
-	text-decoration: none;
-	font-weight: 500;
-}
-.tud-link:hover { color: #047857; text-decoration: underline; }
+.tud-empty { padding: 24px; text-align: center; color: #9ca3af; font-size: 14px; }
+.tud-empty a { color: #3b82f6; }
+.tud-error { padding: 40px; text-align: center; }
+.tud-error-icon { font-size: 40px; margin-bottom: 12px; }
 
-.tud-link-btn {
-	font-size: 12px;
-	color: #059669;
-	text-decoration: none;
-	font-weight: 500;
-	padding: 4px 10px;
-	border-radius: 6px;
-	background: #ecfdf5;
-	transition: background 0.15s;
-}
-.tud-link-btn:hover { background: #d1fae5; color: #047857; }
+.tud-loading-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 20px; }
+.tud-skeleton { height: 80px; background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%); background-size: 200% 100%; animation: tud-shimmer 1.5s infinite; border-radius: 10px; }
+.tud-skeleton-lg { height: 200px; }
+@keyframes tud-shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
 
-/* Empty State */
-.tud-empty {
-	text-align: center;
-	padding: 32px 16px;
-	color: #9ca3af;
-	font-size: 13px;
-}
-.tud-empty a {
-	color: #059669;
-	text-decoration: none;
-	font-weight: 500;
-}
-.tud-empty a:hover { text-decoration: underline; }
+.tud-text-muted { color: #9ca3af; }
 
-/* Responsive */
-@media (max-width: 1200px) {
-	.tud-stats-grid { grid-template-columns: repeat(4, 1fr); }
-}
-@media (max-width: 992px) {
-	.tud-stats-grid { grid-template-columns: repeat(3, 1fr); }
-	.tud-charts-row, .tud-two-col { grid-template-columns: 1fr; }
-}
-@media (max-width: 768px) {
-	.tud-stats-grid { grid-template-columns: repeat(2, 1fr); }
-	.tud-welcome { padding: 20px; }
-	.tud-welcome h2 { font-size: 18px; }
-}
+/* Dark mode support */
+[data-theme="dark"] .tud-stat-card,
+[data-theme="dark"] .tud-card { background: #1f2937; border-color: #374151; }
+[data-theme="dark"] .tud-table-row:hover { background: #111827; }
+[data-theme="dark"] .tud-skeleton { background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%); background-size: 200% 100%; }
+[data-theme="dark"] .tud-card-header { border-color: #374151; }
+[data-theme="dark"] .tud-table-row { border-color: #374151; }
+[data-theme="dark"] .tud-table-head { border-color: #374151; }
+[data-theme="dark"] .tud-project-title { color: #f3f4f6; }
+[data-theme="dark"] .tud-list-title { color: #f3f4f6; }
+[data-theme="dark"] .tud-list-item { border-color: #374151; }
+[data-theme="dark"] .tud-progress-bar { background: #374151; }
