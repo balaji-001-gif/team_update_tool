@@ -100,11 +100,11 @@
 										No technologies found. Please create Technology records in Desk first before creating a project.
 									</div>
 									{% endif %}
-								</div>
-								<div class="col-md-12">
-									<label class="form-label fw-semibold small">Description</label>
-									<textarea id="description" name="description" class="form-control" rows="4" placeholder="Describe your project..."></textarea>
-								</div>
+								</div>											<div class="col-md-12">
+				<label class="form-label fw-semibold small">Description <span class="text-danger">*</span></label>
+				<textarea id="description" name="description" class="form-control" rows="4" required placeholder="Describe your project..."></textarea>
+				<div class="invalid-feedback">Description is required.</div>
+			</div>
 							</div>
 						</div>
 						<div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-end">
@@ -285,9 +285,11 @@ function validateStep(step) {
 		var team = document.getElementById('team').value;
 		var techChecked = document.querySelectorAll('input[name="technologies"]:checked').length;
 		var techGrid = document.getElementById('techGrid');
+		var desc = document.getElementById('description').value.trim();
 		if (!title) { valid = false; msg = 'Project title is required.'; }
 		else if (!category) { valid = false; msg = 'Project category is required.'; }
 		else if (!team) { valid = false; msg = 'Team is required.'; }
+		else if (!desc) { valid = false; msg = 'Description is required.'; }
 		else if (techGrid && techChecked === 0) {
 			valid = false;
 			msg = 'At least one technology must be selected.';

@@ -19,6 +19,11 @@ def create_roles():
 			"description": "Full CRUD access. Can create, read, update, delete, approve, reject projects, manage teams, configure settings.",
 		},
 		{
+			"role_name": "Team Member",
+			"desk_access": 1,
+			"description": "Can create projects, upload GitHub repositories, upload screenshots and documents, edit own projects, and track project status. Cannot approve, reject, or delete approved projects.",
+		},
+		{
 			"role_name": "View-Only User",
 			"desk_access": 1,
 			"description": "Read-only access. Can view approved projects, GitHub links, screenshots, documents, and reports. Cannot create, edit, delete, or upload.",
