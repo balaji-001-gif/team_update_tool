@@ -18,7 +18,7 @@ website_route_rules = [
 ]
 
 fixtures = [
-	{"dt": "Role", "filters": [["role_name", "in", ["Admin", "View-Only User"]]]},
+	{"dt": "Role", "filters": [["role_name", "in", ["Admin", "Team Member", "View-Only User"]]]},
 	{"dt": "Workspace", "filters": [["name", "=", "Team Update Tool"]]},
 ]
 
