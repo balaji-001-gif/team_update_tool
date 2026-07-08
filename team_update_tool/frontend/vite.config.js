@@ -27,7 +27,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: path.resolve(__dirname, '../public/frontend'),
+    outDir: path.resolve(__dirname, '../team_update_tool/www/team-update'),
     emptyOutDir: true,
     sourcemap: false,
   },

@@ -11,6 +11,11 @@ app_color = "#2E8B57"
 app_include_css = "/assets/team_update_tool/css/team_update_tool.css"
 app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 
+# Website route rules - serve the Vue 3 SPA frontend at /team-update
+website_route_rules = [
+	{"from_route": "/team-update/<path:app_path>", "to_route": "team-update/index.html"},
+]
+
 # Installation
 after_install = "team_update_tool.install.after_install"
 
