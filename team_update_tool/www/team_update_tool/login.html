@@ -1,0 +1,94 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Sign In - Team Update Tool{% endblock %}
+
+{% block page_content %}
+<div class="tut-auth-page">
+	<div class="tut-auth-card">
+		<div class="tut-auth-header">
+			<h1 class="tut-auth-title">Welcome Back</h1>
+			<p class="tut-auth-desc">Sign in to Team Update Tool</p>
+		</div>
+		<form id="loginForm" class="tut-auth-form">
+			<div class="tut-form-group">
+				<label class="tut-form-label" for="login_email">Email</label>
+				<input type="email" id="login_email" name="usr" class="tut-form-input" required
+					placeholder="you@example.com" autocomplete="email">
+			</div>
+			<div class="tut-form-group">
+				<label class="tut-form-label" for="login_password">Password</label>
+				<input type="password" id="login_password" name="pwd" class="tut-form-input" required
+					placeholder="Enter your password" autocomplete="current-password">
+			</div>
+			<button type="submit" class="tut-btn tut-btn-primary tut-btn-full" id="loginBtn">
+				Sign In
+			</button>
+			<div id="loginMessage" class="tut-form-message" style="display:none;"></div>
+		</form>
+		<div class="tut-auth-footer">
+			<p>Don't have an account? <a href="/team_update_tool/signup">Create one</a></p>
+		</div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() {
+	var loginForm = document.getElementById('loginForm');
+	if (!loginForm) return;
+
+	loginForm.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		var btn = document.getElementById('loginBtn');
+		var msg = document.getElementById('loginMessage');
+		var form = new FormData(this);
+
+		btn.disabled = true;
+		btn.innerHTML = 'Signing in...';
+		msg.style.display = 'none';
+
+		try {
+			var resp = await fetch('/api/method/login', {
+				method: 'POST',
+				headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token },
+				body: new URLSearchParams({
+					usr: form.get('usr'),
+					pwd: form.get('pwd')
+				})
+			});
+			var result = await resp.json();
+
+			if (result.message === 'Logged In') {
+				msg.className = 'tut-form-message tut-form-success';
+				msg.innerHTML = '<p>Login successful! Redirecting...</p>';
+				msg.style.display = 'block';
+				var redirectTo = '{{ redirect_to }}';
+				setTimeout(function() {
+					window.location.href = redirectTo;
+				}, 500);
+			} else {
+				var errMsg = 'Invalid email or password.';
+				if (result.exc) {
+					try {
+						var exc = JSON.parse(result.exc);
+						errMsg = exc[0] || errMsg;
+					} catch(e) {}
+				}
+				msg.className = 'tut-form-message tut-form-error';
+				msg.innerHTML = '<p>' + errMsg + '</p>';
+				msg.style.display = 'block';
+				btn.disabled = false;
+				btn.innerHTML = 'Sign In';
+			}
+		} catch(err) {
+			msg.className = 'tut-form-message tut-form-error';
+			msg.innerHTML = '<p>Network error. Please try again.</p>';
+			msg.style.display = 'block';
+			btn.disabled = false;
+			btn.innerHTML = 'Sign In';
+		}
+	});
+});
+</script>
+{% endblock %}

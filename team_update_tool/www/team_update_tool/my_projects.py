@@ -13,7 +13,7 @@ def get_context(context):
 
 	user = frappe.session.user
 	if user == "Guest":
-		frappe.local.flags.redirect_location = "/login?redirect-to=/team_update_tool/my_projects"
+		frappe.local.flags.redirect_location = "/team_update_tool/login?redirect-to=/team_update_tool/my_projects"
 		raise frappe.Redirect
 
 	context.projects = frappe.get_all("Project",

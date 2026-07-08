@@ -14,7 +14,7 @@ def get_context(context):
         if redirect_to:
             frappe.local.flags.redirect_location = redirect_to
         else:
-            frappe.local.flags.redirect_location = "/app"
+            frappe.local.flags.redirect_location = "/team_update_tool/dashboard"
         raise frappe.Redirect
 
     context.no_header = True

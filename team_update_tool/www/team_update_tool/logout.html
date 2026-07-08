@@ -1,0 +1,18 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Sign Out - Team Update Tool{% endblock %}
+
+{% block page_content %}
+<div class="tut-auth-page">
+	<div class="tut-auth-card" style="text-align: center;">
+		<div class="tut-auth-header">
+			<h1 class="tut-auth-title">Signed Out</h1>
+			<p class="tut-auth-desc">You have been successfully signed out.</p>
+		</div>
+		<a href="/team_update_tool" class="tut-btn tut-btn-primary tut-btn-full">Return Home</a>
+		<div class="tut-auth-footer">
+			<p><a href="/team_update_tool/login">Sign back in</a></p>
+		</div>
+	</div>
+</div>
+{% endblock %}

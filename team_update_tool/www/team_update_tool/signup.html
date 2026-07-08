@@ -36,7 +36,7 @@
 			<div id="signupMessage" class="tut-form-message" style="display:none;"></div>
 		</form>
 		<div class="tut-auth-footer">
-			<p>Already have an account? <a href="/login?redirect-to=/team_update_tool">Sign In</a></p>
+			<p>Already have an account? <a href="/team_update_tool/login">Sign In</a></p>
 		</div>
 	</div>
 </div>
@@ -73,7 +73,7 @@ frappe.ready(function() {
 				msg.style.display = 'block';
 				btn.innerHTML = 'Redirecting...';
 				setTimeout(function() {
-					window.location.href = '/login?redirect-to=/team_update_tool';
+					window.location.href = '/team_update_tool/login';
 				}, 2000);
 			} else if (result.exc) {
 				const err = JSON.parse(result.exc);

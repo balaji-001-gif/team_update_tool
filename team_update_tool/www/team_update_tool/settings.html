@@ -1,0 +1,107 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Settings - Team Update Tool{% endblock %}
+
+{% block page_content %}
+<div class="tut-page-header">
+	<div class="container">
+		<div class="tut-page-header-content">
+			<h1 class="tut-page-title">Settings</h1>
+			<p class="tut-page-desc">Manage your preferences</p>
+		</div>
+	</div>
+</div>
+
+<div class="container tut-page-body">
+	<div class="tut-form-container">
+		<form id="settingsForm" class="tut-form">
+			<div class="tut-form-section">
+				<h2 class="tut-form-section-title">Profile Information</h2>
+				<div class="tut-form-grid">
+					<div class="tut-form-group">
+						<label class="tut-form-label" for="first_name">First Name</label>
+						<input type="text" id="first_name" name="first_name" class="tut-form-input"
+							value="{{ user_doc.first_name or '' }}">
+					</div>
+					<div class="tut-form-group">
+						<label class="tut-form-label" for="last_name">Last Name</label>
+						<input type="text" id="last_name" name="last_name" class="tut-form-input"
+							value="{{ user_doc.last_name or '' }}">
+					</div>
+				</div>
+			</div>
+
+			<div class="tut-form-section">
+				<h2 class="tut-form-section-title">Notification Preferences</h2>
+				<p style="color: #6b7280; font-size: 0.88rem; margin: 0 0 8px;">
+					Notification preferences will be available in a future update.
+					You will receive email notifications for project status changes by default.
+				</p>
+			</div>
+
+			<div class="tut-form-actions">
+				<button type="submit" class="tut-btn tut-btn-primary" id="saveSettings">
+					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+						<polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/>
+					</svg>
+					Save Settings
+				</button>
+			</div>
+			<div id="settingsMessage" class="tut-form-message" style="display:none;"></div>
+		</form>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() {
+	var form = document.getElementById('settingsForm');
+	if (!form) return;
+
+	form.addEventListener('submit', async function(e) {
+		e.preventDefault();
+		var btn = document.getElementById('saveSettings');
+		var msg = document.getElementById('settingsMessage');
+		var formData = new FormData(this);
+
+		btn.disabled = true;
+		btn.innerHTML = 'Saving...';
+		msg.style.display = 'none';
+
+		try {
+			var resp = await fetch('/api/method/frappe.client.set_value', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+				body: JSON.stringify({
+					doctype: 'User',
+					name: '{{ frappe.session.user }}',
+					fieldname: {
+						first_name: formData.get('first_name'),
+						last_name: formData.get('last_name')
+					}
+				})
+			});
+			var result = await resp.json();
+			if (result.message) {
+				msg.className = 'tut-form-message tut-form-success';
+				msg.innerHTML = '<p>Settings saved successfully!</p>';
+				msg.style.display = 'block';
+			} else if (result.exc) {
+				var err = JSON.parse(result.exc);
+				msg.className = 'tut-form-message tut-form-error';
+				msg.innerHTML = '<p>' + (err[0] || 'An error occurred') + '</p>';
+				msg.style.display = 'block';
+			}
+		} catch(err) {
+			msg.className = 'tut-form-message tut-form-error';
+			msg.innerHTML = '<p>Network error. Please try again.</p>';
+			msg.style.display = 'block';
+		}
+		btn.disabled = false;
+		btn.innerHTML = 'Save Settings';
+	});
+});
+</script>
+{% endblock %}

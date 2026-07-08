@@ -446,6 +446,33 @@
 .tut-contact-card a { color: #16a34a; text-decoration: none; word-break: break-all; }
 .tut-contact-card a:hover { text-decoration: underline; }
 
+/* --- Notifications --- */
+
+.tut-notifications-list { display: flex; flex-direction: column; gap: 8px; }
+
+.tut-notification-item {
+	display: flex; gap: 14px; padding: 14px 16px;
+	background: #fff; border: 1px solid #e5e7eb; border-radius: 10px;
+	transition: all 0.15s ease;
+}
+.tut-notification-item:hover { border-color: #16a34a; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+
+.tut-notification-icon {
+	width: 40px; height: 40px; border-radius: 10px;
+	display: flex; align-items: center; justify-content: center;
+	flex-shrink: 0; background: #f9fafb;
+}
+.tut-notification-update .tut-notification-icon { background: #f0fdf4; }
+.tut-notification-submission .tut-notification-icon { background: #eff6ff; }
+
+.tut-notification-body { flex: 1; min-width: 0; }
+.tut-notification-title { font-size: 0.9rem; font-weight: 500; color: #111827; margin: 0 0 4px; }
+.tut-notification-desc { font-size: 0.82rem; color: #6b7280; margin: 0 0 6px; line-height: 1.5; }
+.tut-notification-meta { display: flex; align-items: center; gap: 12px; font-size: 0.78rem; }
+.tut-notification-link { color: #16a34a; text-decoration: none; font-weight: 500; }
+.tut-notification-link:hover { text-decoration: underline; }
+.tut-notification-date { color: #9ca3af; }
+
 /* --- Error Page --- */
 
 .tut-error-page { min-height: 50vh; display: flex; align-items: center; justify-content: center; }
