@@ -3,48 +3,84 @@
 {% block title %}Gallery - Team Update Tool{% endblock %}
 
 {% block page_content %}
+{% include "team_update_tool/navbar.html" %}
+
 <div class="tut-page-header">
 	<div class="container">
 		<div class="tut-page-header-content">
 			<h1 class="tut-page-title">Screenshot Gallery</h1>
-			<p class="tut-page-desc">{{ total }} screenshots from all projects</p>
+			<p class="tut-page-desc" id="galleryTotal">Loading...</p>
 		</div>
 	</div>
 </div>
 
 <div class="container tut-page-body">
-	{% if screenshots %}
-	<div class="tut-masonry-gallery">
-		{% for s in screenshots %}
-		<div class="tut-gallery-card" data-type="{{ s.screenshot_type }}">
-			<a href="{{ s.screenshot }}" target="_blank" class="tut-gallery-image-wrap">
-				<img src="{{ s.screenshot }}" alt="{{ s.caption or 'Screenshot' }}" loading="lazy">
-			</a>
-			<div class="tut-gallery-card-body">
-				{% if s.caption %}
-				<p class="tut-gallery-card-caption">{{ s.caption }}</p>
-				{% endif %}
-				<div class="tut-gallery-card-meta">
-					<a href="/team_update_tool/project?name={{ s.project }}" class="tut-gallery-card-project">
-						{{ s.project_title }}
-					</a>
-					{% if s.screenshot_type %}
-					<span class="tut-gallery-card-type">{{ s.screenshot_type }}</span>
-					{% endif %}
-				</div>
-			</div>
+	<div class="tut-loading" id="galleryLoading">
+		<div class="tut-spinner"></div>
+		<p>Loading screenshots...</p>
+	</div>
+	<div id="galleryContent" style="display:none;">
+		<div class="tut-masonry-gallery" id="galleryGrid"></div>
+		<div id="galleryEmpty" class="tut-empty-state" style="display:none;">
+			<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+			<h3>No Screenshots Yet</h3>
+			<p>Screenshots from projects will appear here once uploaded.</p>
 		</div>
-		{% endfor %}
+		<div id="galleryPagination" class="tut-pagination" style="display:none;"></div>
 	</div>
-	{% else %}
-	<div class="tut-empty-state">
-		<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: #9ca3af;">
-			<rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
-			<circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
-		</svg>
-		<h3>No Screenshots Yet</h3>
-		<p>Screenshots from projects will appear here once they are uploaded.</p>
-	</div>
-	{% endif %}
 </div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() { loadGallery(0); });
+
+var galleryLimit = 24;
+
+function loadGallery(offset) {
+	document.getElementById('galleryLoading').style.display = 'block';
+	document.getElementById('galleryContent').style.display = 'none';
+
+	fetch('/api/method/team_update_tool.api.projects.get_gallery?limit=' + galleryLimit + '&offset=' + offset)
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			document.getElementById('galleryLoading').style.display = 'none';
+			if (!data.message) return;
+			var d = data.message;
+			document.getElementById('galleryTotal').textContent = d.total + ' screenshot' + (d.total !== 1 ? 's' : '');
+
+			if (d.screenshots && d.screenshots.length) {
+				document.getElementById('galleryEmpty').style.display = 'none';
+				var html = '';
+				d.screenshots.forEach(function(s) {
+					html += '<div class="tut-gallery-card"><a href="' + s.screenshot + '" target="_blank" class="tut-gallery-image-wrap"><img src="' + s.screenshot + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy"></a>' +
+						'<div class="tut-gallery-card-body">' +
+						(s.caption ? '<p class="tut-gallery-card-caption">' + escHtml(s.caption) + '</p>' : '') +
+						'<div class="tut-gallery-card-meta">' +
+						'<a href="/team_update_tool/project/' + s.project + '" class="tut-gallery-card-project">' + escHtml(s.project_title) + '</a>' +
+						(s.screenshot_type ? '<span class="tut-gallery-card-type">' + escHtml(s.screenshot_type) + '</span>' : '') +
+						'</div></div></div>';
+				});
+				document.getElementById('galleryGrid').innerHTML = html;
+
+				if (d.has_more || offset > 0) {
+					var pagHtml = '<div class="tut-pagination-inner">';
+					if (offset > 0) pagHtml += '<button class="tut-btn tut-btn-ghost tut-btn-sm" onclick="loadGallery(' + (offset - galleryLimit) + ')">← Previous</button>';
+					pagHtml += '<span class="tut-pagination-info">' + (offset + 1) + '–' + Math.min(offset + galleryLimit, d.total) + ' of ' + d.total + '</span>';
+					if (d.has_more) pagHtml += '<button class="tut-btn tut-btn-ghost tut-btn-sm" onclick="loadGallery(' + (offset + galleryLimit) + ')">Next →</button>';
+					pagHtml += '</div>';
+					document.getElementById('galleryPagination').innerHTML = pagHtml;
+					document.getElementById('galleryPagination').style.display = 'block';
+				}
+				document.getElementById('galleryContent').style.display = 'block';
+			} else {
+				document.getElementById('galleryEmpty').style.display = 'block';
+				document.getElementById('galleryContent').style.display = 'block';
+			}
+		})
+		.catch(function() {
+			document.getElementById('galleryLoading').innerHTML = '<p style="color:#dc2626;text-align:center;">Failed to load gallery.</p>';
+		});
+}
+</script>
 {% endblock %}

@@ -3,53 +3,85 @@
 {% block title %}Repositories - Team Update Tool{% endblock %}
 
 {% block page_content %}
+{% include "team_update_tool/navbar.html" %}
+
 <div class="tut-page-header">
 	<div class="container">
 		<div class="tut-page-header-content">
 			<h1 class="tut-page-title">GitHub Repositories</h1>
-			<p class="tut-page-desc">Repositories linked to projects</p>
+			<p class="tut-page-desc" id="reposTotal">Loading...</p>
 		</div>
 	</div>
 </div>
 
 <div class="container tut-page-body">
-	{% if repositories %}
-	<div class="tut-grid-2">
-		{% for r in repositories %}
-		<div class="tut-card">
-			<div class="tut-card-body">
-				<div class="tut-github-header">
-					<svg width="24" height="24" viewBox="0 0 24 24" fill="#24292e">
-						<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-					</svg>
-					<div>
-						<h3 class="tut-card-title">{{ r.repository_name or r.name }}</h3>
-						<a href="{{ r.repository_url }}" target="_blank" class="tut-github-url">{{ r.repository_url }}</a>
-					</div>
-				</div>
-				{% if r.languages %}
-				<div class="tut-github-langs">{{ r.languages }}</div>
-				{% endif %}
-				<div class="tut-card-footer">
-					{% if r.default_branch %}
-					<span>Branch: {{ r.default_branch }}</span>
-					{% endif %}
-					{% if r.commit_hash %}
-					<span title="{{ r.commit_hash }}">{{ r.commit_hash[:7] }}...</span>
-					{% endif %}
-				</div>
-			</div>
+	<div class="tut-loading" id="reposLoading">
+		<div class="tut-spinner"></div>
+		<p>Loading repositories...</p>
+	</div>
+	<div id="reposContent" style="display:none;">
+		<div class="tut-grid-2" id="reposGrid"></div>
+		<div id="reposEmpty" class="tut-empty-state" style="display:none;">
+			<svg width="48" height="48" viewBox="0 0 24 24" fill="#9ca3af"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+			<h3>No Repositories</h3>
+			<p>No GitHub repositories have been linked yet.</p>
 		</div>
-		{% endfor %}
+		<div id="reposPagination" class="tut-pagination" style="display:none;"></div>
 	</div>
-	{% else %}
-	<div class="tut-empty-state">
-		<svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor" style="color: #9ca3af;">
-			<path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
-		</svg>
-		<h3>No Repositories</h3>
-		<p>No GitHub repositories have been linked yet.</p>
-	</div>
-	{% endif %}
 </div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() { loadRepos(0); });
+
+function loadRepos(offset) {
+	document.getElementById('reposLoading').style.display = 'block';
+	document.getElementById('reposContent').style.display = 'none';
+
+	fetch('/api/method/team_update_tool.api.projects.get_repositories?limit=20&offset=' + offset)
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			document.getElementById('reposLoading').style.display = 'none';
+			if (!data.message) return;
+			var d = data.message;
+			document.getElementById('reposTotal').textContent = d.total + ' repositor' + (d.total !== 1 ? 'ies' : 'y');
+
+			if (d.repositories && d.repositories.length) {
+				document.getElementById('reposEmpty').style.display = 'none';
+				var html = '';
+				d.repositories.forEach(function(r) {
+					html += '<div class="tut-card"><div class="tut-card-body">' +
+						'<div class="tut-github-header">' +
+						'<svg width="24" height="24" viewBox="0 0 24 24" fill="#24292e"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>' +
+						'<div><h3 class="tut-card-title">' + escHtml(r.repository_name || r.name) + '</h3>' +
+						'<a href="' + r.repository_url + '" target="_blank" class="tut-github-url">' + r.repository_url + '</a></div></div>' +
+						(r.languages ? '<div class="tut-github-langs">' + escHtml(r.languages) + '</div>' : '') +
+						'<div class="tut-card-footer">' +
+						(r.default_branch ? '<span>Branch: ' + r.default_branch + '</span>' : '') +
+						(r.commit_hash ? '<span title="' + r.commit_hash + '">' + r.commit_hash.substring(0,7) + '...</span>' : '') +
+						'</div></div></div>';
+				});
+				document.getElementById('reposGrid').innerHTML = html;
+
+				if (d.has_more || offset > 0) {
+					var pagHtml = '<div class="tut-pagination-inner">';
+					if (offset > 0) pagHtml += '<button class="tut-btn tut-btn-ghost tut-btn-sm" onclick="loadRepos(' + (offset - 20) + ')">← Previous</button>';
+					pagHtml += '<span class="tut-pagination-info">' + (offset + 1) + '–' + Math.min(offset + 20, d.total) + ' of ' + d.total + '</span>';
+					if (d.has_more) pagHtml += '<button class="tut-btn tut-btn-ghost tut-btn-sm" onclick="loadRepos(' + (offset + 20) + ')">Next →</button>';
+					pagHtml += '</div>';
+					document.getElementById('reposPagination').innerHTML = pagHtml;
+					document.getElementById('reposPagination').style.display = 'block';
+				}
+				document.getElementById('reposContent').style.display = 'block';
+			} else {
+				document.getElementById('reposEmpty').style.display = 'block';
+				document.getElementById('reposContent').style.display = 'block';
+			}
+		})
+		.catch(function() {
+			document.getElementById('reposLoading').innerHTML = '<p style="color:#dc2626;text-align:center;">Failed to load repositories.</p>';
+		});
+}
+</script>
 {% endblock %}

@@ -10,6 +10,7 @@ no_cache = 1
 def get_context(context):
 	"""Home page context with public data."""
 	context.title = _("Team Update Tool")
+	context.no_header = 1
 	context.no_breadcrumbs = 1
 
 	# Get public stats

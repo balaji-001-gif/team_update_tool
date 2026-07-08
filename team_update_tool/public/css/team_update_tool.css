@@ -69,6 +69,73 @@
 
 .tut-hero-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-bottom: 56px; }
 
+/* --- Navbar --- */
+
+.tut-navbar {
+	background: #fff; border-bottom: 1px solid #e5e7eb;
+	position: sticky; top: 0; z-index: 1000;
+}
+.tut-navbar .container {
+	display: flex; align-items: center; justify-content: space-between;
+	height: 56px;
+}
+.tut-navbar-brand {
+	display: flex; align-items: center; gap: 8px;
+	font-size: 1rem; font-weight: 700; color: #111827;
+	text-decoration: none; flex-shrink: 0;
+}
+.tut-navbar-brand:hover { text-decoration: none; color: #16a34a; }
+
+.tut-navbar-nav {
+	display: flex; align-items: center; gap: 4px;
+}
+.tut-nav-link {
+	padding: 6px 12px; border-radius: 8px; font-size: 0.88rem;
+	font-weight: 500; color: #6b7280; text-decoration: none;
+	transition: all 0.15s ease;
+}
+.tut-nav-link:hover { background: #f3f4f6; color: #111827; text-decoration: none; }
+.tut-nav-link.tut-nav-active {
+	background: #f0fdf4; color: #16a34a;
+}
+.tut-nav-icon { padding: 6px; display: inline-flex; align-items: center; }
+
+.tut-navbar-right {
+	display: flex; align-items: center; gap: 8px; margin-left: 16px;
+}
+.tut-navbar-toggle {
+	display: none; background: none; border: none;
+	padding: 8px; cursor: pointer; color: #374151;
+}
+
+@media (max-width: 768px) {
+	.tut-navbar-toggle { display: block; }
+	.tut-navbar-nav {
+		display: none; position: absolute; top: 56px; left: 0; right: 0;
+		background: #fff; border-bottom: 1px solid #e5e7eb;
+		flex-direction: column; padding: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.08);
+	}
+	.tut-navbar-open { display: flex !important; }
+	.tut-navbar-right { margin-left: 0; width: 100%; justify-content: flex-start; }
+	.tut-nav-link { width: 100%; }
+}
+
+/* --- Card Images --- */
+
+.tut-card-img {
+	width: 100%; height: 160px; overflow: hidden;
+}
+.tut-card-img img {
+	width: 100%; height: 100%; object-fit: cover;
+	transition: transform 0.3s ease;
+}
+.tut-card-hover:hover .tut-card-img img { transform: scale(1.05); }
+
+.tut-card-img-placeholder {
+	display: flex; align-items: center; justify-content: center;
+	background: #f9fafb; height: 120px;
+}
+
 /* --- Buttons --- */
 
 .tut-btn {

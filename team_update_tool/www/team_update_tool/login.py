@@ -9,6 +9,7 @@ no_cache = 1
 
 def get_context(context):
 	context.title = _("Sign In")
+	context.no_header = 1
 	context.no_breadcrumbs = 1
 
 	redirect_to = frappe.local.request.args.get("redirect-to", "/team_update_tool/dashboard")
