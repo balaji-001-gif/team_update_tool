@@ -97,7 +97,7 @@ def get_project_detail(name):
 	project = frappe.get_doc("Project", name)
 
 	# Permission check
-	roles, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer:
 		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
 		can_view = (approved and project.status == approved) or is_admin
@@ -413,7 +413,7 @@ def create_project(project_title, team, status=None, project_category=None,
 	"""Create a new project from the website.
 	Supports multi-step form with technologies, GitHub repo, screenshots, and files.
 	"""
-	_, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("You do not have permission to create projects."), frappe.PermissionError)
 
@@ -495,7 +495,7 @@ def create_project(project_title, team, status=None, project_category=None,
 @frappe.whitelist()
 def add_project_screenshot(project_name, file_url, caption=None):
 	"""Attach a screenshot to a project's child table after file upload."""
-	_, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("Permission denied."), frappe.PermissionError)
 
@@ -519,7 +519,7 @@ def add_project_screenshot(project_name, file_url, caption=None):
 @frappe.whitelist()
 def add_project_file(project_name, file_url, file_name=None, file_type=None):
 	"""Attach a file to a project's child table after upload."""
-	_, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("Permission denied."), frappe.PermissionError)
 
@@ -545,7 +545,7 @@ def update_project(name, project_title=None, description=None, tags=None,
 				   priority=None, project_category=None, team=None,
 				   start_date=None, due_date=None):
 	"""Update an existing project from the website."""
-	_, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("You do not have permission to edit projects."), frappe.PermissionError)
 
@@ -578,7 +578,7 @@ def update_project(name, project_title=None, description=None, tags=None,
 @frappe.whitelist()
 def update_project_status(name, status):
 	"""Update project status."""
-	_, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("You do not have permission to update status."), frappe.PermissionError)
 
@@ -598,7 +598,7 @@ def update_project_status(name, status):
 @frappe.whitelist()
 def add_project_update(name, update_title, update_description=None, status=None):
 	"""Add a project update."""
-	_, is_admin, is_viewer = _get_user_role_info()
+	__roles, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("You do not have permission to add updates."), frappe.PermissionError)
 
@@ -746,7 +746,7 @@ def get_user_notifications():
 	if user == "Guest":
 		return {"notifications": []}
 
-	_, is_admin, _ = _get_user_role_info()
+	__roles_user, is_admin, __roles_user2 = _get_user_role_info()
 	notifications = []
 
 	# Updates on user's projects
