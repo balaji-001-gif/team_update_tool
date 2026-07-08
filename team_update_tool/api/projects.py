@@ -5,10 +5,31 @@ import frappe
 from frappe import _
 
 
-@frappe.whitelist()
-def get_projects(status=None, category=None, team=None, limit=20, offset=0):
-	"""Get list of projects with optional filters."""
+def _get_user_role_info():
+	"""Helper to get role info for current user."""
+	roles = frappe.get_roles(frappe.session.user)
+	is_admin = "Admin" in roles or "System Manager" in roles
+	is_viewer = "View-Only User" in roles and not is_admin
+	return roles, is_admin, is_viewer
+
+
+def _get_visible_filters():
+	"""Get base filters for View-Only Users."""
+	roles, is_admin, is_viewer = _get_user_role_info()
 	filters = {}
+	if is_viewer:
+		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+		if approved:
+			filters["status"] = approved
+	return filters, is_admin, is_viewer
+
+
+@frappe.whitelist(allow_guest=True)
+def get_projects(status=None, category=None, team=None, technology=None,
+				 search=None, limit=20, offset=0):
+	"""Get list of projects with advanced filters and search."""
+	filters, is_admin, is_viewer = _get_visible_filters()
+
 	if status:
 		filters["status"] = status
 	if category:
@@ -16,23 +37,27 @@ def get_projects(status=None, category=None, team=None, limit=20, offset=0):
 	if team:
 		filters["team"] = team
 
-	# View-Only Users only see approved projects
-	roles = frappe.get_roles(frappe.session.user)
-	if "View-Only User" in roles and "Admin" not in roles:
-		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-		if approved:
-			filters["status"] = approved
+	# Build OR filters for search
+	or_filters = None
+	if search:
+		or_filters = [
+			["project_title", "like", f"%{search}%"],
+			["description", "like", f"%{search}%"],
+			["tags", "like", f"%{search}%"],
+		]
 
 	projects = frappe.get_all("Project",
 		filters=filters,
+		or_filters=or_filters,
 		fields=["name", "project_title", "status", "team", "priority",
-				"project_category", "creation", "start_date", "completion_date"],
+				"project_category", "creation", "start_date", "completion_date",
+				"owner", "modified"],
 		limit=limit,
 		start=offset,
 		order_by="modified desc"
 	)
 
-	# Enrich with status names
+	# Enrich with names, screenshot preview, technology count
 	for p in projects:
 		if p.status:
 			status_doc = frappe.get_cached_doc("Project Status", p.status)
@@ -42,17 +67,28 @@ def get_projects(status=None, category=None, team=None, limit=20, offset=0):
 			cat = frappe.get_cached_doc("Project Category", p.project_category)
 			p.category_name = cat.category_name
 
-	total = frappe.db.count("Project", filters=filters)
+		# Get first screenshot as preview
+		project_doc = frappe.get_cached_doc("Project", p.name)
+		p.screenshot_preview = ""
+		if project_doc.screenshots and len(project_doc.screenshots) > 0:
+			p.screenshot_preview = project_doc.screenshots[0].screenshot
+
+		# Technology count
+		p.technology_count = len(project_doc.technologies or [])
+		p.update_count = len(project_doc.project_updates or [])
+
+	total = frappe.db.count("Project", filters=filters, or_filters=or_filters)
 
 	return {
 		"projects": projects,
 		"total": total,
 		"limit": limit,
 		"offset": offset,
+		"has_more": (offset + limit) < total,
 	}
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_project_detail(name):
 	"""Get full project details including all child tables."""
 	if not name:
@@ -60,15 +96,15 @@ def get_project_detail(name):
 
 	project = frappe.get_doc("Project", name)
 
-	# Permission check for View-Only Users
-	roles = frappe.get_roles(frappe.session.user)
-	if "View-Only User" in roles:
+	# Permission check
+	roles, is_admin, is_viewer = _get_user_role_info()
+	if is_viewer:
 		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-		can_view = (approved and project.status == approved) or "Admin" in roles or "System Manager" in roles
+		can_view = (approved and project.status == approved) or is_admin
 		if not can_view:
 			frappe.throw(_("You do not have permission to view this project."), frappe.PermissionError)
 
-	# Get screenshots with full image URLs
+	# Screenshots
 	screenshots = []
 	for s in project.screenshots or []:
 		screenshots.append({
@@ -77,7 +113,7 @@ def get_project_detail(name):
 			"screenshot_type": s.screenshot_type,
 		})
 
-	# Get files
+	# Files
 	files = []
 	for f in project.project_files or []:
 		files.append({
@@ -87,21 +123,21 @@ def get_project_detail(name):
 			"description": f.file_description,
 		})
 
-	# Get updates
+	# Updates
 	updates = []
 	for u in project.project_updates or []:
 		updates.append({
 			"name": u.name,
 			"update_title": u.update_title,
 			"update_description": u.update_description,
-			"update_date": u.update_date,
+			"update_date": str(u.update_date) if u.update_date else "",
 			"updated_by": u.updated_by,
 		})
 
-	# Get technologies
+	# Technologies
 	technologies = [t.technology for t in project.technologies or []]
 
-	# Get status info
+	# Status info
 	status_info = {}
 	if project.status:
 		status_doc = frappe.get_cached_doc("Project Status", project.status)
@@ -111,29 +147,261 @@ def get_project_detail(name):
 			"color": status_doc.color,
 		}
 
+	# GitHub repo info
+	github_info = None
+	if project.github_repository:
+		try:
+			repo = frappe.get_cached_doc("GitHub Repository", project.github_repository)
+			github_info = {
+				"name": repo.name,
+				"repository_url": repo.repository_url,
+				"repository_name": repo.repository_name,
+				"commit_hash": repo.commit_hash,
+				"default_branch": repo.default_branch,
+				"languages": repo.languages,
+			}
+		except frappe.DoesNotExistError:
+			pass
+
+	# Team name
+	team_name = project.team
+	try:
+		team_doc = frappe.get_cached_doc("Team", project.team)
+		team_name = team_doc.team_name
+	except Exception:
+		pass
+
 	return {
 		"name": project.name,
 		"project_title": project.title,
 		"status": status_info,
 		"team": project.team,
+		"team_name": team_name,
 		"priority": project.priority,
 		"project_category": project.project_category,
 		"description": project.description,
 		"tags": project.tags,
 		"github_repository": project.github_repository,
-		"start_date": project.start_date,
-		"due_date": project.due_date,
-		"completion_date": project.completion_date,
-		"approved_by": project.approved_by,
-		"approval_date": project.approval_date,
-		"review_remarks": project.review_remarks,
+		"github_info": github_info,
+		"start_date": str(project.start_date) if project.start_date else "",
+		"due_date": str(project.due_date) if project.due_date else "",
+		"completion_date": str(project.completion_date) if project.completion_date else "",
+		"approved_by": project.approved_by or "",
+		"approval_date": str(project.approval_date) if project.approval_date else "",
+		"review_remarks": project.review_remarks or "",
 		"creation": str(project.creation),
+		"modified": str(project.modified),
 		"owner": project.owner,
 		"screenshots": screenshots,
 		"files": files,
 		"updates": updates,
 		"technologies": technologies,
+		"is_owner": project.owner == frappe.session.user,
 	}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_dashboard_stats():
+	"""Get comprehensive dashboard statistics."""
+	filters, is_admin, is_viewer = _get_visible_filters()
+
+	total_projects = frappe.db.count("Project", filters=filters)
+
+	# Status-wise counts (even zero)
+	status_counts = []
+	statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
+	for s in statuses:
+		f = dict(filters)
+		f["status"] = s.name
+		count = frappe.db.count("Project", filters=f)
+		status_counts.append({
+			"name": s.status_name,
+			"slug": s.name,
+			"count": count,
+			"color": s.color,
+		})
+
+	# Category counts
+	cat_filters = dict(filters)
+	categories = frappe.get_all("Project Category", fields=["name", "category_name"])
+	category_counts = []
+	for c in categories:
+		f = dict(filters)
+		f["project_category"] = c.name
+		count = frappe.db.count("Project", filters=f)
+		if count:
+			category_counts.append({
+				"name": c.category_name,
+				"count": count,
+			})
+
+	# Latest projects
+	recent = frappe.get_all("Project",
+		filters=filters,
+		fields=["name", "project_title", "status", "owner", "creation", "modified"],
+		limit=6,
+		order_by="modified desc"
+	)
+	for p in recent:
+		if p.status:
+			s = frappe.get_cached_doc("Project Status", p.status)
+			p.status_name = s.status_name
+			p.status_color = s.color
+
+	# Recent GitHub uploads
+	recent_repos = frappe.get_all("GitHub Repository",
+		fields=["name", "repository_name", "repository_url", "creation"],
+		limit=5,
+		order_by="creation desc"
+	)
+
+	# Recent screenshots
+	projects = frappe.get_all("Project", filters=filters, pluck="name")
+	recent_screenshots = []
+	for p_name in projects[:10]:
+		doc = frappe.get_cached_doc("Project", p_name)
+		for s in doc.screenshots or []:
+			recent_screenshots.append({
+				"screenshot": s.screenshot,
+				"caption": s.caption or "",
+				"project": p_name,
+				"project_title": doc.title,
+			})
+			if len(recent_screenshots) >= 6:
+				break
+		if len(recent_screenshots) >= 6:
+			break
+	recent_screenshots.reverse()
+
+	# Team and technology counts
+	total_teams = frappe.db.count("Team", filters={"is_active": 1})
+	total_technologies = frappe.db.count("Technology")
+	total_categories = frappe.db.count("Project Category")
+
+	# User's own projects
+	my_projects = 0
+	if frappe.session.user != "Guest" and not is_viewer:
+		my_projects = frappe.db.count("Project", filters={"owner": frappe.session.user})
+
+	# Recent documents (files)
+	recent_documents = []
+	for p_name in projects[:10]:
+		doc = frappe.get_cached_doc("Project", p_name)
+		for f in doc.project_files or []:
+			recent_documents.append({
+				"file": f.file,
+				"file_name": f.file_name or f.file,
+				"file_type": f.file_type or "",
+				"project": p_name,
+				"project_title": doc.title,
+			})
+			if len(recent_documents) >= 5:
+				break
+		if len(recent_documents) >= 5:
+			break
+	recent_documents.reverse()
+
+	return {
+		"total_projects": total_projects,
+		"total_teams": total_teams,
+		"total_technologies": total_technologies,
+		"total_categories": total_categories,
+		"my_projects": my_projects,
+		"status_counts": status_counts,
+		"category_counts": category_counts,
+		"recent_projects": recent,
+		"recent_repos": recent_repos,
+		"recent_screenshots": recent_screenshots,
+		"recent_documents": recent_documents,
+		"is_admin": is_admin,
+		"is_viewer": is_viewer,
+	}
+
+
+@frappe.whitelist()
+def get_projects_for_user(user=None):
+	"""Get projects owned by a specific user."""
+	if not user:
+		user = frappe.session.user
+	if user == "Guest":
+		frappe.throw(_("Please login to view your projects."))
+	projects = frappe.get_all("Project",
+		filters={"owner": user},
+		fields=["name", "project_title", "status", "team", "priority",
+				"project_category", "creation", "completion_date", "modified"],
+		order_by="modified desc"
+	)
+	for p in projects:
+		if p.status:
+			s = frappe.get_cached_doc("Project Status", p.status)
+			p.status_name = s.status_name
+			p.status_color = s.color
+	return projects
+
+
+@frappe.whitelist(allow_guest=True)
+def get_repositories(limit=20, offset=0):
+	"""Get GitHub repositories."""
+	repos = frappe.get_all("GitHub Repository",
+		fields=["name", "repository_url", "repository_name", "commit_hash",
+				"default_branch", "languages", "creation"],
+		limit=limit,
+		start=offset,
+		order_by="modified desc"
+	)
+	total = frappe.db.count("GitHub Repository")
+	return {"repositories": repos, "total": total, "has_more": (offset + limit) < total}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_documents(limit=20, offset=0):
+	"""Get all project files/documents grouped by project."""
+	filters, is_admin, is_viewer = _get_visible_filters()
+	projects = frappe.get_all("Project", filters=filters, pluck="name")
+
+	all_files = []
+	for p_name in projects:
+		doc = frappe.get_cached_doc("Project", p_name)
+		for f in doc.project_files or []:
+			all_files.append({
+				"file": f.file,
+				"file_name": f.file_name or f.file,
+				"file_type": f.file_type or "",
+				"description": f.file_description or "",
+				"project": p_name,
+				"project_title": doc.title,
+			})
+
+	all_files.reverse()
+	total = len(all_files)
+	limited = all_files[offset:offset + limit]
+
+	return {"documents": limited, "total": total, "has_more": (offset + limit) < total}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_gallery(limit=30, offset=0):
+	"""Get all screenshots from visible projects."""
+	filters, is_admin, is_viewer = _get_visible_filters()
+	projects = frappe.get_all("Project", filters=filters, pluck="name")
+
+	all_screenshots = []
+	for p_name in projects:
+		doc = frappe.get_cached_doc("Project", p_name)
+		for s in doc.screenshots or []:
+			all_screenshots.append({
+				"screenshot": s.screenshot,
+				"caption": s.caption or "",
+				"screenshot_type": s.screenshot_type or "",
+				"project": p_name,
+				"project_title": doc.title,
+			})
+
+	all_screenshots.reverse()
+	total = len(all_screenshots)
+	limited = all_screenshots[offset:offset + limit]
+
+	return {"screenshots": limited, "total": total, "has_more": (offset + limit) < total}
 
 
 @frappe.whitelist()
@@ -141,8 +409,8 @@ def create_project(project_title, team, status=None, project_category=None,
 				   priority="Medium", description=None, tags=None,
 				   start_date=None, due_date=None, github_repository=None):
 	"""Create a new project from the website."""
-	roles = frappe.get_roles(frappe.session.user)
-	if "View-Only User" in roles and "Admin" not in roles:
+	_, is_admin, is_viewer = _get_user_role_info()
+	if is_viewer and not is_admin:
 		frappe.throw(_("You do not have permission to create projects."), frappe.PermissionError)
 
 	if not project_title:
@@ -150,7 +418,6 @@ def create_project(project_title, team, status=None, project_category=None,
 	if not team:
 		frappe.throw(_("Team is required."))
 
-	# Auto-set status if not provided
 	if not status:
 		submitted = frappe.db.get_value("Project Status", {"status_name": "Submitted"}, "name")
 		if submitted:
@@ -169,52 +436,81 @@ def create_project(project_title, team, status=None, project_category=None,
 		"due_date": due_date or None,
 		"github_repository": github_repository or "",
 	})
-
 	project.insert(ignore_permissions=False)
 
 	return {
 		"message": _("Project created successfully."),
 		"name": project.name,
-		"route": f"/team_update_tool/project?name={project.name}",
+		"route": f"/team_update_tool/project/{project.name}",
 	}
 
 
 @frappe.whitelist()
+def update_project(name, project_title=None, description=None, tags=None,
+				   priority=None, project_category=None, team=None,
+				   start_date=None, due_date=None):
+	"""Update an existing project from the website."""
+	_, is_admin, is_viewer = _get_user_role_info()
+	if is_viewer and not is_admin:
+		frappe.throw(_("You do not have permission to edit projects."), frappe.PermissionError)
+
+	project = frappe.get_doc("Project", name)
+	if not is_admin and project.owner != frappe.session.user:
+		frappe.throw(_("You can only edit your own projects."), frappe.PermissionError)
+
+	if project_title:
+		project.project_title = project_title
+	if description is not None:
+		project.description = description
+	if tags is not None:
+		project.tags = tags
+	if priority:
+		project.priority = priority
+	if project_category:
+		project.project_category = project_category
+	if team:
+		project.team = team
+	if start_date is not None:
+		project.start_date = start_date or None
+	if due_date is not None:
+		project.due_date = due_date or None
+
+	project.save(ignore_permissions=is_admin)
+
+	return {"message": _("Project updated successfully."), "name": project.name}
+
+
+@frappe.whitelist()
 def update_project_status(name, status):
-	"""Update project status (for team members submitting updates)."""
+	"""Update project status."""
+	_, is_admin, is_viewer = _get_user_role_info()
+	if is_viewer and not is_admin:
+		frappe.throw(_("You do not have permission to update status."), frappe.PermissionError)
+
 	if not name or not status:
 		frappe.throw(_("Project name and status are required."))
 
-	roles = frappe.get_roles(frappe.session.user)
-	is_admin = "Admin" in roles or "System Manager" in roles
-
 	project = frappe.get_doc("Project", name)
-
-	# Non-admins can only update their own projects
 	if not is_admin and project.owner != frappe.session.user:
 		frappe.throw(_("You can only update your own projects."), frappe.PermissionError)
 
 	project.status = status
 	project.save(ignore_permissions=is_admin)
 
-	return {
-		"message": _("Project status updated successfully."),
-		"name": project.name,
-		"status": project.status,
-	}
+	return {"message": _("Project status updated successfully."), "name": project.name}
 
 
 @frappe.whitelist()
 def add_project_update(name, update_title, update_description=None, status=None):
-	"""Add a project update from the website."""
+	"""Add a project update."""
+	_, is_admin, is_viewer = _get_user_role_info()
+	if is_viewer and not is_admin:
+		frappe.throw(_("You do not have permission to add updates."), frappe.PermissionError)
+
 	if not name or not update_title:
 		frappe.throw(_("Project name and update title are required."))
 
 	project = frappe.get_doc("Project", name)
-
-	roles = frappe.get_roles(frappe.session.user)
-	is_admin = "Admin" in roles or "System Manager" in roles
-
 	if not is_admin and project.owner != frappe.session.user:
 		frappe.throw(_("You can only update your own projects."), frappe.PermissionError)
 
@@ -224,215 +520,174 @@ def add_project_update(name, update_title, update_description=None, status=None)
 		"update_date": frappe.utils.today(),
 		"updated_by": frappe.session.user,
 	})
-
 	project.save(ignore_permissions=is_admin)
 
-	return {
-		"message": _("Project update added successfully."),
-		"update_name": update.name,
-	}
-
-
-@frappe.whitelist()
-def get_dashboard_stats():
-	"""Get dashboard statistics for the website."""
-	roles = frappe.get_roles(frappe.session.user)
-	is_admin = "Admin" in roles or "System Manager" in roles
-	is_viewer = "View-Only User" in roles and not is_admin
-
-	base_filters = {}
-	if is_viewer:
-		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-		if approved:
-			base_filters["status"] = approved
-
-	total_projects = frappe.db.count("Project", filters=base_filters)
-
-	# Status counts
-	status_counts = {}
-	statuses = frappe.get_all("Project Status", pluck="name")
-	for s in statuses:
-		f = {**base_filters, "status": s}
-		count = frappe.db.count("Project", filters=f)
-		if count:
-			status_doc = frappe.get_cached_doc("Project Status", s)
-			status_counts[status_doc.status_name] = {
-				"count": count,
-				"color": status_doc.color,
-			}
-
-	# Category counts
-	category_counts = {}
-	categories = frappe.get_all("Project Category", pluck="name")
-	for c in categories:
-		f = {**base_filters, "project_category": c}
-		count = frappe.db.count("Project", filters=f)
-		if count:
-			cat_doc = frappe.get_cached_doc("Project Category", c)
-			category_counts[cat_doc.category_name] = count
-
-	# Recent projects
-	filters = {}
-	if is_viewer:
-		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-		if approved:
-			filters["status"] = approved
-
-	recent = frappe.get_all("Project",
-		filters=filters,
-		fields=["name", "project_title", "status", "creation"],
-		limit=5,
-		order_by="creation desc"
-	)
-
-	# Total teams and technologies
-	total_teams = frappe.db.count("Team", filters={"is_active": 1})
-	total_technologies = frappe.db.count("Technology")
-
-	# User's own projects count (for logged-in users)
-	my_projects = 0
-	if frappe.session.user != "Guest" and not is_viewer:
-		my_projects = frappe.db.count("Project", filters={"owner": frappe.session.user})
-
-	return {
-		"total_projects": total_projects,
-		"total_teams": total_teams,
-		"total_technologies": total_technologies,
-		"my_projects": my_projects,
-		"status_counts": status_counts,
-		"category_counts": category_counts,
-		"recent_projects": recent,
-	}
-
-
-@frappe.whitelist()
-def get_projects_for_user(user=None):
-	"""Get projects owned by a specific user (for My Projects page)."""
-	if not user:
-		user = frappe.session.user
-
-	if user == "Guest":
-		frappe.throw(_("Please login to view your projects."))
-
-	projects = frappe.get_all("Project",
-		filters={"owner": user},
-		fields=["name", "project_title", "status", "team", "priority",
-				"project_category", "creation", "completion_date"],
-		order_by="modified desc"
-	)
-
-	for p in projects:
-		if p.status:
-			status_doc = frappe.get_cached_doc("Project Status", p.status)
-			p.status_name = status_doc.status_name
-			p.status_color = status_doc.color
-
-	return projects
-
-
-@frappe.whitelist()
-def get_repositories(limit=20, offset=0):
-	"""Get GitHub repositories."""
-	repos = frappe.get_all("GitHub Repository",
-		fields=["name", "repository_url", "repository_name", "commit_hash",
-				"default_branch", "languages", "creation"],
-		limit=limit,
-		start=offset,
-		order_by="modified desc"
-	)
-
-	total = frappe.db.count("GitHub Repository")
-
-	return {
-		"repositories": repos,
-		"total": total,
-	}
-
-
-@frappe.whitelist()
-def get_gallery(limit=30, offset=0):
-	"""Get all screenshots from approved projects for the gallery."""
-	roles = frappe.get_roles(frappe.session.user)
-	is_viewer = "View-Only User" in roles and "Admin" not in roles
-
-	# Get projects that are visible
-	project_filters = {}
-	if is_viewer:
-		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-		if approved:
-			project_filters["status"] = approved
-
-	projects = frappe.get_all("Project",
-		filters=project_filters,
-		pluck="name"
-	)
-
-	if not projects:
-		return {"screenshots": [], "total": 0}
-
-	# Get screenshots from all visible projects
-	# Since screenshots is a child table, we need to query them via parent
-	all_screenshots = []
-	for project_name in projects:
-		project = frappe.get_cached_doc("Project", project_name)
-		for s in project.screenshots or []:
-			all_screenshots.append({
-				"screenshot": s.screenshot,
-				"caption": s.caption or "",
-				"screenshot_type": s.screenshot_type or "",
-				"project": project_name,
-				"project_title": project.title,
-			})
-
-	# Sort by modified (most recent first)
-	all_screenshots.reverse()
-
-	total = len(all_screenshots)
-	limited = all_screenshots[offset:offset + limit]
-
-	return {
-		"screenshots": limited,
-		"total": total,
-	}
+	return {"message": _("Project update added successfully."), "update_name": update.name}
 
 
 @frappe.whitelist(allow_guest=True)
-def get_public_data():
-	"""Get public data for the home page (no login required)."""
+def get_all_public_stats():
+	"""Get public stats for landing page (no login required)."""
 	approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-
 	filters = {}
 	if approved:
 		filters["status"] = approved
 
-	# Stats
 	total_projects = frappe.db.count("Project", filters=filters)
 	total_teams = frappe.db.count("Team", filters={"is_active": 1})
 	total_technologies = frappe.db.count("Technology")
+	total_categories = frappe.db.count("Project Category")
 
-	# Featured projects (recent approved)
 	featured = frappe.get_all("Project",
 		filters=filters,
 		fields=["name", "project_title", "status", "team", "project_category", "creation"],
 		limit=6,
 		order_by="creation desc"
 	)
+	for p in featured:
+		if p.status:
+			s = frappe.get_cached_doc("Project Status", p.status)
+			p.status_name = s.status_name
+			p.status_color = s.color
 
-	# Categories
 	categories = frappe.get_all("Project Category",
-		fields=["name", "category_name", "description"]
-	)
-
-	# Technologies
+		fields=["name", "category_name", "description"])
 	technologies = frappe.get_all("Technology",
-		fields=["name", "technology_name", "description"]
-	)
+		fields=["name", "technology_name", "description"])
+	statuses = frappe.get_all("Project Status",
+		fields=["name", "status_name", "color"])
 
 	return {
 		"total_projects": total_projects,
 		"total_teams": total_teams,
 		"total_technologies": total_technologies,
+		"total_categories": total_categories,
 		"featured_projects": featured,
 		"categories": categories,
 		"technologies": technologies,
+		"statuses": statuses,
 	}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_reports():
+	"""Get report data for the Reports page."""
+	filters, is_admin, is_viewer = _get_visible_filters()
+
+	# Project Summary
+	statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"])
+	status_summary = []
+	for s in statuses:
+		f = dict(filters)
+		f["status"] = s.name
+		count = frappe.db.count("Project", filters=f)
+		status_summary.append({
+			"status": s.status_name,
+			"count": count,
+			"color": s.color,
+		})
+
+	# Category summary
+	categories = frappe.get_all("Project Category", fields=["name", "category_name"])
+	category_summary = []
+	for c in categories:
+		f = dict(filters)
+		f["project_category"] = c.name
+		count = frappe.db.count("Project", filters=f)
+		if count:
+			category_summary.append({"category": c.category_name, "count": count})
+
+	# Team summary
+	teams = frappe.get_all("Team", fields=["name", "team_name"])
+	team_summary = []
+	for t in teams:
+		count = frappe.db.count("Project", filters={**filters, "team": t.name})
+		if count:
+			team_summary.append({"team": t.team_name, "count": count})
+
+	# Completed projects
+	completed = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+	completed_projects = []
+	if completed:
+		f = dict(filters)
+		f["status"] = completed
+		completed_projects = frappe.get_all("Project",
+			filters=f,
+			fields=["name", "project_title", "team", "completion_date", "owner",
+					"project_category", "priority"],
+			order_by="completion_date desc",
+			limit=50
+		)
+
+	# GitHub report
+	repos = frappe.get_all("GitHub Repository",
+		fields=["repository_name", "repository_url", "default_branch", "languages", "creation"],
+		order_by="creation desc",
+		limit=50
+	)
+
+	return {
+		"status_summary": status_summary,
+		"category_summary": category_summary,
+		"team_summary": team_summary,
+		"completed_projects": completed_projects,
+		"github_repos": repos,
+		"total_projects": frappe.db.count("Project", filters=filters),
+	}
+
+
+# Upload utilities
+@frappe.whitelist()
+def upload_file():
+	"""Handle file upload via Frappe's upload API."""
+	from frappe.handler import upload_file as frappe_upload
+	return frappe_upload()
+
+
+@frappe.whitelist()
+def get_user_notifications():
+	"""Get notifications for the current user."""
+	user = frappe.session.user
+	if user == "Guest":
+		return {"notifications": []}
+
+	_, is_admin, _ = _get_user_role_info()
+	notifications = []
+
+	# Updates on user's projects
+	my_projects = frappe.get_all("Project", filters={"owner": user}, pluck="name")
+	if my_projects:
+		updates = frappe.db.get_all("Project Update",
+			filters={"parent": ["in", my_projects]},
+			fields=["name", "parent", "update_title", "update_description",
+					"update_date", "updated_by"],
+			order_by="update_date desc",
+			limit=10
+		)
+		for u in updates:
+			title = frappe.db.get_value("Project", u.parent, "project_title")
+			notifications.append({
+				"type": "update",
+				"title": f"Update on \"{title}\": {u.update_title}",
+				"description": u.update_description or "",
+				"date": str(u.update_date) if u.update_date else "",
+				"project": u.parent,
+			})
+
+	if is_admin:
+		recent = frappe.get_all("Project",
+			fields=["name", "project_title", "owner", "creation"],
+			limit=10,
+			order_by="creation desc"
+		)
+		for p in recent:
+			notifications.append({
+				"type": "submission",
+				"title": f"New project: \"{p.project_title}\" by {p.owner}",
+				"description": "",
+				"date": str(p.creation) if p.creation else "",
+				"project": p.name,
+			})
+
+	notifications.sort(key=lambda n: n.get("date", ""), reverse=True)
+	return {"notifications": notifications[:20]}

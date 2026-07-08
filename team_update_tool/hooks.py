@@ -13,7 +13,7 @@ app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 after_install = "team_update_tool.install.after_install"
 
 website_route_rules = [
-	# Dynamic route for project detail page
+	# Dynamic route for project detail page (path-based URL)
 	{"from_route": "/team_update_tool/project/<name>", "to_route": "team_update_tool/project"},
 ]
 

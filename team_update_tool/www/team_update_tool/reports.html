@@ -1,0 +1,162 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Reports - Team Update Tool{% endblock %}
+
+{% block page_content %}
+<div class="tut-page-header">
+	<div class="container">
+		<div class="tut-page-header-content">
+			<h1 class="tut-page-title">Reports</h1>
+			<p class="tut-page-desc">Project analytics and summaries</p>
+		</div>
+	</div>
+</div>
+
+<div class="container tut-page-body">
+	<div class="tut-loading" id="reportsLoading">
+		<div class="tut-spinner"></div>
+		<p>Loading reports...</p>
+	</div>
+	<div id="reportsContent" style="display:none;">
+		<!-- Summary Cards -->
+		<div class="tut-stats-grid" id="reportSummaryCards"></div>
+
+		<!-- Status Summary -->
+		<section class="tut-detail-section" id="statusReportSection">
+			<h2 class="tut-section-title-sm">Project Status Summary</h2>
+			<div class="tut-table-responsive">
+				<table class="tut-table" id="statusTable">
+					<thead><tr><th>Status</th><th>Count</th><th></th></tr></thead>
+					<tbody id="statusTableBody"></tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Category Summary -->
+		<section class="tut-detail-section" id="categoryReportSection" style="display:none;">
+			<h2 class="tut-section-title-sm">Projects by Category</h2>
+			<div class="tut-table-responsive">
+				<table class="tut-table" id="categoryTable">
+					<thead><tr><th>Category</th><th>Count</th></tr></thead>
+					<tbody id="categoryTableBody"></tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Team Summary -->
+		<section class="tut-detail-section" id="teamReportSection" style="display:none;">
+			<h2 class="tut-section-title-sm">Projects by Team</h2>
+			<div class="tut-table-responsive">
+				<table class="tut-table" id="teamTable">
+					<thead><tr><th>Team</th><th>Count</th></tr></thead>
+					<tbody id="teamTableBody"></tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- Completed Projects -->
+		<section class="tut-detail-section" id="completedSection" style="display:none;">
+			<h2 class="tut-section-title-sm">Approved Projects</h2>
+			<div class="tut-table-responsive">
+				<table class="tut-table" id="completedTable">
+					<thead><tr><th>Project</th><th>Team</th><th>Completed</th><th>Priority</th></tr></thead>
+					<tbody id="completedTableBody"></tbody>
+				</table>
+			</div>
+		</section>
+
+		<!-- GitHub Report -->
+		<section class="tut-detail-section" id="githubReportSection" style="display:none;">
+			<h2 class="tut-section-title-sm">GitHub Repositories</h2>
+			<div class="tut-table-responsive">
+				<table class="tut-table" id="githubTable">
+					<thead><tr><th>Repository</th><th>Branch</th><th>Languages</th><th></th></tr></thead>
+					<tbody id="githubTableBody"></tbody>
+				</table>
+			</div>
+		</section>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() {
+	loadReports();
+});
+
+function loadReports() {
+	fetch('/api/method/team_update_tool.api.projects.get_reports')
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			if (!data.message) return;
+			var d = data.message;
+
+			// Summary cards
+			var cardsHtml = '';
+			[
+				{icon:'green', label:'Total Projects', value:d.total_projects, svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'},
+			].forEach(function(s) {
+				cardsHtml += '<div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-' + s.icon + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + s.svg + '</svg></div><div class="tut-stat-number">' + s.value + '</div><div class="tut-stat-label">' + s.label + '</div></div>';
+			});
+			document.getElementById('reportSummaryCards').innerHTML = cardsHtml;
+
+			// Status table
+			if (d.status_summary && d.status_summary.length) {
+				var bodyHtml = '';
+				d.status_summary.forEach(function(s) {
+					bodyHtml += '<tr><td><span class="tut-status-dot" style="background:' + s.color + '"></span> ' + s.status + '</td><td><strong>' + s.count + '</strong></td><td><div style="height:8px;background:#f3f4f6;border-radius:4px;overflow:hidden;max-width:200px"><div style="height:100%;width:' + Math.min(100, s.count) + '%;background:' + s.color + ';border-radius:4px"></div></div></td></tr>';
+				});
+				document.getElementById('statusTableBody').innerHTML = bodyHtml;
+			}
+
+			// Category table
+			if (d.category_summary && d.category_summary.length) {
+				var catHtml = '';
+				d.category_summary.forEach(function(c) {
+					catHtml += '<tr><td>' + c.category + '</td><td><strong>' + c.count + '</strong></td></tr>';
+				});
+				document.getElementById('categoryTableBody').innerHTML = catHtml;
+				document.getElementById('categoryReportSection').style.display = 'block';
+			}
+
+			// Team table
+			if (d.team_summary && d.team_summary.length) {
+				var teamHtml = '';
+				d.team_summary.forEach(function(t) {
+					teamHtml += '<tr><td>' + t.team + '</td><td><strong>' + t.count + '</strong></td></tr>';
+				});
+				document.getElementById('teamTableBody').innerHTML = teamHtml;
+				document.getElementById('teamReportSection').style.display = 'block';
+			}
+
+			// Completed projects
+			if (d.completed_projects && d.completed_projects.length) {
+				var compHtml = '';
+				d.completed_projects.forEach(function(p) {
+					compHtml += '<tr><td><a href="/team_update_tool/project/' + p.name + '">' + escHtml(p.project_title) + '</a></td><td>' + escHtml(p.team || '-') + '</td><td>' + (p.completion_date || '-') + '</td><td>' + (p.priority ? '<span class="tut-priority tut-priority-' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : '-') + '</td></tr>';
+				});
+				document.getElementById('completedTableBody').innerHTML = compHtml;
+				document.getElementById('completedSection').style.display = 'block';
+			}
+
+			// GitHub repos
+			if (d.github_repos && d.github_repos.length) {
+				var gitHtml = '';
+				d.github_repos.forEach(function(r) {
+					gitHtml += '<tr><td><a href="' + r.repository_url + '" target="_blank">' + escHtml(r.repository_name || 'Repository') + '</a></td><td>' + (r.default_branch || '-') + '</td><td>' + escHtml(r.languages || '-') + '</td><td><a href="' + r.repository_url + '" target="_blank" class="tut-btn tut-btn-ghost tut-btn-sm">Open</a></td></tr>';
+				});
+				document.getElementById('githubTableBody').innerHTML = gitHtml;
+				document.getElementById('githubReportSection').style.display = 'block';
+			}
+
+			document.getElementById('reportsLoading').style.display = 'none';
+			document.getElementById('reportsContent').style.display = 'block';
+		})
+		.catch(function() {
+			document.getElementById('reportsLoading').innerHTML = '<p class="text-center" style="color:#dc2626;">Failed to load reports.</p>';
+		});
+}
+
+</script>
+{% endblock %}

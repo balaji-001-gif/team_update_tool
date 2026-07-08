@@ -1,0 +1,82 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Documents - Team Update Tool{% endblock %}
+
+{% block page_content %}
+<div class="tut-page-header">
+	<div class="container">
+		<div class="tut-page-header-content">
+			<h1 class="tut-page-title">Documents</h1>
+			<p class="tut-page-desc">Project files and documentation</p>
+		</div>
+	</div>
+</div>
+
+<div class="container tut-page-body">
+	<div class="tut-loading" id="docsLoading">
+		<div class="tut-spinner"></div>
+		<p>Loading documents...</p>
+	</div>
+	<div id="docsContent" style="display:none;">
+		<div class="tut-stats-grid" id="docsStats"></div>
+		<div class="tut-section">
+			<div class="tut-files-list" id="docsList"></div>
+		</div>
+		<div id="docsEmpty" class="tut-empty-state" style="display:none;">
+			<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+			<h3>No Documents</h3>
+			<p>No project files have been uploaded yet.</p>
+		</div>
+		<div id="docsPagination" class="tut-pagination" style="display:none;"></div>
+	</div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() { loadDocuments(0); });
+
+function loadDocuments(offset) {
+	document.getElementById('docsLoading').style.display = 'block';
+	document.getElementById('docsContent').style.display = 'none';
+
+	fetch('/api/method/team_update_tool.api.projects.get_documents?limit=20&offset=' + offset)
+		.then(function(r) { return r.json(); })
+		.then(function(data) {
+			document.getElementById('docsLoading').style.display = 'none';
+			if (!data.message) return;
+			var d = data.message;
+
+			document.getElementById('docsStats').innerHTML = '<div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-blue"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div class="tut-stat-number">' + d.total + '</div><div class="tut-stat-label">Total Documents</div></div>';
+
+			if (d.documents && d.documents.length) {
+				var html = '';
+				d.documents.forEach(function(f) {
+					var ext = (f.file_name || '').split('.').pop().toUpperCase();
+					html += '<a href="' + f.file + '" target="_blank" class="tut-file-item"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><div><div class="tut-file-name">' + escHtml(f.file_name) + '</div><div class="tut-file-desc">' + escHtml(f.project_title) + (f.file_type ? ' — ' + f.file_type : '') + '</div></div></a>';
+				});
+				document.getElementById('docsList').innerHTML = html;
+
+				// Pagination
+				if (d.has_more || offset > 0) {
+					var pagHtml = '<div class="tut-pagination-inner">';
+					if (offset > 0) pagHtml += '<button class="tut-btn tut-btn-ghost tut-btn-sm" onclick="loadDocuments(' + (offset - 20) + ')">← Previous</button>';
+					pagHtml += '<span class="tut-pagination-info">' + (offset + 1) + '–' + Math.min(offset + 20, d.total) + ' of ' + d.total + '</span>';
+					if (d.has_more) pagHtml += '<button class="tut-btn tut-btn-ghost tut-btn-sm" onclick="loadDocuments(' + (offset + 20) + ')">Next →</button>';
+					pagHtml += '</div>';
+					document.getElementById('docsPagination').innerHTML = pagHtml;
+					document.getElementById('docsPagination').style.display = 'block';
+				}
+				document.getElementById('docsContent').style.display = 'block';
+			} else {
+				document.getElementById('docsEmpty').style.display = 'block';
+				document.getElementById('docsContent').style.display = 'block';
+			}
+		})
+		.catch(function() {
+			document.getElementById('docsLoading').innerHTML = '<p style="color:#dc2626;text-align:center;">Failed to load documents.</p>';
+		});
+}
+
+</script>
+{% endblock %}
