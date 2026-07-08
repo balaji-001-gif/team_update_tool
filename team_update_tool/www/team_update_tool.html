@@ -2,17 +2,76 @@
 
 {% block title %}Team Update Tool{% endblock %}
 
+{% block style %}
+<link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+{% endblock %}
+
 {% block page_content %}
-<div class="team-update-tool-page" style="min-height: 60vh; display: flex; align-items: center; justify-content: center;">
-	<div class="container text-center">
-		<h1 class="display-4 mb-3">Team Update Tool Website</h1>
-		<p class="lead text-muted mb-4">
-			Track and showcase completed team projects across departments.
+<div class="tut-hero">
+	<div class="tut-hero-bg">
+		<div class="tut-hero-shape tut-hero-shape-1"></div>
+		<div class="tut-hero-shape tut-hero-shape-2"></div>
+		<div class="tut-hero-shape tut-hero-shape-3"></div>
+	</div>
+	<div class="tut-hero-content">
+		<div class="tut-badge">
+			<svg class="tut-badge-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+				<path d="M8 1l2.39 4.84 5.34.78-3.87 3.77.91 5.33L8 12.92l-4.77 2.8.91-5.33L.27 6.62l5.34-.78L8 1z" fill="currentColor"/>
+			</svg>
+			Team Projects Tracker
+		</div>
+
+		<h1 class="tut-hero-title">
+			Team Update
+			<span class="tut-highlight">Tool</span>
+		</h1>
+
+		<p class="tut-hero-subtitle">
+			Track, manage, and showcase completed team projects across departments
+			with GitHub integration and role-based access control.
 		</p>
-		<div class="mt-4">
-			<a href="/app/team-update-tool" class="btn btn-primary btn-lg me-2">
+
+		<div class="tut-hero-actions">
+			<a href="/app/team-update-tool" class="tut-btn tut-btn-primary">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="3" y="3" width="7" height="7"/>
+					<rect x="14" y="3" width="7" height="7"/>
+					<rect x="14" y="14" width="7" height="7"/>
+					<rect x="3" y="14" width="7" height="7"/>
+				</svg>
 				Go to Dashboard
 			</a>
+			<a href="/login" class="tut-btn tut-btn-secondary">
+				<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
+					<polyline points="10 17 15 12 10 7"/>
+					<line x1="15" y1="12" x2="3" y2="12"/>
+				</svg>
+				Sign In
+			</a>
+		</div>
+
+		<div class="tut-features">
+			<div class="tut-feature-item">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+					<polyline points="22 4 12 14.01 9 11.01"/>
+				</svg>
+				<span>Project Tracking</span>
+			</div>
+			<div class="tut-feature-item">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+				</svg>
+				<span>GitHub Integration</span>
+			</div>
+			<div class="tut-feature-item">
+				<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green-600)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+					<path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+				</svg>
+				<span>Role-Based Access</span>
+			</div>
 		</div>
 	</div>
 </div>

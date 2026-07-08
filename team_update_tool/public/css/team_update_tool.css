@@ -1,4 +1,236 @@
 /* Team Update Tool - custom styling */
+
+/* =====================================
+   Website Page — Hero Section
+   ===================================== */
+
+.tut-hero {
+	position: relative;
+	min-height: 85vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+	padding: 2rem 1rem;
+}
+
+/* Background with subtle gradient + shapes */
+.tut-hero-bg {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 30%, #f8fafc 70%, #f0f9ff 100%);
+	z-index: 0;
+}
+
+.tut-hero-shape {
+	position: absolute;
+	border-radius: 50%;
+	opacity: 0.4;
+	filter: blur(60px);
+}
+
+.tut-hero-shape-1 {
+	width: 400px;
+	height: 400px;
+	background: rgba(34, 197, 94, 0.25);
+	top: -100px;
+	right: -100px;
+}
+
+.tut-hero-shape-2 {
+	width: 300px;
+	height: 300px;
+	background: rgba(59, 130, 246, 0.15);
+	bottom: -50px;
+	left: -50px;
+}
+
+.tut-hero-shape-3 {
+	width: 200px;
+	height: 200px;
+	background: rgba(139, 92, 246, 0.12);
+	top: 40%;
+	left: 60%;
+}
+
+/* Content wrapper */
+.tut-hero-content {
+	position: relative;
+	z-index: 1;
+	max-width: 720px;
+	margin: 0 auto;
+	text-align: center;
+	animation: tutFadeUp 0.8s ease-out forwards;
+}
+
+@keyframes tutFadeUp {
+	from {
+		opacity: 0;
+		transform: translateY(24px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+/* Badge */
+.tut-badge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 16px;
+	background: rgba(34, 197, 94, 0.1);
+	border: 1px solid rgba(34, 197, 94, 0.2);
+	border-radius: 999px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--green-700, #15803d);
+	margin-bottom: 24px;
+	letter-spacing: 0.3px;
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tut-badge:hover {
+	transform: scale(1.04);
+	box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+}
+
+.tut-badge-icon {
+	color: var(--green-600, #16a34a);
+}
+
+/* Title */
+.tut-hero-title {
+	font-size: clamp(2.4rem, 6vw, 4rem);
+	font-weight: 800;
+	line-height: 1.15;
+	color: var(--gray-900, #111827);
+	margin: 0 0 16px 0;
+	letter-spacing: -0.03em;
+}
+
+.tut-highlight {
+	color: var(--green-600, #16a34a);
+	position: relative;
+}
+
+.tut-highlight::after {
+	content: '';
+	position: absolute;
+	bottom: 2px;
+	left: 0;
+	right: 0;
+	height: 6px;
+	background: rgba(34, 197, 94, 0.2);
+	border-radius: 3px;
+	z-index: -1;
+}
+
+/* Subtitle */
+.tut-hero-subtitle {
+	font-size: clamp(1rem, 2vw, 1.2rem);
+	line-height: 1.7;
+	color: var(--gray-600, #4b5563);
+	max-width: 560px;
+	margin: 0 auto 32px;
+}
+
+/* Action buttons */
+.tut-hero-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 12px;
+	margin-bottom: 56px;
+}
+
+.tut-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 12px 28px;
+	border-radius: 10px;
+	font-size: 15px;
+	font-weight: 600;
+	text-decoration: none;
+	transition: all 0.2s ease;
+	cursor: pointer;
+	border: none;
+}
+
+.tut-btn-primary {
+	background: var(--green-600, #16a34a);
+	color: #fff;
+	box-shadow: 0 4px 14px rgba(34, 197, 94, 0.3);
+}
+
+.tut-btn-primary:hover {
+	background: var(--green-700, #15803d);
+	color: #fff;
+	box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+	transform: translateY(-2px);
+	text-decoration: none;
+}
+
+.tut-btn-primary:active {
+	transform: translateY(0);
+}
+
+.tut-btn-secondary {
+	background: transparent;
+	color: var(--gray-700, #374151);
+	border: 2px solid var(--gray-200, #e5e7eb);
+}
+
+.tut-btn-secondary:hover {
+	border-color: var(--gray-400, #9ca3af);
+	background: var(--gray-50, #f9fafb);
+	color: var(--gray-900, #111827);
+	transform: translateY(-2px);
+	text-decoration: none;
+}
+
+.tut-btn-secondary:active {
+	transform: translateY(0);
+}
+
+/* Features row */
+.tut-features {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 24px;
+}
+
+.tut-feature-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(4px);
+	border: 1px solid rgba(0, 0, 0, 0.05);
+	border-radius: 8px;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--gray-700, #374151);
+	transition: all 0.2s ease;
+}
+
+.tut-feature-item:hover {
+	background: rgba(255, 255, 255, 0.95);
+	border-color: rgba(34, 197, 94, 0.2);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+	transform: translateY(-2px);
+}
+
+/* =====================================
+   Read-only banner (Desk)
+   ===================================== */
+
 .tut-readonly-banner {
 	background-color: var(--yellow-100);
 	color: var(--yellow-700);
