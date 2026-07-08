@@ -407,8 +407,12 @@ def get_gallery(limit=30, offset=0):
 @frappe.whitelist()
 def create_project(project_title, team, status=None, project_category=None,
 				   priority="Medium", description=None, tags=None,
-				   start_date=None, due_date=None, github_repository=None):
-	"""Create a new project from the website."""
+				   start_date=None, due_date=None,
+				   technologies=None, github_url=None,
+				   github_repo_name=None, github_branch=None):
+	"""Create a new project from the website.
+	Supports multi-step form with technologies, GitHub repo, screenshots, and files.
+	"""
 	_, is_admin, is_viewer = _get_user_role_info()
 	if is_viewer and not is_admin:
 		frappe.throw(_("You do not have permission to create projects."), frappe.PermissionError)
@@ -423,6 +427,29 @@ def create_project(project_title, team, status=None, project_category=None,
 		if submitted:
 			status = submitted
 
+	# Validate GitHub URL if provided
+	github_repo_link = None
+	if github_url:
+		import re
+		github_pattern = r'^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(\/.*)?$'
+		if not re.match(github_pattern, github_url.strip()):
+			frappe.throw(_("Invalid GitHub URL. Must be a valid GitHub repository URL like https://github.com/user/repo"))
+
+		# Create or find GitHub Repository
+		repo_name = github_repo_name or github_url.strip().rstrip('/').split('/')[-1]
+		existing_repo = frappe.db.exists("GitHub Repository", {"repository_url": github_url.strip()})
+		if existing_repo:
+			github_repo_link = existing_repo
+		else:
+			repo_doc = frappe.get_doc({
+				"doctype": "GitHub Repository",
+				"repository_url": github_url.strip(),
+				"repository_name": repo_name,
+				"default_branch": github_branch or "main",
+			})
+			repo_doc.insert(ignore_permissions=False)
+			github_repo_link = repo_doc.name
+
 	project = frappe.get_doc({
 		"doctype": "Project",
 		"project_title": project_title,
@@ -434,8 +461,18 @@ def create_project(project_title, team, status=None, project_category=None,
 		"tags": tags or "",
 		"start_date": start_date or None,
 		"due_date": due_date or None,
-		"github_repository": github_repository or "",
+		"github_repository": github_repo_link or "",
 	})
+
+	# Add technologies
+	if technologies:
+		if isinstance(technologies, str):
+			import json
+			technologies = json.loads(technologies)
+		for tech in technologies:
+			if frappe.db.exists("Technology", tech):
+				project.append("technologies", {"technology": tech})
+
 	project.insert(ignore_permissions=False)
 
 	return {

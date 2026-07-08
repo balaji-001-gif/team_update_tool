@@ -12,7 +12,7 @@
 		<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
 			<div>
 				<h1 class="m-0">{{ title }}</h1>
-				<p class="m-0">Fill in the details to create a new project</p>
+				<p class="m-0" id="stepIndicator">Step 1 of 5: Project Information</p>
 			</div>
 		</div>
 	</div>
@@ -20,98 +20,185 @@
 
 <div class="tut-main-area">
 	<div class="container py-4">
-		<div class="tut-form-card">
-			<form id="projectForm" {% if edit_project %}data-edit="{{ edit_project.name }}"{% endif %}>
-				<div class="mb-4">
-					<h5 class="fw-bold mb-3">Basic Information</h5>
-					<div class="row g-3">
-						<div class="col-md-6">
-							<label class="form-label fw-semibold small" for="project_title">Project Title <span class="text-danger">*</span></label>
-							<input type="text" id="project_title" name="project_title" class="form-control" required value="{{ edit_project.project_title or '' }}" placeholder="Enter project title">
+		<div class="row justify-content-center">
+			<div class="col-lg-8">
+
+				<!-- Step Progress -->
+				<div class="d-flex justify-content-between mb-4" id="stepProgress">
+					{% set steps = ['Info', 'GitHub', 'Screenshots', 'Documents', 'Preview'] %}
+					{% for s in steps %}
+					<div class="text-center step-dot" data-step="{{ loop.index }}" style="flex:1;">
+						<div class="rounded-circle d-inline-flex align-items-center justify-content-center fw-bold step-circle" style="width:36px;height:36px;font-size:0.85rem;background:#e2e8f0;color:#64748b;transition:all 0.2s;">
+							{{ loop.index }}
 						</div>
-						<div class="col-md-6">
-							<label class="form-label fw-semibold small" for="team">Team <span class="text-danger">*</span></label>
-							<select id="team" name="team" class="form-select" required>
-								<option value="">Select Team</option>
-								{% for t in teams %}
-								<option value="{{ t.name }}" {% if edit_project and edit_project.team == t.name %}selected{% endif %}>{{ t.team_name }}</option>
-								{% endfor %}
-							</select>
+						<div class="small mt-1 step-label" style="color:#94a3b8;">{{ s }}</div>
+					</div>
+					{% endfor %}
+				</div>
+
+				<form id="projectForm" novalidate>
+					<!-- Step 1: Project Information -->
+					<div class="card border-0 shadow-sm rounded-4 step-panel" id="step1">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Project Information</h5>
+							<div class="row g-3">
+								<div class="col-md-12">
+									<label class="form-label fw-semibold small">Project Title <span class="text-danger">*</span></label>
+									<input type="text" id="project_title" name="project_title" class="form-control" required placeholder="Enter project title">
+									<div class="invalid-feedback">Project title is required.</div>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label fw-semibold small">Category <span class="text-danger">*</span></label>
+									<select id="project_category" name="project_category" class="form-select" required>
+										<option value="">Select Category</option>
+										{% for c in categories %}
+										<option value="{{ c.name }}">{{ c.category_name }}</option>
+										{% endfor %}
+									</select>
+									<div class="invalid-feedback">Category is required.</div>
+								</div>
+								<div class="col-md-6">
+									<label class="form-label fw-semibold small">Team <span class="text-danger">*</span></label>
+									<select id="team" name="team" class="form-select" required>
+										<option value="">Select Team</option>
+										{% for t in teams %}
+										<option value="{{ t.name }}">{{ t.team_name }}</option>
+										{% endfor %}
+									</select>
+									<div class="invalid-feedback">Team is required.</div>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label fw-semibold small">Priority</label>
+									<select id="priority" name="priority" class="form-select">
+										<option value="Low">Low</option>
+										<option value="Medium" selected>Medium</option>
+										<option value="High">High</option>
+										<option value="Urgent">Urgent</option>
+									</select>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label fw-semibold small">Start Date</label>
+									<input type="date" id="start_date" name="start_date" class="form-control">
+								</div>
+								<div class="col-md-4">
+									<label class="form-label fw-semibold small">Due Date</label>
+									<input type="date" id="due_date" name="due_date" class="form-control">
+								</div>
+								<div class="col-md-12">
+									<label class="form-label fw-semibold small">Technologies</label>
+									<div class="tut-tech-grid">
+										{% for t in technologies %}
+										<label class="tut-tech-label">
+											<input type="checkbox" name="technologies" value="{{ t.name }}">
+											<span>{{ t.technology_name }}</span>
+										</label>
+										{% endfor %}
+									</div>
+								</div>
+								<div class="col-md-12">
+									<label class="form-label fw-semibold small">Description</label>
+									<textarea id="description" name="description" class="form-control" rows="4" placeholder="Describe your project..."></textarea>
+								</div>
+							</div>
 						</div>
-						<div class="col-md-4">
-							<label class="form-label fw-semibold small" for="project_category">Category</label>
-							<select id="project_category" name="project_category" class="form-select">
-								<option value="">Select Category</option>
-								{% for c in categories %}
-								<option value="{{ c.name }}" {% if edit_project and edit_project.project_category == c.name %}selected{% endif %}>{{ c.category_name }}</option>
-								{% endfor %}
-							</select>
-						</div>
-						<div class="col-md-4">
-							<label class="form-label fw-semibold small" for="priority">Priority</label>
-							<select id="priority" name="priority" class="form-select">
-								<option value="Low" {% if edit_project and edit_project.priority == 'Low' %}selected{% endif %}>Low</option>
-								<option value="Medium" {% if not edit_project or edit_project.priority == 'Medium' %}selected{% endif %}>Medium</option>
-								<option value="High" {% if edit_project and edit_project.priority == 'High' %}selected{% endif %}>High</option>
-								<option value="Urgent" {% if edit_project and edit_project.priority == 'Urgent' %}selected{% endif %}>Urgent</option>
-							</select>
-						</div>
-						<div class="col-md-4">
-							<label class="form-label fw-semibold small" for="status">Status</label>
-							<select id="status" name="status" class="form-select">
-								<option value="">Select Status</option>
-								{% for s in statuses %}
-								<option value="{{ s.name }}" {% if edit_project and edit_project.status == s.name %}selected{% endif %}>{{ s.status_name }}</option>
-								{% endfor %}
-							</select>
+						<div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-end">
+							<button type="button" class="btn btn-success rounded-pill px-4 fw-semibold" onclick="goToStep(2)">Next: GitHub →</button>
 						</div>
 					</div>
-				</div>
 
-				<div class="mb-4">
-					<h5 class="fw-bold mb-3">Dates & Tags</h5>
-					<div class="row g-3">
-						<div class="col-md-4">
-							<label class="form-label fw-semibold small" for="start_date">Start Date</label>
-							<input type="date" id="start_date" name="start_date" class="form-control" value="{{ edit_project.start_date or '' }}">
+					<!-- Step 2: GitHub Repository -->
+					<div class="card border-0 shadow-sm rounded-4 step-panel" id="step2" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">GitHub Repository</h5>
+							<div class="alert alert-info border-0 rounded-3 small mb-3">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="#24292e" class="me-1"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+								A valid GitHub repository URL is required. Example: <strong>https://github.com/user/repo</strong>
+							</div>
+							<div class="row g-3">
+								<div class="col-md-8">
+									<label class="form-label fw-semibold small">GitHub URL <span class="text-danger">*</span></label>
+									<div class="input-group">
+										<span class="input-group-text bg-light"><svg width="16" height="16" viewBox="0 0 24 24" fill="#24292e"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></span>
+										<input type="url" id="github_url" name="github_url" class="form-control" placeholder="https://github.com/username/repository">
+									</div>
+									<div id="githubValidation" class="small mt-1" style="display:none;"></div>
+								</div>
+								<div class="col-md-4">
+									<label class="form-label fw-semibold small">Branch</label>
+									<input type="text" id="github_branch" name="github_branch" class="form-control" value="main" placeholder="main">
+								</div>
+							</div>
 						</div>
-						<div class="col-md-4">
-							<label class="form-label fw-semibold small" for="due_date">Due Date</label>
-							<input type="date" id="due_date" name="due_date" class="form-control" value="{{ edit_project.due_date or '' }}">
-						</div>
-						<div class="col-md-4">
-							<label class="form-label fw-semibold small" for="tags">Tags</label>
-							<input type="text" id="tags" name="tags" class="form-control" value="{{ edit_project.tags or '' }}" placeholder="comma, separated, tags">
+						<div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-between">
+							<button type="button" class="btn btn-outline-secondary rounded-pill px-3" onclick="goToStep(1)">← Back</button>
+							<button type="button" class="btn btn-success rounded-pill px-4 fw-semibold" onclick="goToStep(3)">Next: Screenshots →</button>
 						</div>
 					</div>
-				</div>
 
-				<div class="mb-4">
-					<h5 class="fw-bold mb-2">Description</h5>
-					<textarea id="description" name="description" class="form-control" rows="5" placeholder="Describe your project...">{{ edit_project.description or '' }}</textarea>
-				</div>
-
-				<div class="mb-4">
-					<h5 class="fw-bold mb-2">Technologies</h5>
-					<div class="tut-tech-grid">
-						{% for t in technologies %}
-						<label class="tut-tech-label">
-							<input type="checkbox" name="technologies" value="{{ t.name }}" {% if edit_technologies and t.name in edit_technologies %}checked{% endif %}>
-							<span>{{ t.technology_name }}</span>
-						</label>
-						{% endfor %}
+					<!-- Step 3: Screenshots -->
+					<div class="card border-0 shadow-sm rounded-4 step-panel" id="step3" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Project Screenshots</h5>
+							<div class="alert alert-info border-0 rounded-3 small mb-3">
+								Upload at least one screenshot (PNG, JPG, JPEG, or WEBP). You can add multiple.
+							</div>
+							<div class="mb-3">
+								<label class="form-label fw-semibold small">Upload Screenshots</label>
+								<input type="file" id="screenshotInput" accept="image/png,image/jpeg,image/webp" multiple class="form-control">
+								<div class="invalid-feedback">At least one screenshot is required.</div>
+							</div>
+							<div id="screenshotPreview" class="row g-2"></div>
+							<input type="hidden" id="screenshotsData" name="screenshots" value="">
+						</div>
+						<div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-between">
+							<button type="button" class="btn btn-outline-secondary rounded-pill px-3" onclick="goToStep(2)">← Back</button>
+							<button type="button" class="btn btn-success rounded-pill px-4 fw-semibold" onclick="goToStep(4)">Next: Documents →</button>
+						</div>
 					</div>
-				</div>
 
-				<div class="d-flex gap-2 justify-content-end pt-3 border-top">
-					<a href="/team_update_tool/dashboard" class="btn btn-outline-secondary rounded-pill px-4">Cancel</a>
-					<button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold" id="submitProject">
-						<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
-						{% if edit_project %}Save Changes{% else %}Create Project{% endif %}
-					</button>
-				</div>
-			</form>
-			<div id="formMessage" class="mt-3" style="display:none;"></div>
+					<!-- Step 4: Documents -->
+					<div class="card border-0 shadow-sm rounded-4 step-panel" id="step4" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Documents (Optional)</h5>
+							<div class="alert alert-info border-0 rounded-3 small mb-3">
+								Upload PDF, DOCX, TXT, or ZIP files related to your project.
+							</div>
+							<div class="mb-3">
+								<label class="form-label fw-semibold small">Upload Files</label>
+								<input type="file" id="fileInput" accept=".pdf,.docx,.txt,.zip,.png,.jpg,.jpeg" multiple class="form-control">
+							</div>
+							<div id="filePreview" class="row g-2"></div>
+							<input type="hidden" id="filesData" name="files" value="">
+						</div>
+						<div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-between">
+							<button type="button" class="btn btn-outline-secondary rounded-pill px-3" onclick="goToStep(3)">← Back</button>
+							<button type="button" class="btn btn-success rounded-pill px-4 fw-semibold" onclick="goToStep(5)">Review Project →</button>
+						</div>
+					</div>
+
+					<!-- Step 5: Preview & Submit -->
+					<div class="card border-0 shadow-sm rounded-4 step-panel" id="step5" style="display:none;">
+						<div class="card-body p-4">
+							<h5 class="fw-bold mb-3">Review Your Project</h5>
+							<div id="previewContent" class="mb-3">
+								<div class="text-center py-4 text-muted">
+									<div class="spinner-border spinner-border-sm text-success me-1"></div>
+									Loading preview...
+								</div>
+							</div>
+						</div>
+						<div class="card-footer bg-white border-0 px-4 py-3 d-flex justify-content-between">
+							<button type="button" class="btn btn-outline-secondary rounded-pill px-3" onclick="goToStep(4)">← Back</button>
+							<button type="submit" class="btn btn-success rounded-pill px-4 fw-semibold" id="submitBtn">
+								<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+								Submit Project
+							</button>
+						</div>
+					</div>
+				</form>
+
+				<div id="formMessage" class="mt-3" style="display:none;"></div>
+			</div>
 		</div>
 	</div>
 </div>
@@ -119,56 +206,356 @@
 
 {% block script %}
 <script>
-frappe.ready(function() {
-	document.getElementById('projectForm').addEventListener('submit', async function(e) {
-		e.preventDefault();
-		const submitBtn = document.getElementById('submitProject');
-		const messageEl = document.getElementById('formMessage');
-		const formData = new FormData(this);
-		const isEdit = this.dataset.edit;
-		const techCheckboxes = document.querySelectorAll('input[name="technologies"]:checked');
-		const technologies = Array.from(techCheckboxes).map(cb => cb.value);
+// ============================
+// Multi-step Form State
+// ============================
+var currentStep = 1;
+var maxStep = 5;
+var uploadedScreenshots = [];  // Array of {file: File, dataUrl: string}
+var uploadedFiles = [];        // Array of {file: File, name: string}
 
-		submitBtn.disabled = true;
-		submitBtn.innerHTML = 'Saving...';
-		messageEl.style.display = 'none';
+// ============================
+// Step Navigation
+// ============================
+function goToStep(step) {
+	// Validate current step before proceeding
+	if (step > currentStep) {
+		if (!validateStep(currentStep)) return;
+	}
 
-		try {
-			const resp = await fetch('/api/method/team_update_tool.api.projects.create_project', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
-				body: JSON.stringify({
-					project_title: formData.get('project_title'),
-					team: formData.get('team'),
-					project_category: formData.get('project_category'),
-					priority: formData.get('priority'),
-					status: formData.get('status'),
-					description: formData.get('description'),
-					tags: formData.get('tags'),
-					start_date: formData.get('start_date'),
-					due_date: formData.get('due_date'),
-				})
-			});
-			const result = await resp.json();
-			if (result.message) {
-				messageEl.className = 'alert alert-success border-0 rounded-3';
-				messageEl.innerHTML = '<p class="mb-1 fw-semibold">Project created successfully! <a href="' + result.message.route + '" class="fw-bold">View Project →</a></p>';
-				messageEl.style.display = 'block';
-				this.reset();
-			} else if (result.exc) {
-				const err = JSON.parse(result.exc);
-				messageEl.className = 'alert alert-danger border-0 rounded-3';
-				messageEl.innerHTML = '<p class="mb-0">' + (err[0] || 'An error occurred') + '</p>';
-				messageEl.style.display = 'block';
-			}
-		} catch (err) {
-			messageEl.className = 'alert alert-danger border-0 rounded-3';
-			messageEl.innerHTML = '<p class="mb-0">Network error. Please try again.</p>';
-			messageEl.style.display = 'block';
+	// Hide all steps
+	document.querySelectorAll('.step-panel').forEach(function(el) { el.style.display = 'none'; });
+	// Show target step
+	var target = document.getElementById('step' + step);
+	if (target) target.style.display = 'block';
+
+	currentStep = step;
+
+	// Update progress indicators
+	document.querySelectorAll('.step-dot').forEach(function(dot) {
+		var s = parseInt(dot.dataset.step);
+		var circle = dot.querySelector('.step-circle');
+		var label = dot.querySelector('.step-label');
+		if (s <= step) {
+			circle.style.background = '#16a34a';
+			circle.style.color = '#fff';
+			label.style.color = '#16a34a';
+			label.style.fontWeight = '600';
+		} else {
+			circle.style.background = '#e2e8f0';
+			circle.style.color = '#64748b';
+			label.style.color = '#94a3b8';
+			label.style.fontWeight = '400';
 		}
-		submitBtn.disabled = false;
-		submitBtn.innerHTML = '{% if edit_project %}Save Changes{% else %}Create Project{% endif %}';
 	});
+
+	// Update step indicator
+	var names = ['Project Information', 'GitHub Repository', 'Screenshots', 'Documents', 'Review & Submit'];
+	document.getElementById('stepIndicator').textContent = 'Step ' + step + ' of 5: ' + names[step - 1];
+
+	// Refresh preview on step 5
+	if (step === 5) refreshPreview();
+}
+
+// ============================
+// Validation
+// ============================
+function validateStep(step) {
+	var valid = true;
+	var msg = '';
+
+	if (step === 1) {
+		var title = document.getElementById('project_title').value.trim();
+		var category = document.getElementById('project_category').value;
+		var team = document.getElementById('team').value;
+		if (!title) { valid = false; msg = 'Project title is required.'; }
+		else if (!category) { valid = false; msg = 'Project category is required.'; }
+		else if (!team) { valid = false; msg = 'Team is required.'; }
+	} else if (step === 2) {
+		var githubUrl = document.getElementById('github_url').value.trim();
+		if (githubUrl) {
+			var pattern = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/;
+			if (!pattern.test(githubUrl)) {
+				valid = false;
+				msg = 'Invalid GitHub URL. Must be like https://github.com/user/repo';
+				var gv = document.getElementById('githubValidation');
+				gv.style.display = 'block';
+				gv.className = 'small mt-1 text-danger';
+				gv.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> ' + msg;
+			} else {
+				var gv = document.getElementById('githubValidation');
+				gv.style.display = 'block';
+				gv.className = 'small mt-1 text-success';
+				gv.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Valid GitHub URL ✓';
+			}
+		}
+	} else if (step === 3) {
+		if (uploadedScreenshots.length === 0) {
+			valid = false;
+			msg = 'At least one screenshot is required.';
+			document.getElementById('screenshotInput').classList.add('is-invalid');
+		} else {
+			document.getElementById('screenshotInput').classList.remove('is-invalid');
+		}
+	}
+
+	if (!valid && msg) {
+		tutToast(msg, 'warning');
+	}
+	return valid;
+}
+
+// ============================
+// Screenshot Upload Handler
+// ============================
+document.getElementById('screenshotInput').addEventListener('change', function(e) {
+	var files = Array.from(e.target.files);
+	var validTypes = ['image/png', 'image/jpeg', 'image/webp'];
+	files.forEach(function(file) {
+		if (!validTypes.includes(file.type)) {
+			tutToast('Invalid file type: ' + file.name + '. Only PNG, JPG, JPEG, WEBP allowed.', 'error');
+			return;
+		}
+		var reader = new FileReader();
+		reader.onload = function(ev) {
+			uploadedScreenshots.push({ file: file, dataUrl: ev.target.result });
+			renderScreenshots();
+		};
+		reader.readAsDataURL(file);
+	});
+	this.value = '';
+});
+
+function renderScreenshots() {
+	var container = document.getElementById('screenshotPreview');
+	if (uploadedScreenshots.length === 0) {
+		container.innerHTML = '<div class="text-center py-3 text-muted small">No screenshots added yet.</div>';
+		return;
+	}
+	var html = '';
+	uploadedScreenshots.forEach(function(s, i) {
+		html += '<div class="col-md-4 col-sm-6"><div class="position-relative border rounded-3 overflow-hidden" style="background:#f8f9fa;">' +
+			'<img src="' + s.dataUrl + '" alt="Screenshot" class="w-100" style="height:120px;object-fit:cover;display:block;">' +
+			'<button type="button" class="btn btn-danger btn-sm position-absolute top-0 end-0 m-1 rounded-circle" style="width:24px;height:24px;padding:0;font-size:12px;line-height:1;" onclick="removeScreenshot(' + i + ')">×</button>' +
+			'<div class="p-1 small text-truncate" style="font-size:0.75rem;">' + s.file.name + '</div></div></div>';
+	});
+	container.innerHTML = html;
+}
+
+function removeScreenshot(index) {
+	uploadedScreenshots.splice(index, 1);
+	renderScreenshots();
+}
+
+// ============================
+// File Upload Handler
+// ============================
+document.getElementById('fileInput').addEventListener('change', function(e) {
+	var files = Array.from(e.target.files);
+	files.forEach(function(file) {
+		uploadedFiles.push({ file: file, name: file.name });
+	});
+	renderFiles();
+	this.value = '';
+});
+
+function renderFiles() {
+	var container = document.getElementById('filePreview');
+	if (uploadedFiles.length === 0) {
+		container.innerHTML = '<div class="text-center py-3 text-muted small">No files added yet.</div>';
+		return;
+	}
+	var html = '';
+	uploadedFiles.forEach(function(f, i) {
+		var icon = f.name.endsWith('.pdf') ? '📄' : f.name.endsWith('.docx') ? '📝' : f.name.endsWith('.zip') ? '📦' : '📎';
+		html += '<div class="col-md-6"><div class="d-flex align-items-center gap-2 p-2 border rounded-3 bg-light">' +
+			'<span>' + icon + '</span>' +
+			'<span class="small flex-grow-1 text-truncate">' + f.name + '</span>' +
+			'<button type="button" class="btn btn-outline-danger btn-sm rounded-circle" style="width:24px;height:24px;padding:0;font-size:12px;line-height:1;" onclick="removeFile(' + i + ')">×</button></div></div>';
+	});
+	container.innerHTML = html;
+}
+
+function removeFile(index) {
+	uploadedFiles.splice(index, 1);
+	renderFiles();
+}
+
+// ============================
+// Preview (Step 5)
+// ============================
+function refreshPreview() {
+	var title = document.getElementById('project_title').value || '(Not set)';
+	var category = document.getElementById('project_category').selectedOptions[0]?.text || '(Not set)';
+	var team = document.getElementById('team').selectedOptions[0]?.text || '(Not set)';
+	var priority = document.getElementById('priority').value;
+	var desc = document.getElementById('description').value || '(No description)';
+	var githubUrl = document.getElementById('github_url').value || '(Not provided)';
+	var techLabels = [];
+	document.querySelectorAll('input[name="technologies"]:checked').forEach(function(cb) {
+		techLabels.push(cb.nextElementSibling.textContent);
+	});
+
+	var html = '<div class="row g-3">' +
+		'<div class="col-md-6"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Project Title</div><div class="fw-semibold">' + escHtml(title) + '</div></div></div>' +
+		'<div class="col-md-6"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Team</div><div class="fw-semibold">' + escHtml(team) + '</div></div></div>' +
+		'<div class="col-md-4"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Category</div><div class="fw-semibold">' + escHtml(category) + '</div></div></div>' +
+		'<div class="col-md-4"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Priority</div><div class="fw-semibold">' + escHtml(priority) + '</div></div></div>' +
+		'<div class="col-md-4"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">GitHub URL</div><div class="fw-semibold small">' + escHtml(githubUrl) + '</div></div></div>' +
+		(techLabels.length ? '<div class="col-md-12"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Technologies</div><div>' + techLabels.map(function(t) { return '<span class="tut-tag">' + t + '</span>'; }).join(' ') + '</div></div></div>' : '') +
+		'<div class="col-12"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Description</div><div class="small" style="white-space:pre-wrap;">' + escHtml(desc) + '</div></div></div>' +
+		(uploadedScreenshots.length ? '<div class="col-12"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Screenshots (' + uploadedScreenshots.length + ')</div><div class="d-flex gap-1 flex-wrap">' + uploadedScreenshots.map(function(s) { return '<img src="' + s.dataUrl + '" alt="" style="width:60px;height:60px;object-fit:cover;border-radius:6px;border:1px solid #e2e8f0;">'; }).join('') + '</div></div></div>' : '') +
+		(uploadedFiles.length ? '<div class="col-12"><div class="bg-light rounded-3 p-3"><div class="small text-muted mb-1">Documents (' + uploadedFiles.length + ')</div><div class="small">' + uploadedFiles.map(function(f) { return '📎 ' + f.name; }).join('<br>') + '</div></div></div>' : '') +
+		'</div>';
+
+	document.getElementById('previewContent').innerHTML = html;
+}
+
+// ============================
+// Form Submission
+// ============================
+document.getElementById('projectForm').addEventListener('submit', async function(e) {
+	e.preventDefault();
+
+	// Validate all steps
+	for (var i = 1; i <= 4; i++) {
+		if (!validateStep(i)) { goToStep(i); return; }
+	}
+
+	var submitBtn = document.getElementById('submitBtn');
+	var msgEl = document.getElementById('formMessage');
+	var formData = new FormData(this);
+
+	// Get selected technologies
+	var techValues = [];
+	document.querySelectorAll('input[name="technologies"]:checked').forEach(function(cb) {
+		techValues.push(cb.value);
+	});
+
+	submitBtn.disabled = true;
+	submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Submitting...';
+	msgEl.style.display = 'none';
+
+	try {
+		var projectResp = await fetch('/api/method/team_update_tool.api.projects.create_project', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+			body: JSON.stringify({
+				project_title: formData.get('project_title'),
+				team: formData.get('team'),
+				project_category: formData.get('project_category'),
+				priority: formData.get('priority'),
+				description: formData.get('description'),
+				start_date: formData.get('start_date') || null,
+				due_date: formData.get('due_date') || null,
+				technologies: techValues,
+				github_url: document.getElementById('github_url').value.trim() || null,
+				github_branch: document.getElementById('github_branch').value || 'main',
+			})
+		});
+		var projectResult = await projectResp.json();
+
+		if (!projectResult.message || !projectResult.message.name) {
+			if (projectResult.exc) {
+				var err = JSON.parse(projectResult.exc);
+				msgEl.className = 'alert alert-danger border-0 rounded-3';
+				msgEl.innerHTML = '<p class="mb-0">' + (err[0] || 'An error occurred') + '</p>';
+				msgEl.style.display = 'block';
+			}
+			submitBtn.disabled = false;
+			submitBtn.innerHTML = 'Submit Project';
+			return;
+		}
+
+		var projectName = projectResult.message.name;
+		var hasErrors = false;
+
+		// Upload screenshots
+		if (uploadedScreenshots.length > 0) {
+			for (var si = 0; si < uploadedScreenshots.length; si++) {
+				var fileData = new FormData();
+				fileData.append('file', uploadedScreenshots[si].file);
+				fileData.append('doctype', 'Project');
+				fileData.append('docname', projectName);
+				fileData.append('fieldname', 'screenshots');
+				try {
+					await fetch('/api/method/upload_file', {
+						method: 'POST',
+						headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token },
+						body: fileData
+					});
+				} catch(e) {
+					hasErrors = true;
+				}
+			}
+		}
+
+		// Upload files
+		if (uploadedFiles.length > 0) {
+			for (var fi = 0; fi < uploadedFiles.length; fi++) {
+				var fileData2 = new FormData();
+				fileData2.append('file', uploadedFiles[fi].file);
+				fileData2.append('doctype', 'Project');
+				fileData2.append('docname', projectName);
+				fileData2.append('fieldname', 'project_files');
+				try {
+					await fetch('/api/method/upload_file', {
+						method: 'POST',
+						headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token },
+						body: fileData2
+					});
+				} catch(e) {
+					hasErrors = true;
+				}
+			}
+		}
+
+		var successMsg = 'Project created successfully!';
+		if (hasErrors) successMsg += ' Some files could not be uploaded.';
+
+		msgEl.className = 'alert alert-success border-0 rounded-3';
+		msgEl.innerHTML = '<p class="mb-1 fw-semibold">' + successMsg + '</p><a href="/team_update_tool/project/' + projectName + '" class="fw-bold">View Project →</a>';
+		msgEl.style.display = 'block';
+		submitBtn.disabled = true;
+		submitBtn.innerHTML = '✓ Submitted';
+
+		// Scroll to message
+		msgEl.scrollIntoView({ behavior: 'smooth' });
+
+	} catch (err) {
+		msgEl.className = 'alert alert-danger border-0 rounded-3';
+		msgEl.innerHTML = '<p class="mb-0">Network error: ' + err.message + '</p>';
+		msgEl.style.display = 'block';
+		submitBtn.disabled = false;
+		submitBtn.innerHTML = 'Submit Project';
+	}
+});
+
+// ============================
+// GitHub URL Real-time Validation
+// ============================
+document.getElementById('github_url').addEventListener('input', function() {
+	var url = this.value.trim();
+	var gv = document.getElementById('githubValidation');
+	if (!url) {
+		gv.style.display = 'none';
+		return;
+	}
+	var pattern = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/;
+	if (pattern.test(url)) {
+		gv.style.display = 'block';
+		gv.className = 'small mt-1 text-success';
+		gv.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Valid GitHub URL ✓';
+	} else {
+		gv.style.display = 'block';
+		gv.className = 'small mt-1 text-danger';
+		gv.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Must be a valid GitHub repository URL';
+	}
+});
+
+frappe.ready(function() {
+	// Init step 1
+	goToStep(1);
 });
 </script>
 {% endblock %}
