@@ -1,0 +1,238 @@
+{%- extends "templates/web.html" -%}
+
+{%- block page_content -%}
+<div id="login-page" class="login-page">
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">TU</div>
+        <h1>{{ _("Welcome Back") }}</h1>
+        <p>{{ _("Sign in to continue") }}</p>
+      </div>
+
+      <form id="login-form" onsubmit="return handleLogin(event)">
+        <div class="form-group">
+          <label for="login-email">{{ _("Email Address") }}</label>
+          <input
+            id="login-email"
+            type="text"
+            name="usr"
+            placeholder="{{ _('you@example.com') }}"
+            required
+            autocomplete="username"
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="login-password">{{ _("Password") }}</label>
+          <input
+            id="login-password"
+            type="password"
+            name="pwd"
+            placeholder="••••••••"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+
+        <div id="login-error" class="login-error" style="display: none;"></div>
+
+        <button id="login-submit" type="submit" class="btn-login">
+          {{ _("Sign In") }}
+        </button>
+
+        <div class="login-footer">
+          <a href="/forgot-password">{{ _("Forgot Password?") }}</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<style>
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 50%, #f0fdf4 100%);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    padding: 1rem;
+  }
+
+  .login-container {
+    width: 100%;
+    max-width: 420px;
+  }
+
+  .login-card {
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08), 0 1px 4px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e5e7eb;
+    padding: 2.5rem;
+  }
+
+  .login-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .login-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    background: #16a34a;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+  }
+
+  .login-header h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 0.25rem;
+  }
+
+  .login-header p {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin: 0;
+  }
+
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
+
+  .form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 0.375rem;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    color: #111827;
+    background: #ffffff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    box-sizing: border-box;
+  }
+
+  .form-group input:focus {
+    border-color: #16a34a;
+    box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.15);
+  }
+
+  .form-group input::placeholder {
+    color: #9ca3af;
+  }
+
+  .login-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    border-radius: 8px;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+
+  .btn-login {
+    width: 100%;
+    padding: 0.625rem;
+    background: #16a34a;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  .btn-login:hover {
+    background: #15803d;
+  }
+
+  .btn-login:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .login-footer {
+    text-align: center;
+    margin-top: 1.25rem;
+  }
+
+  .login-footer a {
+    font-size: 0.8125rem;
+    color: #16a34a;
+    text-decoration: none;
+  }
+
+  .login-footer a:hover {
+    text-decoration: underline;
+  }
+
+  /* Hide Frappe navbar and footer on login page */
+  .navbar, .web-footer, .footer { display: none !important; }
+</style>
+
+<script>
+  function handleLogin(e) {
+    e.preventDefault();
+
+    var usr = document.getElementById("login-email").value;
+    var pwd = document.getElementById("login-password").value;
+    var btn = document.getElementById("login-submit");
+    var errDiv = document.getElementById("login-error");
+
+    errDiv.style.display = "none";
+    btn.disabled = true;
+    btn.textContent = "Signing in...";
+
+    // Use the standard Frappe /api/method/login endpoint (NOT frappe.www.login.login)
+    fetch("/api/method/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Frappe-CSRF-Token": (document.cookie.match(/csrf_token=([^;]+)/) || [])[1] || ""
+      },
+      credentials: "include",
+      body: JSON.stringify({ usr: usr, pwd: pwd })
+    })
+    .then(function(res) {
+      return res.json().then(function(data) {
+        if (!res.ok) throw new Error(data.message || data.exc || "Login failed");
+        return data;
+      });
+    })
+    .then(function(data) {
+      // Redirect on success
+      var redirect = "{{ redirect_to }}" || "/app";
+      window.location.href = redirect;
+    })
+    .catch(function(err) {
+      errDiv.textContent = err.message || "Invalid email or password";
+      errDiv.style.display = "block";
+      btn.disabled = false;
+      btn.textContent = "Sign In";
+    });
+
+    return false;
+  }
+</script>
+{%- endblock -%}
