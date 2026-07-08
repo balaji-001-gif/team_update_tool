@@ -10,7 +10,7 @@
   {"fieldname": "caption", "fieldtype": "Data", "in_list_view": 1, "label": "Caption"},
   {"fieldname": "screenshot_type", "fieldtype": "Select", "in_list_view": 1, "label": "Type", "options": "Workflow\nDashboard\nUI Screen\nDatabase / ERD\nDocumentation\nOther"}
  ],
- "index_web_pages_for_search": 1,
+ "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
  "modified": "2026-07-08 10:00:00",
