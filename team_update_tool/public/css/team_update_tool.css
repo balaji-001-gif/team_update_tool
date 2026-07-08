@@ -124,8 +124,11 @@ body {
   }
   .tut-sidebar.offcanvas .offcanvas-header { display: none; }
   .tut-sidebar.offcanvas .offcanvas-body { padding: 0.5rem 0 2rem; }
-  body.tut-sidebar-open .tut-main-area {
+  .tut-main-area {
     margin-left: var(--tut-sidebar-width);
+  }
+  .tut-main-area-full {
+    margin-left: 0;
   }
 }
 
