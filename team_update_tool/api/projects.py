@@ -180,7 +180,7 @@ def get_project_detail(name):
 
 	return {
 		"name": project.name,
-		"project_title": project.title,
+		"project_title": project.project_title,
 		"status": status_info,
 		"team": project.team,
 		"team_name": team_name,
@@ -272,7 +272,7 @@ def get_dashboard_stats():
 				"screenshot": s.screenshot,
 				"caption": s.caption or "",
 				"project": p_name,
-				"project_title": doc.title,
+				"project_title": doc.project_title,
 			})
 			if len(recent_screenshots) >= 6:
 				break
@@ -300,7 +300,7 @@ def get_dashboard_stats():
 				"file_name": f.file_name or f.file,
 				"file_type": f.file_type or "",
 				"project": p_name,
-				"project_title": doc.title,
+				"project_title": doc.project_title,
 			})
 			if len(recent_documents) >= 5:
 				break
@@ -376,7 +376,7 @@ def get_documents(limit=20, offset=0):
 				"file_type": f.file_type or "",
 				"description": f.file_description or "",
 				"project": p_name,
-				"project_title": doc.title,
+				"project_title": doc.project_title,
 			})
 
 	all_files.reverse()
@@ -401,7 +401,7 @@ def get_gallery(limit=30, offset=0):
 				"caption": s.caption or "",
 				"screenshot_type": s.screenshot_type or "",
 				"project": p_name,
-				"project_title": doc.title,
+				"project_title": doc.project_title,
 			})
 
 	all_screenshots.reverse()
