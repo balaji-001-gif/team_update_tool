@@ -97,7 +97,11 @@ def get_project_detail(name):
 	if not name:
 		frappe.throw(_("Project name is required."))
 
-	project = frappe.get_doc("Project", name)
+	try:
+		project = frappe.get_doc("Project", name)
+	except Exception as e:
+		frappe.log_error(f"Error loading project {name}: {str(e)}", "get_project_detail Error")
+		frappe.throw(_(f"Error loading project: {str(e)}"))
 
 	# Permission check
 	__roles, is_admin, __is_team_member, is_viewer = _get_user_role_info()
