@@ -24,5 +24,5 @@ fixtures = [
 
 # Permission query conditions
 permission_query_conditions = {
-	"Project": "team_update_tool.team_update_tool.transactions.doctype.project.project.get_permission_query_conditions",
+	"Project": "team_update_tool.transactions.doctype.project.project.get_permission_query_conditions",
 }
