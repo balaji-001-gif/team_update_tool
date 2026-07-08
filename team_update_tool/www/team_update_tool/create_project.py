@@ -40,6 +40,10 @@ def get_context(context):
 		fields=["name", "technology_name"]
 	)
 
+	# Default to create mode
+	context.edit_project = None
+	context.edit_technologies = []
+
 	# If editing existing project
 	edit_name = frappe.form_dict.get("edit")
 	if edit_name:
