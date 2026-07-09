@@ -82,21 +82,6 @@ def force_sync_doctypes():
 	import_file_by_path(workspace_path, force=True)
 	frappe.db.commit()
 	
-	# Update workspace with fresh links
-	import json
-	with open(workspace_path, 'r') as f:
-		workspace_data = json.load(f)
-	
-	workspace_doc = frappe.get_doc("Workspace", "Team Update Tool")
-	workspace_doc.set("links", [])
-	
-	for link in workspace_data.get("links", []):
-		workspace_doc.append("links", link)
-	
-	workspace_doc.flags.ignore_validate = True
-	workspace_doc.save(ignore_permissions=True)
-	frappe.db.commit()
-	
 	frappe.clear_cache()
 	frappe.publish_realtime("clear_cache")
 
