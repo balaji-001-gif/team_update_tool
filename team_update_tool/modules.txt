@@ -1,4 +1,4 @@
-Masters
-Transactions
-Reports
-Team Update Tool
+masters
+transactions
+reports
+team_update_tool
