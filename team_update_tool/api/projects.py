@@ -198,6 +198,18 @@ def get_project_detail(name):
 	except Exception:
 		pass
 
+	# README content
+	readme = None
+	try:
+		readme_doc = frappe.db.get_value("Project Readme", {"project": name}, "*", as_dict=1)
+		if readme_doc:
+			readme = {
+				"readme_content": readme_doc.readme_content or "",
+				"readme_file": readme_doc.readme_file or "",
+			}
+	except Exception:
+		pass
+
 	return {
 		"name": project.name,
 		"project_title": project.project_title,
@@ -223,6 +235,7 @@ def get_project_detail(name):
 		"files": files,
 		"updates": updates,
 		"technologies": technologies,
+		"readme": readme,
 		"is_owner": project.owner == frappe.session.user,
 	}
 

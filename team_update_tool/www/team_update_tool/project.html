@@ -111,6 +111,24 @@ function renderProject(p) {
 			'<p style="color:#334155;white-space:pre-wrap;">' + escHtml(p.description) + '</p></div></div>';
 	}
 
+	// README Section
+	if (p.readme) {
+		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
+			'<h5 class="fw-bold mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" class="me-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>README</h5>';
+		
+		if (p.readme.readme_content) {
+			html += '<div class="tut-readme-content">' + escHtml(p.readme.readme_content) + '</div>';
+		}
+		
+		if (p.readme.readme_file) {
+			html += '<div class="mt-3 pt-3 border-top">' +
+				'<a href="' + p.readme.readme_file + '" target="_blank" class="btn btn-success btn-sm rounded-pill">' +
+				'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download README File</a></div>';
+		}
+		
+		html += '</div></div>';
+	}
+
 	// Technologies
 	if (p.technologies && p.technologies.length) {
 		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +

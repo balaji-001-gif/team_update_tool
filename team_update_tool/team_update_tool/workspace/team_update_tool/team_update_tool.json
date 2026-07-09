@@ -17,6 +17,7 @@
   {"hidden": 0, "is_query_report": 0, "label": "Project Category", "link_type": "DocType", "link_to": "Project Category", "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "label": "Project Status", "link_type": "DocType", "link_to": "Project Status", "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "label": "Project", "link_type": "DocType", "link_to": "Project", "type": "Link"},
+  {"hidden": 0, "is_query_report": 0, "label": "Project Readme", "link_type": "DocType", "link_to": "Project Readme", "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "label": "Project Update", "link_type": "DocType", "link_to": "Project Update", "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "label": "Project Files", "link_type": "DocType", "link_to": "Project Files", "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "label": "Project Screenshots", "link_type": "DocType", "link_to": "Project Screenshots", "type": "Link"},

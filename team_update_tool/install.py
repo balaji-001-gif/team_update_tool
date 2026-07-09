@@ -38,6 +38,7 @@ def force_sync_doctypes():
 		("masters/doctype/project_category/project_category.json", "Project Category"),
 		("masters/doctype/project_status/project_status.json", "Project Status"),
 		("transactions/doctype/project/project.json", "Project"),
+		("transactions/doctype/project_readme/project_readme.json", "Project Readme"),
 		("transactions/doctype/project_update/project_update.json", "Project Update"),
 		("transactions/doctype/project_files/project_files.json", "Project Files"),
 		("transactions/doctype/project_screenshots/project_screenshots.json", "Project Screenshots"),

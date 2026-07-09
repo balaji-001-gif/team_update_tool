@@ -88,3 +88,12 @@ def get_context(context):
 			context.github_repo = repo
 		except frappe.DoesNotExistError:
 			context.github_repo = None
+
+	# README content
+	context.readme = None
+	try:
+		readme = frappe.db.get_value("Project Readme", {"project": project_name}, "*", as_dict=1)
+		if readme:
+			context.readme = readme
+	except Exception:
+		pass
