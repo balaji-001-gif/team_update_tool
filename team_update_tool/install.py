@@ -74,28 +74,17 @@ def force_sync_doctypes():
 		frappe.delete_doc("Workspace", "Team Update Tool", force=True)
 	frappe.db.commit()
 	
-	# Delete any orphaned workspace links
-	frappe.db.delete("Workspace Link", {"parent": "Team Update Tool"})
+	# Delete all related workspace child records
+	frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = 'Team Update Tool'")
+	frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = 'Team Update Tool'")
+	frappe.db.sql("DELETE FROM `tabWorkspace Chart` WHERE parent = 'Team Update Tool'")
+	frappe.db.sql("DELETE FROM `tabWorkspace Number Card` WHERE parent = 'Team Update Tool'")
 	frappe.db.commit()
 	
 	# Import fresh workspace from JSON
 	import_file_by_path(workspace_path, force=True)
 	frappe.db.commit()
 	
-	# Sync Workspace
-	import json
-	with open(workspace_path, 'r') as f:
-		workspace_data = json.load(f)
-	
-	workspace_doc = frappe.get_doc("Workspace", "Team Update Tool")
-	workspace_doc.set("links", [])
-	
-	for link in workspace_data.get("links", []):
-		workspace_doc.append("links", link)
-	
-	workspace_doc.flags.ignore_validate = True
-	workspace_doc.save(ignore_permissions=True)
-	frappe.db.commit()
 	frappe.clear_cache()
 	frappe.publish_realtime("clear_cache")
 
@@ -121,22 +110,15 @@ def sync_workspace():
 		frappe.delete_doc("Workspace", "Team Update Tool", force=True)
 	frappe.db.commit()
 	
-	# Import fresh workspace from JSON
-	import_file_by_path(workspace_path, force=True)
+	# Delete all related workspace child records
+	frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = 'Team Update Tool'")
+	frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = 'Team Update Tool'")
+	frappe.db.sql("DELETE FROM `tabWorkspace Chart` WHERE parent = 'Team Update Tool'")
+	frappe.db.sql("DELETE FROM `tabWorkspace Number Card` WHERE parent = 'Team Update Tool'")
 	frappe.db.commit()
 	
-	# Read JSON and re-apply links explicitly
-	with open(workspace_path, 'r') as f:
-		workspace_data = json.load(f)
-	
-	workspace_doc = frappe.get_doc("Workspace", "Team Update Tool")
-	workspace_doc.set("links", [])
-	
-	for link in workspace_data.get("links", []):
-		workspace_doc.append("links", link)
-	
-	workspace_doc.flags.ignore_validate = True
-	workspace_doc.save(ignore_permissions=True)
+	# Import fresh workspace from JSON
+	import_file_by_path(workspace_path, force=True)
 	frappe.db.commit()
 	
 	# Clear all caches
