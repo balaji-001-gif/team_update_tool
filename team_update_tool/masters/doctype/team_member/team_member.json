@@ -4,27 +4,93 @@
  "autoname": "format:TM-.YYYY.-.#####",
  "creation": "2026-07-08 10:00:00",
  "doctype": "DocType",
+ "module": "Masters",
  "engine": "InnoDB",
- "field_order": ["user", "role_in_team", "column_break_3", "team"],
+ "field_order": [
+  "user",
+  "role_in_team",
+  "column_break_3",
+  "team"
+ ],
  "fields": [
-  {"fieldname": "user", "fieldtype": "Link", "in_list_view": 1, "in_standard_filter": 1, "label": "User", "options": "User", "reqd": 1},
-  {"fieldname": "role_in_team", "fieldtype": "Data", "in_list_view": 1, "label": "Role in Team"},
-  {"fieldname": "column_break_3", "fieldtype": "Column Break"},
-  {"fieldname": "team", "fieldtype": "Link", "in_list_view": 1, "in_standard_filter": 1, "label": "Team", "options": "Team"}
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1
+  },
+  {
+   "fieldname": "role_in_team",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Role in Team"
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "team",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Team",
+   "options": "Team"
+  }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "team_update_tool.masters",
  "name": "Team Member",
  "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
-  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Admin", "share": 1, "write": 1},
-  {"create": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "Team Member", "write": 1},
-  {"email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "View-Only User"},
-  {"create": 1, "delete": 1, "email": 1, "export": 1, "print": 1, "read": 1, "report": 1, "role": "System Manager", "share": 1, "write": 1}
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Admin",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Team Member",
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "View-Only User"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
  ],
  "search_fields": "user,role_in_team,team",
  "sort_field": "modified",

@@ -3,6 +3,7 @@
  "creation": "2026-07-08 10:00:00",
  "docstatus": 0,
  "doctype": "Notification",
+ "module": "Transactions",
  "document_type": "Project",
  "enabled": 1,
  "event": "Value Change",
@@ -11,11 +12,14 @@
  "method": "",
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "team_update_tool.transactions",
  "name": "Project Status Updated",
  "owner": "Administrator",
  "recipients": [
-  {"condition": "", "receiver_by_document_field": "", "receiver_by_role": "Admin"}
+  {
+   "condition": "",
+   "receiver_by_document_field": "",
+   "receiver_by_role": "Admin"
+  }
  ],
  "send_system_notification": 1,
  "subject": "Project Status Updated: {{ doc.project_title }}",
