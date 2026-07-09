@@ -4,7 +4,7 @@
  "autoname": "field:project",
  "creation": "2026-07-09 10:00:00",
  "doctype": "DocType",
- "module": "Masters",
+ "module": "Transactions",
  "engine": "InnoDB",
  "field_order": [
   "project",
