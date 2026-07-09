@@ -506,8 +506,8 @@ def create_project(project_title, team, status=None, project_category=None,
 		now = frappe.utils.now()
 		frappe.db.sql("""
 			INSERT INTO `tabGitHub Repository` 
-			(name, doctype, repository_url, repository_name, default_branch, creation, modified, owner, modified_by)
-			VALUES (%s, 'GitHub Repository', %s, %s, %s, %s, %s, %s, %s)
+			(name, repository_url, repository_name, default_branch, creation, modified, owner, modified_by)
+			VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
 		""", (
 			repo_name_unique,
 			github_url.strip(),
@@ -548,9 +548,9 @@ def create_project(project_title, team, status=None, project_category=None,
 	now = frappe.utils.now()
 	frappe.db.sql("""
 		INSERT INTO `tabProject` 
-		(name, doctype, project_title, team, project_category, status, priority, description, tags, 
+		(name, project_title, team, project_category, status, priority, description, tags, 
 		 start_date, due_date, github_repository, creation, modified, owner, modified_by)
-		VALUES (%s, 'Project', %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+		VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
 	""", (
 		proj_name_unique,
 		project_title,
@@ -572,8 +572,8 @@ def create_project(project_title, team, status=None, project_category=None,
 		tech_name = f"PROJTECH-{tech_hash}"
 		frappe.db.sql("""
 			INSERT INTO `tabProject Technology` 
-			(name, doctype, parent, parentfield, parenttype, technology, idx, creation, modified, owner, modified_by)
-			VALUES (%s, 'Project Technology', %s, 'technologies', 'Project', %s, %s, %s, %s, %s, %s)
+			(name, parent, parentfield, parenttype, technology, idx, creation, modified, owner, modified_by)
+			VALUES (%s, %s, 'technologies', 'Project', %s, %s, %s, %s, %s, %s)
 		""", (
 			tech_name,
 			proj_name_unique,
