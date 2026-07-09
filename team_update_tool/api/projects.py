@@ -527,8 +527,20 @@ def create_project(project_title, team, status=None, project_category=None,
 	if not tech_list:
 		frappe.throw(_("At least one technology must be selected."))
 
+	# Generate a unique name for the Project
+	# The autoname format in doctype is not working properly, so we generate a unique name manually
+	import hashlib
+	hash_suffix = hashlib.md5((project_title + team + frappe.session.user).encode()).hexdigest()[:8].upper()
+	proj_name_unique = f"PRJ-{hash_suffix}"
+	
+	# Ensure uniqueness in case of hash collision
+	while frappe.db.exists("Project", proj_name_unique):
+		hash_suffix = hashlib.md5((project_title + team + frappe.session.user + frappe.generate_hash(length=8)).encode()).hexdigest()[:8].upper()
+		proj_name_unique = f"PRJ-{hash_suffix}"
+
 	project = frappe.get_doc({
 		"doctype": "Project",
+		"name": proj_name_unique,
 		"project_title": project_title,
 		"team": team,
 		"project_category": project_category or "",
