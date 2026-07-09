@@ -11,7 +11,7 @@
  "method": "",
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "team_update_tool.transactions",
+ "module": "transactions",
  "name": "Project Approved",
  "owner": "Administrator",
  "recipients": [

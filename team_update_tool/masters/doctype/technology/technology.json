@@ -14,7 +14,7 @@
  "links": [],
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "team_update_tool.masters",
+ "module": "masters",
  "name": "Technology",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
