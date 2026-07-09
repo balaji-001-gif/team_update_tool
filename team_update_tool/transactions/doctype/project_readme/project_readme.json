@@ -4,7 +4,7 @@
  "autoname": "field:project",
  "creation": "2026-07-09 10:00:00",
  "doctype": "DocType",
- "module": "Transactions",
+ "module": "Masters",
  "engine": "InnoDB",
  "field_order": [
   "project",
@@ -18,14 +18,12 @@
    "in_list_view": 1,
    "label": "Project",
    "options": "Project",
-   "reqd": 1,
-   "unique": 1
+   "reqd": 1
   },
   {
    "fieldname": "readme_content",
    "fieldtype": "Text Editor",
-   "label": "README Content (Markdown Supported)",
-   "reqd": 1
+   "label": "README Content (Markdown Supported)"
   },
   {
    "fieldname": "readme_file",
@@ -38,7 +36,7 @@
  "modified": "2026-07-09 10:00:00",
  "modified_by": "Administrator",
  "name": "Project Readme",
- "naming_rule": "Autoincrement",
+ "naming_rule": "Field",
  "owner": "Administrator",
  "permissions": [
   {
