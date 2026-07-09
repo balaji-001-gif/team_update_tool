@@ -8,7 +8,7 @@ app_icon = "octicon octicon-repo"
 app_color = "#2E8B57"
 
 app_include_css = "/assets/team_update_tool/css/team_update_tool.css"
-app_include_js = "/assets/team_update_tool/js/team_update_tool.js"
+website_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 
 after_install = "team_update_tool.install.after_install"
 app_setup = "team_update_tool.install.force_sync_doctypes"
