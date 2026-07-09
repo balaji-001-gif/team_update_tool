@@ -9,7 +9,7 @@
  "is_standard": "Yes",
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "Reports",
+ "module": "Team Update Tool.Reports",
  "name": "Project Summary Report",
  "owner": "Administrator",
  "ref_doctype": "Project",
