@@ -15,7 +15,7 @@
  "links": [],
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "Transactions",
+ "module": "team_update_tool.transactions",
  "name": "Project Technology",
  "naming_rule": "Expression",
  "owner": "Administrator",
