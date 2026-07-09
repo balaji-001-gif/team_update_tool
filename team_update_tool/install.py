@@ -67,7 +67,7 @@ def force_sync_doctypes():
 		frappe.db.commit()
 	
 	# Sync Workspace - Force delete and recreate
-	workspace_path = os.path.join(app_path, "team_update_tool/workspace/team_update_tool/team_update_tool.json")
+	workspace_path = os.path.join(app_path, "masters/workspace/team_update_tool.json")
 	
 	# Delete existing workspace completely
 	if frappe.db.exists("Workspace", "Team Update Tool"):
