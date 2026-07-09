@@ -502,13 +502,11 @@ def create_project(project_title, team, status=None, project_category=None,
 			hash_suffix = hashlib.md5((github_url.strip() + frappe.generate_hash(length=8)).encode()).hexdigest()[:8].upper()
 			repo_name_unique = f"GR-{hash_suffix}"
 		
-		repo_doc = frappe.get_doc({
-			"doctype": "GitHub Repository",
-			"name": repo_name_unique,
-			"repository_url": github_url.strip(),
-			"repository_name": repo_name,
-			"default_branch": github_branch or "main",
-		})
+		repo_doc = frappe.new_doc("GitHub Repository")
+		repo_doc.name = repo_name_unique
+		repo_doc.repository_url = github_url.strip()
+		repo_doc.repository_name = repo_name
+		repo_doc.default_branch = github_branch or "main"
 		repo_doc.insert(ignore_permissions=False)
 		github_repo_link = repo_doc.name
 
