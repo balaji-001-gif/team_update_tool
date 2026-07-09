@@ -56,17 +56,24 @@ function escHtml(s) {
 function loadGallery(offset) {
 	document.getElementById('galleryLoading').style.display = 'block';
 	document.getElementById('galleryContent').style.display = 'none';
+	document.getElementById('galleryEmpty').style.display = 'none';
 
 	fetch('/api/method/team_update_tool.api.projects.get_gallery?limit=' + galleryLimit + '&offset=' + offset)
-		.then(function(r) { return r.json(); })
+		.then(function(r) {
+			if (!r.ok) throw new Error('API request failed');
+			return r.json();
+		})
 		.then(function(data) {
 			document.getElementById('galleryLoading').style.display = 'none';
-			if (!data.message) return;
+			if (!data.message) {
+				document.getElementById('galleryEmpty').style.display = 'block';
+				document.getElementById('galleryContent').style.display = 'block';
+				return;
+			}
 			var d = data.message;
 			document.getElementById('galleryTotal').textContent = d.total + ' screenshot' + (d.total !== 1 ? 's' : '');
 
 			if (d.screenshots && d.screenshots.length) {
-				document.getElementById('galleryEmpty').style.display = 'none';
 				var html = '';
 				d.screenshots.forEach(function(s) {
 					html += '<div class="tut-gallery-card"><a href="' + s.screenshot + '" target="_blank"><img src="' + s.screenshot + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy"></a>' +
@@ -93,8 +100,9 @@ function loadGallery(offset) {
 				document.getElementById('galleryContent').style.display = 'block';
 			}
 		})
-		.catch(function() {
-			document.getElementById('galleryLoading').innerHTML = '<p class="text-danger text-center">Failed to load gallery.</p>';
+		.catch(function(err) {
+			console.error('Gallery load error:', err);
+			document.getElementById('galleryLoading').innerHTML = '<div class="text-center py-5"><p class="text-danger">Failed to load gallery.</p><p class="text-muted small">Check browser console for details.</p><button class="btn btn-outline-secondary btn-sm" onclick="loadGallery(0)">Try Again</button></div>';
 		});
 }
 </script>
