@@ -1,13 +1,11 @@
 {
  "charts": [],
- "content": "[\n\t{\"type\": \"card\", \"data\": {\"card_name\": \"Masters\", \"col\": 4}},\n\t{\"type\": \"card\", \"data\": {\"card_name\": \"Transactions\", \"col\": 4}},\n\t{\"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}\n]",
  "creation": "2026-07-08 10:00:00",
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
-"is_standard": 1,
+ "is_standard": 1,
  "hide_custom": 0,
-"category": "Modules",
  "icon": "octicon octicon-repo",
  "idx": 0,
  "is_hidden": 0,
@@ -29,7 +27,7 @@
   {"hidden": 0, "is_query_report": 0, "item_type": "Report", "label": "Completed Projects Report", "link_type": "Report", "link_to": "Completed Projects Report", "type": "Link"},
   {"hidden": 0, "is_query_report": 0, "item_type": "Report", "label": "GitHub Repository Report", "link_type": "Report", "link_to": "GitHub Repository Report", "type": "Link"}
  ],
- "modified": "2026-07-09 09:00:00",
+ "modified": "2026-07-09 15:00:00",
  "modified_by": "Administrator",
  "module": "Masters",
  "name": "Team Update Tool",
