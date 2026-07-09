@@ -6,9 +6,56 @@ import frappe
 
 def after_install():
 	"""Creates roles and seed data on app install."""
+	force_sync_doctypes()
 	create_roles()
 	create_seed_data()
 	frappe.db.commit()
+
+
+def force_sync_doctypes():
+	"""Delete old doctype records and let them re-sync from JSON files."""
+	from frappe.modules.import_file import import_file_by_path
+	import os
+	
+	doctype_list = [
+		("masters/doctype/team/team.json", "Team"),
+		("masters/doctype/team_member/team_member.json", "Team Member"),
+		("masters/doctype/technology/technology.json", "Technology"),
+		("masters/doctype/project_category/project_category.json", "Project Category"),
+		("masters/doctype/project_status/project_status.json", "Project Status"),
+		("transactions/doctype/project/project.json", "Project"),
+		("transactions/doctype/project_update/project_update.json", "Project Update"),
+		("transactions/doctype/project_files/project_files.json", "Project Files"),
+		("transactions/doctype/project_screenshots/project_screenshots.json", "Project Screenshots"),
+		("transactions/doctype/project_technology/project_technology.json", "Project Technology"),
+		("transactions/doctype/github_repository/github_repository.json", "GitHub Repository"),
+	]
+	
+	app_path = frappe.get_app_path("team_update_tool")
+	
+	for json_path, dt_name in doctype_list:
+		full_path = os.path.join(app_path, json_path)
+		# Delete existing doctype record
+		if frappe.db.exists("DocType", dt_name):
+			frappe.delete_doc("DocType", dt_name, force=True)
+		# Re-import from JSON
+		import_file_by_path(full_path)
+		frappe.db.commit()
+	
+	# Sync reports
+	report_list = [
+		"reports/project_summary_report/project_summary_report.json",
+		"reports/team_activity_report/team_activity_report.json",
+		"reports/completed_projects_report/completed_projects_report.json",
+		"reports/github_repository_report/github_repository_report.json",
+	]
+	
+	for json_path in report_list:
+		full_path = os.path.join(app_path, json_path)
+		import_file_by_path(full_path)
+		frappe.db.commit()
+	
+	frappe.clear_cache()
 
 
 def create_roles():
