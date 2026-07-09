@@ -72,17 +72,25 @@
 		
 		<!-- Role-Based Access Info -->
 		<div class="tut-hero-roles">
-			<div class="tut-role-badge">
+			<div class="tut-role-badge" onclick="showRoleInfo('admin')" style="cursor:pointer;">
 				<span class="tut-role-icon">👑</span>
 				<span>Admin</span>
 			</div>
-			<div class="tut-role-badge">
+			<div class="tut-role-badge" onclick="showRoleInfo('member')" style="cursor:pointer;">
 				<span class="tut-role-icon">👤</span>
 				<span>Team Member</span>
 			</div>
-			<div class="tut-role-badge">
+			<div class="tut-role-badge" onclick="showRoleInfo('viewer')" style="cursor:pointer;">
 				<span class="tut-role-icon">👁</span>
 				<span>View-Only</span>
+			</div>
+		</div>
+		
+		<!-- Role Info Modal -->
+		<div id="roleInfoModal" class="tut-role-modal" style="display:none;">
+			<div class="tut-role-modal-content">
+				<span class="tut-role-modal-close" onclick="closeRoleInfo()">&times;</span>
+				<div id="roleInfoContent"></div>
 			</div>
 		</div>
 	</div>
@@ -155,4 +163,74 @@
 	</div>
 </section>
 {% endif %}
+{% endblock %}
+
+{% block script %}
+<script>
+var roleData = {
+	admin: {
+		title: '👑 Admin',
+		color: '#16a34a',
+		permissions: [
+			'Full access to all features',
+			'Create, edit, and delete projects',
+			'Manage teams and members',
+			'Access Frappe Admin Desk',
+			'Approve or reject projects',
+			'View all project details'
+		]
+	},
+	member: {
+		title: '👤 Team Member',
+		color: '#0d6efd',
+		permissions: [
+			'Create new projects',
+			'Edit own projects',
+			'Add project updates',
+			'View all team projects',
+			'Cannot delete projects',
+			'Cannot approve projects'
+		]
+	},
+	viewer: {
+		title: '👁 View-Only',
+		color: '#6b7280',
+		permissions: [
+			'View approved projects only',
+			'Browse project gallery',
+			'Download project files',
+			'Cannot create or edit projects',
+			'Read-only access',
+			'Cannot add updates'
+		]
+	}
+};
+
+function showRoleInfo(role) {
+	var data = roleData[role];
+	if (!data) return;
+	
+	var content = '<h3 style="color:' + data.color + '; margin-bottom:1rem;">' + data.title + '</h3>';
+	content += '<h6 class="mb-2">Permissions:</h6><ul style="text-align:left; padding-left:1.25rem;">';
+	data.permissions.forEach(function(p) {
+		content += '<li style="margin-bottom:0.35rem;">' + p + '</li>';
+	});
+	content += '</ul>';
+	
+	document.getElementById('roleInfoContent').innerHTML = content;
+	document.getElementById('roleInfoModal').style.display = 'flex';
+}
+
+function closeRoleInfo() {
+	document.getElementById('roleInfoModal').style.display = 'none';
+}
+
+// Close modal when clicking outside
+window.addEventListener('click', function(e) {
+	var modal = document.getElementById('roleInfoModal');
+	if (e.target === modal) {
+		closeRoleInfo();
+	}
+});
+</script>
 {% endblock %}
