@@ -400,52 +400,60 @@ def get_repositories(limit=20, offset=0):
 @frappe.whitelist(allow_guest=True)
 def get_documents(limit=20, offset=0):
 	"""Get all project files/documents grouped by project."""
-	filters, is_admin, is_viewer = _get_visible_filters()
-	projects = frappe.get_all("Project", filters=filters, pluck="name")
+	try:
+		filters, is_admin, is_viewer = _get_visible_filters()
+		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
-	all_files = []
-	for p_name in projects:
-		doc = frappe.get_cached_doc("Project", p_name)
-		for f in doc.project_files or []:
-			all_files.append({
-				"file": f.file,
-				"file_name": f.file_name or f.file,
-				"file_type": f.file_type or "",
-				"description": f.file_description or "",
-				"project": p_name,
-				"project_title": doc.project_title,
-			})
+		all_files = []
+		for p_name in projects:
+			doc = frappe.get_cached_doc("Project", p_name)
+			for f in doc.project_files or []:
+				all_files.append({
+					"file": f.file,
+					"file_name": f.file_name or f.file,
+					"file_type": f.file_type or "",
+					"description": f.file_description or "",
+					"project": p_name,
+					"project_title": doc.project_title,
+				})
 
-	all_files.reverse()
-	total = len(all_files)
-	limited = all_files[offset:offset + limit]
+		all_files.reverse()
+		total = len(all_files)
+		limited = all_files[offset:offset + limit]
 
-	return {"documents": limited, "total": total, "has_more": (offset + limit) < total}
+		return {"documents": limited, "total": total, "has_more": (offset + limit) < total}
+	except Exception as e:
+		frappe.log_error(f"Error in get_documents: {str(e)}", "get_documents Error")
+		return {"documents": [], "total": 0, "has_more": False, "error": str(e)}
 
 
 @frappe.whitelist(allow_guest=True)
 def get_gallery(limit=30, offset=0):
 	"""Get all screenshots from visible projects."""
-	filters, is_admin, is_viewer = _get_visible_filters()
-	projects = frappe.get_all("Project", filters=filters, pluck="name")
+	try:
+		filters, is_admin, is_viewer = _get_visible_filters()
+		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
-	all_screenshots = []
-	for p_name in projects:
-		doc = frappe.get_cached_doc("Project", p_name)
-		for s in doc.screenshots or []:
-			all_screenshots.append({
-				"screenshot": s.screenshot,
-				"caption": s.caption or "",
-				"screenshot_type": s.screenshot_type or "",
-				"project": p_name,
-				"project_title": doc.project_title,
-			})
+		all_screenshots = []
+		for p_name in projects:
+			doc = frappe.get_cached_doc("Project", p_name)
+			for s in doc.screenshots or []:
+				all_screenshots.append({
+					"screenshot": s.screenshot,
+					"caption": s.caption or "",
+					"screenshot_type": s.screenshot_type or "",
+					"project": p_name,
+					"project_title": doc.project_title,
+				})
 
-	all_screenshots.reverse()
-	total = len(all_screenshots)
-	limited = all_screenshots[offset:offset + limit]
+		all_screenshots.reverse()
+		total = len(all_screenshots)
+		limited = all_screenshots[offset:offset + limit]
 
-	return {"screenshots": limited, "total": total, "has_more": (offset + limit) < total}
+		return {"screenshots": limited, "total": total, "has_more": (offset + limit) < total}
+	except Exception as e:
+		frappe.log_error(f"Error in get_gallery: {str(e)}", "get_gallery Error")
+		return {"screenshots": [], "total": 0, "has_more": False, "error": str(e)}
 
 
 @frappe.whitelist()
