@@ -456,9 +456,15 @@ def create_project(project_title, team, status=None, project_category=None,
 		frappe.throw(_("GitHub repository URL is required. Every project must have a linked GitHub repository."))
 
 	if not status:
-		submitted = frappe.db.get_value("Project Status", {"status_name": "Submitted"}, "name")
-		if submitted:
-			status = submitted
+		# Default to "Pending Review" for new projects
+		pending_review = frappe.db.get_value("Project Status", {"status_name": "Pending Review"}, "name")
+		if not pending_review:
+			# Fallback to first available status
+			statuses = frappe.db.get_all("Project Status", fields=["name"], order_by="creation asc", limit=1)
+			if statuses:
+				status = statuses[0].name
+		else:
+			status = pending_review
 
 	# Validate GitHub URL
 	import re

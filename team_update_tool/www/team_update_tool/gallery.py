@@ -10,3 +10,13 @@ def get_context(context):
 	context.title = _("Screenshot Gallery")
 	context.no_header = 1
 	context.no_breadcrumbs = 1
+
+	user = frappe.session.user
+	if user == "Guest":
+		frappe.local.flags.redirect_location = "/team_update_tool/login?redirect-to=/team_update_tool/gallery"
+		raise frappe.Redirect
+
+	context.full_name = frappe.utils.get_fullname(user)
+	roles = frappe.get_roles(user)
+	context.is_admin = "Admin" in roles or "System Manager" in roles
+	context.is_viewer = "View-Only User" in roles and not context.is_admin

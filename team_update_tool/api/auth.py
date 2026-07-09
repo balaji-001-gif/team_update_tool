@@ -26,7 +26,7 @@ def signup(email, first_name, last_name=None, password=None):
 		"send_welcome_email": 1,
 		"enabled": 1,
 		"roles": [
-			{"role": "View-Only User"}
+			{"role": "Team Member"}
 		],
 		"user_type": "Website User",
 	})
@@ -47,12 +47,15 @@ def get_current_user():
 
 	roles = frappe.get_roles(user)
 	is_admin = "Admin" in roles or "System Manager" in roles
-	is_viewer = "View-Only User" in roles and not is_admin
+	is_team_member = "Team Member" in roles and not is_admin
+	is_viewer = "View-Only User" in roles and not is_admin and not is_team_member
 
 	return {
 		"guest": False,
 		"user": user,
 		"full_name": frappe.utils.get_fullname(user),
 		"is_admin": is_admin,
+		"is_team_member": is_team_member,
 		"is_viewer": is_viewer,
+		"roles": roles,
 	}

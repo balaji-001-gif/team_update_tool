@@ -45,11 +45,11 @@ def create_seed_data():
 	# Project Statuses
 	statuses = [
 		{"status_name": "Draft", "color": "#64748b"},
-		{"status_name": "Submitted", "color": "#3b82f6"},
-		{"status_name": "Under Review", "color": "#f59e0b"},
+		{"status_name": "Pending Review", "color": "#f59e0b"},
+		{"status_name": "Under Review", "color": "#3b82f6"},
+		{"status_name": "In Progress", "color": "#8b5cf6"},
 		{"status_name": "Approved", "color": "#16a34a"},
 		{"status_name": "Rejected", "color": "#dc2626"},
-		{"status_name": "In Progress", "color": "#8b5cf6"},
 		{"status_name": "Completed", "color": "#16a34a"},
 		{"status_name": "On Hold", "color": "#f97316"},
 	]
