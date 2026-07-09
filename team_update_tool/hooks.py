@@ -19,5 +19,6 @@ website_route_rules = [
 
 fixtures = [
 	{"dt": "Role", "filters": [["role_name", "in", ["Admin", "Team Member", "View-Only User"]]]},
+	{"dt": "DocType", "filters": [["name", "in", ["Team", "Team Member", "Technology", "Project Category", "Project Status", "Project", "Project Update", "Project Files", "Project Screenshots", "Project Technology", "GitHub Repository"]]]},
 ]
 
