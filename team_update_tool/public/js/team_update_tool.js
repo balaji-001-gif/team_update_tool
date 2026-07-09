@@ -212,15 +212,18 @@ function formatDate(d) {
 // Init — Render Navbar + Sidebar
 // ==============================
 
-frappe.ready(function() {
-	tutRenderNavbar();
+// Check if frappe.ready is available (only in website/desk context)
+if (typeof frappe !== 'undefined' && typeof frappe.ready === 'function') {
+	frappe.ready(function() {
+		tutRenderNavbar();
 
-	// Only render sidebar on authenticated pages (not login, signup, or home)
-	var path = window.location.pathname;
-	var noSidebar = ['/team_update_tool/login', '/team_update_tool/signup', '/team_update_tool/logout', '/team_update_tool'];
-	var shouldShowSidebar = !noSidebar.includes(path) && path.startsWith('/team_update_tool');
+		// Only render sidebar on authenticated pages (not login, signup, or home)
+		var path = window.location.pathname;
+		var noSidebar = ['/team_update_tool/login', '/team_update_tool/signup', '/team_update_tool/logout', '/team_update_tool'];
+		var shouldShowSidebar = !noSidebar.includes(path) && path.startsWith('/team_update_tool');
 
-	if (shouldShowSidebar && typeof bootstrap !== 'undefined') {
-		tutRenderSidebar();
-	}
-});
+		if (shouldShowSidebar && typeof bootstrap !== 'undefined') {
+			tutRenderSidebar();
+		}
+	});
+}
