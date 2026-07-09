@@ -16,6 +16,7 @@
   {"hidden": 0, "is_query_report": 0, "label": "Project Status", "link_to": "Project Status", "type": "DocType", "group": "Masters"},
   {"hidden": 0, "is_query_report": 0, "label": "Team", "link_to": "Team", "type": "DocType", "group": "Masters"},
   {"hidden": 0, "is_query_report": 0, "label": "Project", "link_to": "Project", "type": "DocType", "group": "Transactions"},
+  {"hidden": 0, "is_query_report": 0, "label": "Project Update", "link_to": "Project Update", "type": "DocType", "group": "Transactions"},
   {"hidden": 0, "is_query_report": 0, "label": "GitHub Repository", "link_to": "GitHub Repository", "type": "DocType", "group": "Transactions"},
   {"hidden": 0, "is_query_report": 0, "label": "Project Summary Report", "link_to": "Project Summary Report", "type": "Report", "group": "Reports"},
   {"hidden": 0, "is_query_report": 0, "label": "Team Activity Report", "link_to": "Team Activity Report", "type": "Report", "group": "Reports"},
@@ -35,6 +36,13 @@
   {"role": "System Manager"}
  ],
  "sequence_id": 1.0,
- "shortcuts": [],
+ "shortcuts": [
+  {"label": "Team", "link_to": "Team", "type": "DocType"},
+  {"label": "Technology", "link_to": "Technology", "type": "DocType"},
+  {"label": "Project Category", "link_to": "Project Category", "type": "DocType"},
+  {"label": "Project Status", "link_to": "Project Status", "type": "DocType"},
+  {"label": "Project", "link_to": "Project", "type": "DocType"},
+  {"label": "Project Update", "link_to": "Project Update", "type": "DocType"}
+ ],
  "title": "Team Update Tool"
 }
