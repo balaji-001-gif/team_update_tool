@@ -98,6 +98,52 @@
 
 {% block script %}
 <script>
+// Polyfill for deprecated initHighlighting() -> highlightAll()
+if (typeof hljs !== 'undefined' && hljs.initHighlighting && !hljs.highlightAll) {
+    hljs.highlightAll = function() {
+        document.querySelectorAll('pre code').forEach(function(block) {
+            hljs.highlightElement(block);
+        });
+    };
+}
+// Also replace any initHighlighting calls with highlightAll
+if (typeof hljs !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', function() {
+        if (typeof hljs.initHighlighting === 'function') {
+            hljs.highlightAll();
+        }
+    });
+}
+
+// Toast notification function
+function tutToast(message, type) {
+    if (typeof type === 'undefined') type = 'info';
+    var container = document.querySelector('.tut-toast-container');
+    if (!container) {
+        container = document.createElement('div');
+        container.className = 'tut-toast-container';
+        document.body.appendChild(container);
+    }
+    var colors = { info: '#2563eb', success: '#16a34a', error: '#dc2626', warning: '#f59e0b' };
+    var bg = colors[type] || '#2563eb';
+    var toast = document.createElement('div');
+    toast.style.cssText = 'background:#fff;border-left:4px solid ' + bg + ';border-radius:0.5rem;padding:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,0.08);font-size:0.88rem;color:#1e293b;max-width:340px;animation:tutToastIn 0.25s ease;';
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(function() {
+        toast.style.transition = 'all 0.25s ease';
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(40px)';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 4000);
+}
+
+// Escape HTML to prevent XSS
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 frappe.ready(function() { loadDashboard(); });
 
 async function loadDashboard() {
