@@ -13,6 +13,9 @@ def execute():
     self.doc.content is truthy. If the content field is NULL or empty, the
     attribute is never created, causing get_onboardings() to raise:
         AttributeError: 'Workspace' object has no attribute 'onboarding_list'
+
+    Uses frappe.db.set_value() to bypass all document-level validation
+    (link validation, mandatory checks) that can fail during migration.
     """
     workspace_name = "Team Update Tool"
 
@@ -41,14 +44,8 @@ def execute():
         print("Workspace fixture has no content field. Skipping.")
         return
 
-    # Update the workspace document in the database
-    workspace_doc = frappe.get_doc("Workspace", workspace_name)
-    workspace_doc.content = content
-    workspace_doc.flags.ignore_validate = True
-    workspace_doc.flags.ignore_links = True
-    workspace_doc.flags.ignore_permissions = True
-    workspace_doc.save(ignore_permissions=True)
-
+    # Use set_value to bypass all document-level validation
+    frappe.db.set_value("Workspace", workspace_name, "content", content)
     frappe.db.commit()
     frappe.clear_cache()
 

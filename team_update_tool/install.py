@@ -85,28 +85,8 @@ def force_sync_doctypes():
 	import_file_by_path(workspace_path, force=True)
 	frappe.db.commit()
 	
-	# Sync Workspace: re-apply fixture data and ensure content field is set
-	# (content field is needed to prevent onboarding_list AttributeError in Frappe v15)
-	import json
-	with open(workspace_path, 'r') as f:
-		workspace_data = json.load(f)
-	
-	workspace_doc = frappe.get_doc("Workspace", "Team Update Tool")
-	workspace_doc.set("links", [])
-	
-	for link in workspace_data.get("links", []):
-		workspace_doc.append("links", link)
-	
-	# Ensure content field is set from fixture (prevents onboarding_list AttributeError)
-	content = workspace_data.get("content")
-	if content:
-		workspace_doc.content = content
-	
-	workspace_doc.flags.ignore_validate = True
-	workspace_doc.flags.ignore_links = True
-	workspace_doc.flags.ignore_permissions = True
-	workspace_doc.save(ignore_permissions=True)
-	frappe.db.commit()
+	# import_file_by_path handles all workspace fields including content and child tables.
+	# No explicit re-save needed - the fixture JSON now has all mandatory fields set correctly.
 	frappe.clear_cache()
 	frappe.publish_realtime("clear_cache")
 
@@ -143,28 +123,8 @@ def sync_workspace():
 	import_file_by_path(workspace_path, force=True)
 	frappe.db.commit()
 	
-	# Read JSON and re-apply links and content explicitly
-	with open(workspace_path, 'r') as f:
-		workspace_data = json.load(f)
-	
-	workspace_doc = frappe.get_doc("Workspace", "Team Update Tool")
-	workspace_doc.set("links", [])
-	
-	for link in workspace_data.get("links", []):
-		workspace_doc.append("links", link)
-	
-	# Ensure content field is set from fixture (prevents onboarding_list AttributeError)
-	content = workspace_data.get("content")
-	if content:
-		workspace_doc.content = content
-	
-	workspace_doc.flags.ignore_validate = True
-	workspace_doc.flags.ignore_links = True
-	workspace_doc.flags.ignore_permissions = True
-	workspace_doc.save(ignore_permissions=True)
-	frappe.db.commit()
-	
-	# Clear all caches
+	# import_file_by_path handles all workspace fields including content and child tables.
+	# No explicit re-save needed - the fixture JSON now has all mandatory fields set correctly.
 	frappe.clear_cache()
 	frappe.publish_realtime("clear_cache")
 

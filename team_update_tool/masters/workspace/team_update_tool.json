@@ -41,12 +41,12 @@
  "restrict_to_domain": null,
  "sequence_id": 1.0,
  "shortcuts": [
-  {"color": "Blue", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 1, "link_to": "Project", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
-  {"color": "Green", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 2, "link_to": "Team", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
-  {"color": "Orange", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 3, "link_to": "Technology", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
-  {"color": "Purple", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 4, "link_to": "Project Category", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
-  {"color": "Red", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 5, "link_to": "Project Status", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
-  {"color": "Blue", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 6, "link_to": "GitHub Repository", "link_type": "DocType", "stats_filter": "null", "type": "Link"}
+  {"color": "Blue", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 1, "label": "Project", "link_to": "Project", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
+  {"color": "Green", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 2, "label": "Team", "link_to": "Team", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
+  {"color": "Orange", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 3, "label": "Technology", "link_to": "Technology", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
+  {"color": "Purple", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 4, "label": "Project Category", "link_to": "Project Category", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
+  {"color": "Red", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 5, "label": "Project Status", "link_to": "Project Status", "link_type": "DocType", "stats_filter": "null", "type": "Link"},
+  {"color": "Blue", "doc_view": "List", "format": "{name}", "hidden": 0, "icon": null, "idx": 6, "label": "GitHub Repository", "link_to": "GitHub Repository", "link_type": "DocType", "stats_filter": "null", "type": "Link"}
  ],
  "title": "Team Update Tool",
  "workspace_name": "team_update_tool"
