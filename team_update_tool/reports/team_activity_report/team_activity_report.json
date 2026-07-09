@@ -13,7 +13,7 @@
  "is_standard": "Yes",
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "Team Update Tool.Reports",
+ "module": "team_update_tool.Reports",
  "name": "Team Activity Report",
  "owner": "Administrator",
  "ref_doctype": "Project",

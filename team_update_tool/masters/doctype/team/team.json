@@ -21,7 +21,7 @@
  "links": [{"link_doctype": "Project", "link_fieldname": "team", "group": "Projects"}],
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "Team Update Tool.Masters",
+ "module": "team_update_tool.Masters",
  "name": "Team",
  "naming_rule": "By fieldname",
  "owner": "Administrator",
