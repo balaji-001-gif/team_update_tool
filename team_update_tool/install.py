@@ -93,7 +93,13 @@ def force_sync_doctypes():
 	for link in workspace_data.get("links", []):
 		workspace_doc.append("links", link)
 	
+	# Ensure content field is set from fixture (prevents onboarding_list AttributeError)
+	content = workspace_data.get("content")
+	if content:
+		workspace_doc.content = content
+	
 	workspace_doc.flags.ignore_validate = True
+	workspace_doc.flags.ignore_permissions = True
 	workspace_doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	frappe.clear_cache()
@@ -135,7 +141,13 @@ def sync_workspace():
 	for link in workspace_data.get("links", []):
 		workspace_doc.append("links", link)
 	
+	# Ensure content field is set from fixture (prevents onboarding_list AttributeError)
+	content = workspace_data.get("content")
+	if content:
+		workspace_doc.content = content
+	
 	workspace_doc.flags.ignore_validate = True
+	workspace_doc.flags.ignore_permissions = True
 	workspace_doc.save(ignore_permissions=True)
 	frappe.db.commit()
 	

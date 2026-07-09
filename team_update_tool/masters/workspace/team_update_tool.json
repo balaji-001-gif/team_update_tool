@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[\n\t{\"type\": \"card\", \"data\": {\"card_name\": \"Masters\", \"col\": 4}},\n\t{\"type\": \"card\", \"data\": {\"card_name\": \"Transactions\", \"col\": 4}},\n\t{\"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}\n]",
+ "content": "[{\"type\": \"card\", \"data\": {\"card_name\": \"Masters\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Transactions\", \"col\": 4}}, {\"type\": \"card\", \"data\": {\"card_name\": \"Reports\", \"col\": 4}}]",
  "creation": "2026-07-08 10:00:00",
  "docstatus": 0,
  "doctype": "Workspace",
