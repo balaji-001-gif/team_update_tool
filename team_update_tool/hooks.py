@@ -12,6 +12,7 @@ website_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 
 after_install = "team_update_tool.install.after_install"
 app_setup = "team_update_tool.install.force_sync_doctypes"
+after_migrate = "team_update_tool.install.sync_workspace"
 
 website_route_rules = [
 	# Dynamic route for project detail page (path-based URL)
@@ -21,5 +22,6 @@ website_route_rules = [
 fixtures = [
 	{"dt": "Role", "filters": [["role_name", "in", ["Admin", "Team Member", "View-Only User"]]]},
 	{"dt": "DocType", "filters": [["module", "in", ["Masters", "Transactions", "Reports"]]]},
+	{"dt": "Workspace", "filters": [["name", "in", ["Team Update Tool"]]]},
 ]
 
