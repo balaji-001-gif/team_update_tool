@@ -29,5 +29,7 @@ def get_context(context):
 			s = frappe.get_cached_doc("Project Status", p.status)
 			p.status_name = s.status_name
 			p.status_color = s.color
+		# Format creation date
+		p.formatted_creation = frappe.format(p.creation, "Datetime") if p.creation else ""
 
 	context.full_name = frappe.utils.get_fullname(user)
