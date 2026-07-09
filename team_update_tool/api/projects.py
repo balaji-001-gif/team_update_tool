@@ -800,68 +800,80 @@ def get_all_public_stats():
 @frappe.whitelist(allow_guest=True)
 def get_reports():
 	"""Get report data for the Reports page."""
-	filters, is_admin, is_viewer = _get_visible_filters()
+	try:
+		filters, is_admin, is_viewer = _get_visible_filters()
 
-	# Project Summary
-	statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"])
-	status_summary = []
-	for s in statuses:
-		f = dict(filters)
-		f["status"] = s.name
-		count = frappe.db.count("Project", filters=f)
-		status_summary.append({
-			"status": s.status_name,
-			"count": count,
-			"color": s.color,
-		})
+		# Project Summary
+		statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"])
+		status_summary = []
+		for s in statuses:
+			f = dict(filters)
+			f["status"] = s.name
+			count = frappe.db.count("Project", filters=f)
+			status_summary.append({
+				"status": s.status_name,
+				"count": count,
+				"color": s.color,
+			})
 
-	# Category summary
-	categories = frappe.get_all("Project Category", fields=["name", "category_name"])
-	category_summary = []
-	for c in categories:
-		f = dict(filters)
-		f["project_category"] = c.name
-		count = frappe.db.count("Project", filters=f)
-		if count:
-			category_summary.append({"category": c.category_name, "count": count})
+		# Category summary
+		categories = frappe.get_all("Project Category", fields=["name", "category_name"])
+		category_summary = []
+		for c in categories:
+			f = dict(filters)
+			f["project_category"] = c.name
+			count = frappe.db.count("Project", filters=f)
+			if count:
+				category_summary.append({"category": c.category_name, "count": count})
 
-	# Team summary
-	teams = frappe.get_all("Team", fields=["name", "team_name"])
-	team_summary = []
-	for t in teams:
-		count = frappe.db.count("Project", filters={**filters, "team": t.name})
-		if count:
-			team_summary.append({"team": t.team_name, "count": count})
+		# Team summary
+		teams = frappe.get_all("Team", fields=["name", "team_name"])
+		team_summary = []
+		for t in teams:
+			count = frappe.db.count("Project", filters={**filters, "team": t.name})
+			if count:
+				team_summary.append({"team": t.team_name, "count": count})
 
-	# Completed projects
-	completed = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-	completed_projects = []
-	if completed:
-		f = dict(filters)
-		f["status"] = completed
-		completed_projects = frappe.get_all("Project",
-			filters=f,
-			fields=["name", "project_title", "team", "completion_date", "owner",
-					"project_category", "priority"],
-			order_by="completion_date desc",
+		# Completed projects
+		completed = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+		completed_projects = []
+		if completed:
+			f = dict(filters)
+			f["status"] = completed
+			completed_projects = frappe.get_all("Project",
+				filters=f,
+				fields=["name", "project_title", "team", "completion_date", "owner",
+						"project_category", "priority"],
+				order_by="completion_date desc",
+				limit=50
+			)
+
+		# GitHub report
+		repos = frappe.get_all("GitHub Repository",
+			fields=["repository_name", "repository_url", "default_branch", "languages", "creation"],
+			order_by="creation desc",
 			limit=50
 		)
 
-	# GitHub report
-	repos = frappe.get_all("GitHub Repository",
-		fields=["repository_name", "repository_url", "default_branch", "languages", "creation"],
-		order_by="creation desc",
-		limit=50
-	)
-
-	return {
-		"status_summary": status_summary,
-		"category_summary": category_summary,
-		"team_summary": team_summary,
-		"completed_projects": completed_projects,
-		"github_repos": repos,
-		"total_projects": frappe.db.count("Project", filters=filters),
-	}
+		return {
+			"status_summary": status_summary,
+			"category_summary": category_summary,
+			"team_summary": team_summary,
+			"completed_projects": completed_projects,
+			"github_repos": repos,
+			"total_projects": frappe.db.count("Project", filters=filters),
+		}
+	except Exception as e:
+		frappe.log_error(f"Error in get_reports: {str(e)}", "get_reports Error")
+		return {
+			"status_summary": [],
+			"category_summary": [],
+			"team_summary": [],
+			"completed_projects": [],
+			"github_repos": [],
+			"total_projects": 0,
+			"error": str(e)
+		}
 
 
 # Upload utilities

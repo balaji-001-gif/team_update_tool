@@ -104,10 +104,22 @@ frappe.ready(function() { loadReports(); });
 
 function loadReports() {
 	fetch('/api/method/team_update_tool.api.projects.get_reports')
-		.then(function(r) { return r.json(); })
+		.then(function(r) { 
+			if (!r.ok) throw new Error('API request failed');
+			return r.json(); 
+		})
 		.then(function(data) {
-			if (!data.message) return;
+			if (!data.message) {
+				showError('No data received from server');
+				return;
+			}
 			var d = data.message;
+			
+			// Check for error in response
+			if (d.error) {
+				showError('Server error: ' + d.error);
+				return;
+			}
 
 			// Summary cards
 			var cardsHtml = '';
@@ -164,9 +176,14 @@ function loadReports() {
 			document.getElementById('reportsLoading').style.display = 'none';
 			document.getElementById('reportsContent').style.display = 'block';
 		})
-		.catch(function() {
-			document.getElementById('reportsLoading').innerHTML = '<p class="text-danger text-center">Failed to load reports.</p>';
+		.catch(function(err) {
+			showError('Failed to load reports. Please refresh the page.');
+			console.error('Reports load error:', err);
 		});
+}
+
+function showError(msg) {
+	document.getElementById('reportsLoading').innerHTML = '<div class="text-center py-5"><p class="text-danger mb-2">' + msg + '</p><button class="btn btn-outline-secondary btn-sm" onclick="location.reload()">Refresh Page</button></div>';
 }
 </script>
 {% endblock %}
