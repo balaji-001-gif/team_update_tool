@@ -21,7 +21,7 @@
  "links": [{"link_doctype": "Project", "link_fieldname": "github_repository", "group": "Projects"}],
  "modified": "2026-07-08 10:00:00",
  "modified_by": "Administrator",
- "module": "team_update_tool.Transactions",
+ "module": "team_update_tool.transactions",
  "name": "GitHub Repository",
  "naming_rule": "Expression",
  "owner": "Administrator",
