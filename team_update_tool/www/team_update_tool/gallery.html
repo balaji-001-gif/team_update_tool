@@ -48,6 +48,11 @@ frappe.ready(function() { loadGallery(0); });
 
 var galleryLimit = 24;
 
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function loadGallery(offset) {
 	document.getElementById('galleryLoading').style.display = 'block';
 	document.getElementById('galleryContent').style.display = 'none';

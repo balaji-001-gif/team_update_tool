@@ -50,6 +50,11 @@
 <script>
 frappe.ready(function() { loadDocuments(0); });
 
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 function loadDocuments(offset) {
 	document.getElementById('docsLoading').style.display = 'block';
 	document.getElementById('docsContent').style.display = 'none';
