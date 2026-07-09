@@ -44,6 +44,29 @@
 
 {% block script %}
 <script>
+// Polyfill for deprecated initHighlighting() -> highlightAll()
+if (typeof hljs !== 'undefined' && hljs.initHighlighting && !hljs.highlightAll) {
+    hljs.highlightAll = function() {
+        document.querySelectorAll('pre code').forEach(function(block) {
+            hljs.highlightElement(block);
+        });
+    };
+}
+// Also replace any initHighlighting calls with highlightAll
+if (typeof hljs !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', function() {
+        if (typeof hljs.initHighlighting === 'function') {
+            hljs.highlightAll();
+        }
+    });
+}
+
+// Escape HTML helper
+function escHtml(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 frappe.ready(function() { loadRepos(0); });
 
 function loadRepos(offset) {

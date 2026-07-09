@@ -349,15 +349,19 @@ def get_projects_for_user(user=None):
 @frappe.whitelist(allow_guest=True)
 def get_repositories(limit=20, offset=0):
 	"""Get GitHub repositories."""
-	repos = frappe.get_all("GitHub Repository",
-		fields=["name", "repository_url", "repository_name", "commit_hash",
-				"default_branch", "languages", "creation"],
-		limit=limit,
-		start=offset,
-		order_by="modified desc"
-	)
-	total = frappe.db.count("GitHub Repository")
-	return {"repositories": repos, "total": total, "has_more": (offset + limit) < total}
+	try:
+		repos = frappe.get_all("GitHub Repository",
+			fields=["name", "repository_url", "repository_name", "commit_hash",
+					"default_branch", "languages", "creation"],
+			limit=limit,
+			start=offset,
+			order_by="creation desc"
+		)
+		total = frappe.db.count("GitHub Repository")
+		return {"repositories": repos, "total": total, "has_more": (offset + limit) < total}
+	except Exception as e:
+		frappe.log_error(f"Error fetching repositories: {str(e)}", "get_repositories Error")
+		return {"repositories": [], "total": 0, "has_more": False, "error": str(e)}
 
 
 @frappe.whitelist(allow_guest=True)
