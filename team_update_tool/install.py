@@ -5,11 +5,22 @@ import frappe
 
 
 def after_install():
-	"""Creates roles and seed data on app install."""
+	"""Creates roles, domain, and seed data on app install."""
 	force_sync_doctypes()
+	create_domain()
 	create_roles()
 	create_seed_data()
 	frappe.db.commit()
+
+
+def create_domain():
+	"""Create Team Update Tool domain for restrict_to_domain usage."""
+	if not frappe.db.exists("Domain", "Team Update Tool"):
+		doc = frappe.get_doc({
+			"doctype": "Domain",
+			"domain": "Team Update Tool",
+		})
+		doc.insert(ignore_permissions=True)
 
 
 def force_sync_doctypes():
