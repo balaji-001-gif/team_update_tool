@@ -4,59 +4,528 @@
 
 {% block style %}
 <link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+<style>
+/* =====================================
+   ERPNext 15 Professional My Projects UI
+   ===================================== */
+
+/* Page Header - ERPNext 15 Style */
+.erp-page-header {
+    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+    border-bottom: none;
+    padding: 2.5rem 0 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.erp-page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.erp-page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: 10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+}
+
+.erp-page-header .container {
+    position: relative;
+    z-index: 1;
+}
+
+.erp-page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.erp-page-header p {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+}
+
+.erp-header-icon {
+    width: 48px;
+    height: 48px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+.erp-header-icon svg {
+    width: 24px;
+    height: 24px;
+    color: #ffffff;
+}
+
+/* Main Content Area */
+.erp-projects-content {
+    background: #f5f7fa;
+    min-height: calc(100vh - var(--tut-navbar-height));
+    padding: 2rem 0;
+}
+
+/* Projects Grid */
+.erp-projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+@media (max-width: 1200px) {
+    .erp-projects-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .erp-projects-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Project Card - ERPNext 15 Style */
+.erp-project-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.erp-project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1), 0 4px 10px rgba(0, 0, 0, 0.05);
+    border-color: #e0e7ff;
+}
+
+.erp-project-card-body {
+    padding: 1.25rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.erp-project-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+/* Status Badge */
+.erp-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.erp-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* Priority Badge */
+.erp-priority-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+.erp-priority-badge.high {
+    background: #ffebee;
+    color: #c62828;
+}
+
+.erp-priority-badge.medium {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.erp-priority-badge.low {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.erp-priority-badge.urgent {
+    background: #ffebee;
+    color: #b71c1c;
+}
+
+.erp-priority-badge.critical {
+    background: #ff1744;
+    color: #ffffff;
+}
+
+/* Project Title */
+.erp-project-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1c1e21;
+    margin: 0 0 0.5rem;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Project Meta */
+.erp-project-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #5f6368;
+    font-size: 0.8rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.erp-project-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.erp-project-meta-item svg {
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+/* Project Footer */
+.erp-project-card-footer {
+    margin-top: auto;
+    padding-top: 0.75rem;
+    border-top: 1px solid #f1f3f4;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.erp-project-date {
+    font-size: 0.75rem;
+    color: #9aa0a6;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.erp-project-date svg {
+    width: 12px;
+    height: 12px;
+    opacity: 0.6;
+}
+
+.erp-view-btn {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #1a73e8;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+}
+
+.erp-view-btn svg {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.15s ease;
+}
+
+.erp-project-card:hover .erp-view-btn svg {
+    transform: translateX(3px);
+}
+
+/* New Project Button */
+.erp-new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #ffffff;
+    color: #1a73e8;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.erp-new-btn:hover {
+    background: #1a73e8;
+    color: #ffffff;
+    border-color: #1a73e8;
+}
+
+.erp-new-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Empty State */
+.erp-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.erp-empty-icon {
+    width: 80px;
+    height: 80px;
+    background: #f5f7fa;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+}
+
+.erp-empty-icon svg {
+    width: 36px;
+    height: 36px;
+    color: #9aa0a6;
+}
+
+.erp-empty-state h4 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1c1e21;
+    margin: 0 0 0.5rem;
+}
+
+.erp-empty-state p {
+    font-size: 0.95rem;
+    color: #5f6368;
+    margin: 0 0 1.5rem;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.erp-create-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #1a73e8;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.15s ease;
+}
+
+.erp-create-btn:hover {
+    background: #1557b0;
+    color: #ffffff;
+    transform: translateY(-1px);
+}
+
+.erp-create-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* Stats Summary */
+.erp-stats-summary {
+    display: flex;
+    gap: 2rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.erp-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.erp-stat-count {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1c1e21;
+}
+
+.erp-stat-label {
+    font-size: 0.875rem;
+    color: #5f6368;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .erp-page-header {
+        padding: 1.5rem 0 1.25rem;
+    }
+    
+    .erp-page-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .erp-projects-content {
+        padding: 1.5rem 0;
+    }
+}
+</style>
 {% endblock %}
 
 {% block page_content %}
-<div class="tut-page-header">
+<!-- ERPNext 15 Style Page Header -->
+<div class="erp-page-header">
 	<div class="container">
-		<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+		<div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
 			<div>
-				<h1 class="m-0">My Projects</h1>
-				<p class="m-0">Projects you own — {{ full_name }}</p>
+				<div class="erp-header-icon">
+					<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+						<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+					</svg>
+				</div>
+				<h1>My Projects</h1>
+				<p>Projects you own — {{ full_name }}</p>
 			</div>
-			<a href="/team_update_tool/create_project" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold">
-				<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+			<a href="/team_update_tool/create_project" class="erp-new-btn">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+					<line x1="12" y1="5" x2="12" y2="19"/>
+					<line x1="5" y1="12" x2="19" y2="12"/>
+				</svg>
 				New Project
 			</a>
 		</div>
 	</div>
 </div>
 
-<div class="tut-main-area">
-	<div class="container py-4">
+<!-- Main Content Area -->
+<div class="erp-projects-content">
+	<div class="container">
 		{% if projects %}
-		<div class="row g-3">
-			{% for p in projects %}
-			<div class="col-md-4 col-sm-6">
-				<a href="/team_update_tool/project/{{ p.name }}" class="tut-project-card h-100">
-					<div class="tut-project-card-body">
-						<div class="d-flex align-items-center gap-2 mb-1">
-							<span class="tut-status-badge" style="background:{{ p.status_color or '#6b7280' }}15;color:{{ p.status_color or '#6b7280' }};border:1px solid {{ p.status_color or '#6b7280' }}30;">
-								{{ p.status_name or p.status }}
-							</span>
-							{% if p.priority %}
-							<span class="badge bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25 fw-semibold" style="font-size:0.7rem;">{{ p.priority }}</span>
-							{% endif %}
-						</div>
-						<h6 class="fw-semibold mb-1" style="color:#0f172a;">{{ p.project_title }}</h6>
-						<div class="d-flex align-items-center gap-2 text-muted small mb-2">
-							<span>{{ p.team }}</span>
-							{% if p.project_category %}<span>·</span><span>{{ p.project_category }}</span>{% endif %}
-						</div>
-						<div class="text-muted" style="font-size:0.75rem;">Created {{ p.formatted_creation }}</div>
-					</div>
-				</a>
+		<!-- Stats Summary -->
+		<div class="erp-stats-summary">
+			<div class="erp-stat-item">
+				<span class="erp-stat-count">{{ projects|length }}</span>
+				<span class="erp-stat-label">Project{{ "s" if projects|length != 1 else "" }}</span>
 			</div>
+		</div>
+
+		<!-- Projects Grid -->
+		<div class="erp-projects-grid">
+			{% for p in projects %}
+			<a href="/team_update_tool/project/{{ p.name }}" class="erp-project-card">
+				<div class="erp-project-card-body">
+					<div class="erp-project-card-header">
+						<span class="erp-status-badge" style="background:{{ p.status_color or '#6b7280' }}15;color:{{ p.status_color or '#6b7280' }};">
+							<span class="erp-status-dot" style="background:{{ p.status_color or '#6b7280' }};"></span>
+							{{ p.status_name or p.status }}
+						</span>
+						{% if p.priority %}
+						<span class="erp-priority-badge {{ p.priority|lower }}">
+							{{ p.priority }}
+						</span>
+						{% endif %}
+					</div>
+					<h3 class="erp-project-title">{{ p.project_title }}</h3>
+					<div class="erp-project-meta">
+						{% if p.team %}
+						<span class="erp-project-meta-item">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+								<circle cx="9" cy="7" r="4"/>
+								<path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+								<path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+							</svg>
+							{{ p.team }}
+						</span>
+						{% endif %}
+						{% if p.project_category %}
+						<span class="erp-project-meta-item">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+							</svg>
+							{{ p.project_category }}
+						</span>
+						{% endif %}
+					</div>
+					<div class="erp-project-card-footer">
+						<span class="erp-project-date">
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+								<line x1="16" y1="2" x2="16" y2="6"/>
+								<line x1="8" y1="2" x2="8" y2="6"/>
+								<line x1="3" y1="10" x2="21" y2="10"/>
+							</svg>
+							{{ p.formatted_creation }}
+						</span>
+						<span class="erp-view-btn">
+							View
+							<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+								<polyline points="9 18 15 12 9 6"/>
+							</svg>
+						</span>
+					</div>
+				</div>
+			</a>
 			{% endfor %}
 		</div>
 		{% else %}
-		<div class="tut-empty-state">
-			<div class="empty-icon mx-auto mb-2">
-				<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+		<!-- Empty State -->
+		<div class="erp-empty-state">
+			<div class="erp-empty-icon">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+					<path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+					<line x1="12" y1="11" x2="12" y2="17"/>
+					<polyline points="9 14 12 11 15 14"/>
+				</svg>
 			</div>
 			<h4>No Projects Yet</h4>
-			<p>You haven't created any projects. Start by creating your first project!</p>
-			<a href="/team_update_tool/create_project" class="btn btn-success rounded-pill px-4">Create Project</a>
+			<p>You haven't created any projects. Start by creating your first project and showcase your work!</p>
+			<a href="/team_update_tool/create_project" class="erp-create-btn">
+				<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+					<line x1="12" y1="5" x2="12" y2="19"/>
+					<line x1="5" y1="12" x2="19" y2="12"/>
+				</svg>
+				Create Project
+			</a>
 		</div>
 		{% endif %}
 	</div>
