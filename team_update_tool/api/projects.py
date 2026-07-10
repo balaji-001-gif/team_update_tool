@@ -211,17 +211,22 @@ def get_project_detail(name):
 	except Exception:
 		pass
 
-	# README content
-	readme = None
+	# README content - Fetch for all users (admin and view-only)
+	readme = {"readme_content": "", "readme_file": ""}
 	try:
-		readme_doc = frappe.db.get_value("Project Readme", {"project": name}, "*", as_dict=1)
+		# Try to get README from Project Readme doctype
+		readme_doc = frappe.db.get_value("Project Readme", {"project": name}, ["readme_content", "readme_file"], as_dict=1)
 		if readme_doc:
 			readme = {
-				"readme_content": readme_doc.readme_content or "",
-				"readme_file": readme_doc.readme_file or "",
+				"readme_content": readme_doc.get("readme_content") or "",
+				"readme_file": readme_doc.get("readme_file") or "",
 			}
-	except Exception:
-		pass
+	except Exception as e:
+		frappe.log_error(f"Error getting README: {str(e)}", "get_project_detail README Error")
+	
+	# Also check for readme_content directly in project (if stored as field)
+	if not readme.get("readme_content") and hasattr(project, 'readme_content') and project.readme_content:
+		readme["readme_content"] = project.readme_content
 
 	return {
 		"name": project.name,
