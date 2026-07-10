@@ -796,16 +796,11 @@ function loadReports() {
 		})
 		.then(function(data) {
 			if (!data.message) {
-				showError('No data received from server');
+				showEmptyState();
 				return;
 			}
 			var d = data.message;
 			
-			if (d.error) {
-				showError('Server error: ' + d.error);
-				return;
-			}
-
 			// Summary cards - ERPNext 15 Style
 			var cardsHtml = '';
 			var stats = [
@@ -891,12 +886,13 @@ function loadReports() {
 			if (d.github_repos && d.github_repos.length) {
 				var gitHtml = '';
 				d.github_repos.forEach(function(r) {
+					var repoUrl = r.repository_url || '#';
 					gitHtml += '<tr>';
 					gitHtml += '<td><span class="erp-link">' + escHtml(r.repository_name || 'Repository') + '</span><br><small class="text-muted">' + escHtml(r.repository_url || '') + '</small></td>';
 					gitHtml += '<td><span class="erp-badge erp-badge-info">' + escHtml(r.default_branch || 'main') + '</span></td>';
 					gitHtml += '<td>' + escHtml(r.languages || '-') + '</td>';
 					gitHtml += '<td><code class="small" style="background:#f1f3f4;padding:2px 6px;border-radius:4px;">' + escHtml(r.commit_hash || '-') + '</code></td>';
-					gitHtml += '<td><a href="' + escHtml(r.repository_url) + '" target="_blank" class="erp-github-link">Open <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td>';
+					gitHtml += '<td><a href="' + escHtml(repoUrl) + '" target="_blank" class="erp-github-link">Open <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg></a></td>';
 					gitHtml += '</tr>';
 				});
 				document.getElementById('githubTableBody').innerHTML = gitHtml;
@@ -910,36 +906,38 @@ function loadReports() {
 			document.getElementById('reportsContent').style.display = 'block';
 		})
 		.catch(function(err) {
-			showError('Failed to load reports. Please refresh the page.');
 			console.error('Reports load error:', err);
+			showEmptyState();
 		});
 }
 
 function hexToRgba(hex, alpha) {
+	if (!hex) return 'rgba(0, 0, 0, 0.1)';
 	hex = hex.replace('#', '');
-	var r = parseInt(hex.substring(0, 2), 16);
-	var g = parseInt(hex.substring(2, 4), 16);
-	var b = parseInt(hex.substring(4, 6), 16);
+	if (hex.length < 6) hex = hex + hex.charAt(0) + hex.charAt(1) + hex.charAt(2);
+	var r = parseInt(hex.substring(0, 2), 16) || 0;
+	var g = parseInt(hex.substring(2, 4), 16) || 0;
+	var b = parseInt(hex.substring(4, 6), 16) || 0;
 	return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
 }
 
 function getCompletedCount(data) {
-	if (!data.status_summary) return 0;
+	if (!data.status_summary || !data.status_summary.length) return 0;
 	var completed = data.status_summary.find(function(s) { 
-		return s.status && s.status.toLowerCase().indexOf('approved') !== -1 || s.status && s.status.toLowerCase().indexOf('complete') !== -1; 
+		return s.status && (s.status.toLowerCase().indexOf('approved') !== -1 || s.status.toLowerCase().indexOf('complete') !== -1); 
 	});
 	return completed ? completed.count : 0;
 }
 
 function getInProgressCount(data) {
-	if (!data.status_summary) return 0;
+	if (!data.status_summary || !data.status_summary.length) return (data.total_projects || 0);
 	var inProgress = data.status_summary.reduce(function(sum, s) { 
-		if (s.status && s.status.toLowerCase().indexOf('progress') !== -1 || s.status && s.status.toLowerCase().indexOf('working') !== -1) {
+		if (s.status && (s.status.toLowerCase().indexOf('progress') !== -1 || s.status.toLowerCase().indexOf('working') !== -1)) {
 			return sum + s.count;
 		}
 		return sum;
 	}, 0);
-	return inProgress || (data.total_projects || 0) - getCompletedCount(data);
+	return inProgress || Math.max(0, (data.total_projects || 0) - getCompletedCount(data));
 }
 
 function getPriorityClass(priority) {
@@ -951,8 +949,39 @@ function getPriorityClass(priority) {
 	return 'info';
 }
 
-function showError(msg) {
-	document.getElementById('reportsLoading').innerHTML = '<div class="erp-empty-state"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><h4>Error Loading Reports</h4><p>' + msg + '</p><button class="btn btn-primary btn-sm mt-3" onclick="location.reload()">Refresh Page</button></div>';
+function showEmptyState() {
+	document.getElementById('reportsLoading').style.display = 'none';
+	document.getElementById('reportsContent').style.display = 'block';
+	
+	// Show empty stat cards
+	var cardsHtml = '';
+	var stats = [
+		{icon: 'blue', label: 'Total Projects', value: '0', iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'},
+		{icon: 'green', label: 'Completed', value: '0', iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>'},
+		{icon: 'purple', label: 'In Progress', value: '0', iconSvg: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>'},
+		{icon: 'orange', label: 'Repositories', value: '0', iconSvg: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>'}
+	];
+	stats.forEach(function(s) {
+		cardsHtml += '<div class="erp-stat-card">';
+		cardsHtml += '<div class="erp-stat-icon-wrapper ' + s.icon + '">' + s.iconSvg + '</div>';
+		cardsHtml += '<div class="erp-stat-info">';
+		cardsHtml += '<div class="erp-stat-value">' + s.value + '</div>';
+		cardsHtml += '<div class="erp-stat-label">' + s.label + '</div>';
+		cardsHtml += '</div></div>';
+	});
+	document.getElementById('reportSummaryCards').innerHTML = cardsHtml;
+	
+	// Show empty tables
+	document.getElementById('statusTableBody').innerHTML = '<tr><td colspan="3"><div class="erp-empty-state"><h4>No data available</h4><p>Start adding projects to see report data.</p></div></td></tr>';
+	document.getElementById('categoryTableBody').innerHTML = '<tr><td colspan="2"><div class="erp-empty-state"><h4>No categories</h4><p>Category data will appear here once projects are categorized.</p></div></td></tr>';
+	document.getElementById('teamTableBody').innerHTML = '<tr><td colspan="2"><div class="erp-empty-state"><h4>No teams</h4><p>Team data will appear here once teams are assigned.</p></div></td></tr>';
+	document.getElementById('completedTableBody').innerHTML = '<tr><td colspan="4"><div class="erp-empty-state"><h4>No completed projects</h4><p>Approved projects will appear here.</p></div></td></tr>';
+	document.getElementById('githubTableBody').innerHTML = '<tr><td colspan="5"><div class="erp-empty-state"><h4>No repositories</h4><p>GitHub repositories will appear here once linked to projects.</p></div></td></tr>';
+	
+	document.getElementById('categoryReportSection').style.display = 'block';
+	document.getElementById('teamReportSection').style.display = 'block';
+	document.getElementById('completedSection').style.display = 'block';
+	document.getElementById('githubReportSection').style.display = 'block';
 }
 </script>
 {% endblock %}

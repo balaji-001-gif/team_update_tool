@@ -988,67 +988,101 @@ def get_reports():
 		filters, is_admin, is_viewer = _get_visible_filters()
 
 		# Project Summary
-		statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"])
 		status_summary = []
-		for s in statuses:
-			f = dict(filters)
-			f["status"] = s.name
-			count = frappe.db.count("Project", filters=f)
-			status_summary.append({
-				"status": s.status_name,
-				"count": count,
-				"color": s.color,
-			})
+		try:
+			statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"])
+			for s in statuses:
+				f = dict(filters)
+				f["status"] = s.name
+				count = frappe.db.count("Project", filters=f)
+				status_summary.append({
+					"status": s.status_name or s.name,
+					"count": count,
+					"color": s.color or "#6b7280",
+				})
+		except Exception as e:
+			frappe.log_error(f"Error getting status summary: {str(e)}", "get_reports Error")
 
 		# Category summary
-		categories = frappe.get_all("Project Category", fields=["name", "category_name"])
 		category_summary = []
-		for c in categories:
-			f = dict(filters)
-			f["project_category"] = c.name
-			count = frappe.db.count("Project", filters=f)
-			if count:
-				category_summary.append({"category": c.category_name, "count": count})
+		try:
+			categories = frappe.get_all("Project Category", fields=["name", "category_name"])
+			for c in categories:
+				f = dict(filters)
+				f["project_category"] = c.name
+				count = frappe.db.count("Project", filters=f)
+				if count:
+					category_summary.append({"category": c.category_name or c.name, "count": count})
+		except Exception as e:
+			frappe.log_error(f"Error getting category summary: {str(e)}", "get_reports Error")
 
 		# Team summary
-		teams = frappe.get_all("Team", fields=["name", "team_name"])
 		team_summary = []
-		for t in teams:
-			count = frappe.db.count("Project", filters={**filters, "team": t.name})
-			if count:
-				team_summary.append({"team": t.team_name, "count": count})
+		try:
+			teams = frappe.get_all("Team", fields=["name", "team_name"])
+			for t in teams:
+				count = frappe.db.count("Project", filters={**filters, "team": t.name})
+				if count:
+					team_summary.append({"team": t.team_name or t.name, "count": count})
+		except Exception as e:
+			frappe.log_error(f"Error getting team summary: {str(e)}", "get_reports Error")
 
 		# Completed projects
-		completed = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
 		completed_projects = []
-		if completed:
-			f = dict(filters)
-			f["status"] = completed
-			completed_projects = frappe.get_all("Project",
-				filters=f,
-				fields=["name", "project_title", "team", "completion_date", "owner",
-						"project_category", "priority"],
-				order_by="completion_date desc",
-				limit=50
-			)
+		try:
+			completed = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+			if completed:
+				f = dict(filters)
+				f["status"] = completed
+				completed_projects = frappe.get_all("Project",
+					filters=f,
+					fields=["name", "project_title", "team", "completion_date", "owner",
+							"project_category", "priority"],
+					order_by="completion_date desc",
+					limit=50
+				)
+		except Exception as e:
+			frappe.log_error(f"Error getting completed projects: {str(e)}", "get_reports Error")
 
 		# GitHub report
-		repos = frappe.get_all("GitHub Repository",
-			fields=["repository_name", "repository_url", "default_branch", "languages", "creation"],
-			order_by="creation desc",
-			limit=50
-		)
+		github_repos = []
+		try:
+			repos = frappe.get_all("GitHub Repository",
+				fields=["name", "repository_name", "repository_url", "default_branch", "languages", "commit_hash", "creation"],
+				order_by="creation desc",
+				limit=50
+			)
+			for r in repos:
+				github_repos.append({
+					"name": r.name,
+					"repository_name": r.repository_name or r.name,
+					"repository_url": r.repository_url or "",
+					"default_branch": r.default_branch or "main",
+					"languages": r.languages or "",
+					"commit_hash": r.commit_hash[:8] if r.commit_hash else "",
+					"creation": str(r.creation) if r.creation else ""
+				})
+		except Exception as e:
+			frappe.log_error(f"Error getting GitHub repos: {str(e)}", "get_reports Error")
+
+		# Total projects
+		total_projects = 0
+		try:
+			total_projects = frappe.db.count("Project", filters=filters)
+		except Exception as e:
+			frappe.log_error(f"Error counting projects: {str(e)}", "get_reports Error")
 
 		return {
 			"status_summary": status_summary,
 			"category_summary": category_summary,
 			"team_summary": team_summary,
 			"completed_projects": completed_projects,
-			"github_repos": repos,
-			"total_projects": frappe.db.count("Project", filters=filters),
+			"github_repos": github_repos,
+			"total_projects": total_projects,
 		}
 	except Exception as e:
 		frappe.log_error(f"Error in get_reports: {str(e)}", "get_reports Error")
+		# Return empty data instead of error to show empty state gracefully
 		return {
 			"status_summary": [],
 			"category_summary": [],
@@ -1056,7 +1090,6 @@ def get_reports():
 			"completed_projects": [],
 			"github_repos": [],
 			"total_projects": 0,
-			"error": str(e)
 		}
 
 
