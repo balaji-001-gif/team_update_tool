@@ -7,98 +7,109 @@
 {% endblock %}
 
 {% block page_content %}
-<div class="tut-page-header">
-	<div class="container">
-		<div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
-			<div>
-				<h1 class="m-0">Dashboard</h1>
-				<p class="m-0" id="welcomeMsg">Loading...</p>
-			</div>
-			{% if not is_viewer %}
-			<div class="d-flex gap-2">
-				<a href="/team_update_tool/create_project" class="btn btn-success btn-sm rounded-pill px-3 fw-semibold">
-					<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-					New Project
-				</a>
-			</div>
-			{% endif %}
-		</div>
-	</div>
+<!-- Dashboard Hero -->
+<div class="tut-dash-hero">
+<div class="container">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="tut-dash-welcome">
+<h1 class="tut-dash-title">Dashboard</h1>
+<p class="tut-dash-subtitle" id="welcomeMsg">Loading...</p>
+</div>
+</div>
+<div class="col-md-4 text-end">
+{% if not is_viewer %}
+<a href="/team_update_tool/create_project" class="btn btn-light btn-lg rounded-pill px-4 fw-semibold shadow-sm">
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="me-1"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+New Project
+</a>
+{% endif %}
+</div>
+</div>
+</div>
 </div>
 
-<div class="tut-main-area">
-	<div class="container py-4">
+<!-- Dashboard Content -->
+<div class="tut-dash-content">
+<div class="container">
 
-		<!-- Loading -->
-		<div id="dashboardLoading" class="tut-loading">
-			<div class="spinner-border text-success" role="status"></div>
-			<p class="text-muted mt-2">Loading dashboard data...</p>
-		</div>
+<!-- Loading -->
+<div id="dashboardLoading" class="tut-dash-loading">
+<div class="spinner-border text-success" role="status"></div>
+<p class="text-muted mt-3">Loading dashboard data...</p>
+</div>
 
-		<!-- Content -->
-		<div id="dashboardContent" style="display:none;">
+<!-- Content -->
+<div id="dashboardContent" style="display:none;">
 
-			<!-- Stats Cards -->
-			<div class="row g-3 mb-4" id="statsCards"></div>
+<!-- Stats Cards -->
+<div class="row g-4 mb-4" id="statsCards"></div>
 
-			<!-- Status Distribution -->
-			<div class="row g-4">
-				<div class="col-lg-8">
-					<div class="card border-0 shadow-sm rounded-4">
-						<div class="card-body p-4">
-							<h5 class="fw-bold mb-3">Projects by Status</h5>
-							<div id="statusBars"></div>
-							<div id="statusSectionEmpty" class="text-muted small" style="display:none;">No status data available.</div>
-						</div>
-					</div>
+<!-- Main Grid -->
+<div class="row g-4">
+<!-- Left Column -->
+<div class="col-lg-8">
+<!-- Status Distribution -->
+<div class="tut-dash-card">
+<div class="tut-dash-card-header">
+<h5><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg> Projects by Status</h5>
+</div>
+<div class="tut-dash-card-body">
+<div id="statusBars"></div>
+<div id="statusSectionEmpty" class="text-muted small" style="display:none;">No status data available.</div>
+</div>
+</div>
 
-					<!-- Recent Projects -->
-					<div class="card border-0 shadow-sm rounded-4 mt-4">
-						<div class="card-body p-4">
-							<h5 class="fw-bold mb-3">Recent Projects</h5>
-							<div id="recentProjects"></div>
-						</div>
-					</div>
+<!-- Recent Projects -->
+<div class="tut-dash-card">
+<div class="tut-dash-card-header">
+<h5><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Recent Projects</h5>
+</div>
+<div class="tut-dash-card-body">
+<div id="recentProjects"></div>
+</div>
+</div>
 
-					<!-- Recent GitHub -->
-					<div class="card border-0 shadow-sm rounded-4 mt-4" id="recentReposSection" style="display:none;">
-						<div class="card-body p-4">
-							<h5 class="fw-bold mb-3">
-								<svg width="18" height="18" viewBox="0 0 24 24" fill="#24292e" class="me-1"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
-								Recent GitHub Uploads
-							</h5>
-							<div id="recentRepos"></div>
-						</div>
-					</div>
-				</div>
+<!-- Recent GitHub -->
+<div class="tut-dash-card" id="recentReposSection" style="display:none;">
+<div class="tut-dash-card-header">
+<h5><svg width="18" height="18" viewBox="0 0 24 24" fill="#24292e"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Recent GitHub Repositories</h5>
+</div>
+<div class="tut-dash-card-body">
+<div id="recentRepos"></div>
+</div>
+</div>
+</div>
 
-				<div class="col-lg-4">
-					<div class="card border-0 shadow-sm rounded-4">
-						<div class="card-body p-4">
-							<h5 class="fw-bold mb-3">Quick Links</h5>
-							<nav class="d-flex flex-column gap-1">
-								<a href="/team_update_tool/projects" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg> Browse All Projects</a>
-								<a href="/team_update_tool/my_projects" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> My Projects</a>
-								<a href="/team_update_tool/repositories" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> GitHub Repositories</a>
-								<a href="/team_update_tool/gallery" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg> Gallery</a>
-								<a href="/team_update_tool/documents" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg> Documents</a>
-								<a href="/team_update_tool/reports" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg> Reports</a>
-								<a href="/team_update_tool/settings" class="tut-row-item"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg> Settings</a>
-								<div id="adminDeskLink"></div>
-								<a href="/team_update_tool/logout" class="tut-row-item text-danger"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg> Sign Out</a>
-							</nav>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+<!-- Right Column -->
+<div class="col-lg-4">
+<!-- Quick Links -->
+<div class="tut-dash-card">
+<div class="tut-dash-card-header">
+<h5><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg> Quick Links</h5>
+</div>
+<div class="tut-dash-card-body">
+<nav class="tut-dash-nav">
+<a href="/team_update_tool/projects" class="tut-dash-link"><span class="tut-dash-link-icon tut-link-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span><span class="tut-dash-link-text">Browse All Projects</span><span class="tut-dash-link-arrow">→</span></a>
+<a href="/team_update_tool/my_projects" class="tut-dash-link"><span class="tut-dash-link-icon tut-link-blue"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span><span class="tut-dash-link-text">My Projects</span><span class="tut-dash-link-arrow">→</span></a>
+<a href="/team_update_tool/repositories" class="tut-dash-link"><span class="tut-dash-link-icon tut-link-dark"><svg width="18" height="18" viewBox="0 0 24 24" fill="#24292e"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg></span><span class="tut-dash-link-text">GitHub Repositories</span><span class="tut-dash-link-arrow">→</span></a>
+<a href="/team_update_tool/gallery" class="tut-dash-link"><span class="tut-dash-link-icon tut-link-purple"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span><span class="tut-dash-link-text">Gallery</span><span class="tut-dash-link-arrow">→</span></a>
+<a href="/team_update_tool/documents" class="tut-dash-link"><span class="tut-dash-link-icon tut-link-orange"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span><span class="tut-dash-link-text">Documents</span><span class="tut-dash-link-arrow">→</span></a>
+<a href="/team_update_tool/reports" class="tut-dash-link"><span class="tut-dash-link-icon tut-link-red"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg></span><span class="tut-dash-link-text">Reports</span><span class="tut-dash-link-arrow">→</span></a>
+<div id="adminDeskLink"></div>
+<a href="/team_update_tool/logout" class="tut-dash-link text-danger"><span class="tut-dash-link-icon tut-link-danger"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span><span class="tut-dash-link-text">Sign Out</span><span class="tut-dash-link-arrow">→</span></a>
+</nav>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
 </div>
 {% endblock %}
 
 {% block script %}
 <script>
-// Toast notification function
 function tutToast(message, type) {
     if (typeof type === 'undefined') type = 'info';
     var container = document.querySelector('.tut-toast-container');
@@ -107,21 +118,15 @@ function tutToast(message, type) {
         container.className = 'tut-toast-container';
         document.body.appendChild(container);
     }
-    var colors = { info: '#2563eb', success: '#16a34a', error: '#dc2626', warning: '#f59e0b' };
-    var bg = colors[type] || '#2563eb';
+    var colors = { info: '#3b82f6', success: '#22c55e', error: '#ef4444', warning: '#f59e0b' };
+    var bg = colors[type] || '#3b82f6';
     var toast = document.createElement('div');
-    toast.style.cssText = 'background:#fff;border-left:4px solid ' + bg + ';border-radius:0.5rem;padding:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,0.08);font-size:0.88rem;color:#1e293b;max-width:340px;animation:tutToastIn 0.25s ease;';
+    toast.style.cssText = 'background:#fff;border-left:4px solid ' + bg + ';border-radius:0.5rem;padding:12px 16px;box-shadow:0 4px 16px rgba(0,0,0,0.1);font-size:0.9rem;color:#1e293b;max-width:360px;animation:tutToastIn 0.25s ease;margin-bottom:8px;';
     toast.textContent = message;
     container.appendChild(toast);
-    setTimeout(function() {
-        toast.style.transition = 'all 0.25s ease';
-        toast.style.opacity = '0';
-        toast.style.transform = 'translateX(40px)';
-        setTimeout(function() { toast.remove(); }, 300);
-    }, 4000);
+    setTimeout(function() { toast.remove(); }, 4000);
 }
 
-// Escape HTML to prevent XSS
 function escHtml(s) {
     if (!s) return '';
     return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
@@ -130,84 +135,77 @@ function escHtml(s) {
 frappe.ready(function() { loadDashboard(); });
 
 async function loadDashboard() {
-	try {
-		var resp = await fetch('/api/method/team_update_tool.api.projects.get_dashboard_stats');
-		var data = await resp.json();
-		if (!data.message) { tutToast('Failed to load dashboard data.', 'error'); return; }
-		var d = data.message;
+    try {
+        var resp = await fetch('/api/method/team_update_tool.api.projects.get_dashboard_stats');
+        var data = await resp.json();
+        if (!data.message) { tutToast('Failed to load dashboard data.', 'error'); return; }
+        var d = data.message;
 
-		// Welcome
-		var fullName = 'User', isAdmin = d.is_admin || false;
-		try {
-			var userResp = await fetch('/api/method/team_update_tool.api.auth.get_current_user');
-			var userData = await userResp.json();
-			if (userData.message && !userData.message.guest) {
-				fullName = userData.message.full_name;
-				isAdmin = userData.message.is_admin;
-			}
-		} catch(e) {}
-		document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + fullName;
+        var fullName = 'User', isAdmin = d.is_admin || false;
+        try {
+            var userResp = await fetch('/api/method/team_update_tool.api.auth.get_current_user');
+            var userData = await userResp.json();
+            if (userData.message && !userData.message.guest) {
+                fullName = userData.message.full_name;
+                isAdmin = userData.message.is_admin;
+            }
+        } catch(e) {}
+        document.getElementById('welcomeMsg').textContent = 'Welcome back, ' + fullName;
 
-		// Admin desk link
-		if (isAdmin) {
-			document.getElementById('adminDeskLink').innerHTML =
-				'<a href="/app/team-update-tool" target="_blank" class="tut-row-item fw-semibold" style="color:#16a34a;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Admin Desk</a>';
-		}
+        if (isAdmin) {
+            document.getElementById('adminDeskLink').innerHTML = '<a href="/app/team-update-tool" target="_blank" class="tut-dash-link fw-semibold" style="color:#22c55e;"><span class="tut-dash-link-icon tut-link-green"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></span><span class="tut-dash-link-text">Admin Desk</span><span class="tut-dash-link-arrow">↗</span></a>';
+        }
 
-		// Stats cards
-		var statsCards = '';
-		var stats = [
-			{icon:'green', label:'Total Projects', value:d.total_projects, svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'},
-			{icon:'blue', label:'Active Teams', value:d.total_teams, svg:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
-			{icon:'purple', label:'Technologies', value:d.total_technologies, svg:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
-			{icon:'orange', label:'My Projects', value:d.my_projects || 0, svg:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'},
-		];
-		stats.forEach(function(s) {
-			statsCards += '<div class="col-md-3 col-sm-6"><div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-' + s.icon + '"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + s.svg + '</svg></div><div><div class="tut-stat-number">' + s.value + '</div><div class="tut-stat-label">' + s.label + '</div></div></div></div>';
-		});
-		document.getElementById('statsCards').innerHTML = statsCards;
+        var statsCards = '';
+        var stats = [
+            {icon:'green', label:'Total Projects', value:d.total_projects, svg:'<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>'},
+            {icon:'blue', label:'Active Teams', value:d.total_teams, svg:'<path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>'},
+            {icon:'purple', label:'Technologies', value:d.total_technologies, svg:'<circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/>'},
+            {icon:'orange', label:'My Projects', value:d.my_projects || 0, svg:'<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>'},
+        ];
+        stats.forEach(function(s) {
+            statsCards += '<div class="col-6 col-lg-3"><div class="tut-dash-stat-card"><div class="tut-dash-stat-icon tut-dash-stat-icon-' + s.icon + '"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">' + s.svg + '</svg></div><div class="tut-dash-stat-num">' + s.value + '</div><div class="tut-dash-stat-lbl">' + s.label + '</div></div></div>';
+        });
+        document.getElementById('statsCards').innerHTML = statsCards;
 
-		// Status bars
-		if (d.status_counts && d.status_counts.length) {
-			var barsHtml = '';
-			var maxCount = Math.max.apply(null, d.status_counts.map(function(s){return s.count;}));
-			d.status_counts.forEach(function(s) {
-				var pct = maxCount > 0 ? Math.round(s.count / maxCount * 100) : 0;
-				barsHtml += '<div class="tut-status-bar-item"><div class="tut-status-bar-label"><span class="tut-status-dot" style="background:' + s.color + '"></span><span>' + s.name + '</span></div><div class="tut-status-bar-track"><div class="tut-status-bar-fill" style="width:' + pct + '%;background:' + s.color + '"></div></div><span class="tut-status-bar-count">' + s.count + '</span></div>';
-			});
-			document.getElementById('statusBars').innerHTML = barsHtml;
-		} else {
-			document.getElementById('statusSectionEmpty').style.display = 'block';
-		}
+        if (d.status_counts && d.status_counts.length) {
+            var barsHtml = '';
+            var maxCount = Math.max.apply(null, d.status_counts.map(function(s){return s.count;}));
+            d.status_counts.forEach(function(s) {
+                var pct = maxCount > 0 ? Math.round(s.count / maxCount * 100) : 0;
+                barsHtml += '<div class="tut-prog-item"><div class="tut-prog-header"><span class="tut-prog-dot" style="background:' + s.color + '"></span><span class="tut-prog-name">' + s.name + '</span><span class="tut-prog-count">' + s.count + '</span></div><div class="tut-prog-bar"><div class="tut-prog-fill" style="width:' + pct + '%;background:' + s.color + '"></div></div></div>';
+            });
+            document.getElementById('statusBars').innerHTML = barsHtml;
+        } else {
+            document.getElementById('statusSectionEmpty').style.display = 'block';
+        }
 
-		// Recent projects
-		var recentHtml = '';
-		if (d.recent_projects && d.recent_projects.length) {
-			d.recent_projects.forEach(function(p) {
-				var color = p.status_color || '#6b7280';
-				var sname = p.status_name || p.status;
-				recentHtml += '<a href="/team_update_tool/project/' + p.name + '" class="tut-row-item"><div class="tut-row-item-main"><span class="tut-row-item-title">' + escHtml(p.project_title) + '</span><span class="tut-row-item-meta">By ' + (p.owner || 'Unknown') + '</span></div><span class="tut-status-badge" style="background:' + color + '15;color:' + color + ';border:1px solid ' + color + '30;flex-shrink:0;">' + sname + '</span></a>';
-			});
-		} else {
-			recentHtml = '<div class="text-center py-4 text-muted"><p class="small m-0">No projects yet.</p></div>';
-		}
-		document.getElementById('recentProjects').innerHTML = recentHtml;
+        var recentHtml = '';
+        if (d.recent_projects && d.recent_projects.length) {
+            d.recent_projects.forEach(function(p) {
+                var color = p.status_color || '#6b7280';
+                var sname = p.status_name || p.status;
+                recentHtml += '<a href="/team_update_tool/project/' + p.name + '" class="tut-proj-item"><div class="tut-proj-info"><span class="tut-proj-title">' + escHtml(p.project_title) + '</span><span class="tut-proj-meta">By ' + (p.owner || 'Unknown') + '</span></div><span class="tut-proj-status" style="background:' + color + '15;color:' + color + ';">' + sname + '</span></a>';
+            });
+        } else {
+            recentHtml = '<div class="text-center py-5"><p class="text-muted mb-0">No projects yet. Create your first project!</p></div>';
+        }
+        document.getElementById('recentProjects').innerHTML = recentHtml;
 
-		// Recent repos
-		if (d.recent_repos && d.recent_repos.length) {
-			var reposHtml = '';
-			d.recent_repos.forEach(function(r) {
-				reposHtml += '<a href="' + (r.repository_url || '#') + '" target="_blank" class="tut-row-item"><div class="tut-row-item-main"><span class="tut-row-item-title">' + (r.repository_name || r.name) + '</span><span class="tut-row-item-meta">' + (r.repository_url || '') + '</span></div><span class="btn btn-outline-dark btn-sm rounded-pill px-3" style="flex-shrink:0;">Open</span></a>';
-			});
-			document.getElementById('recentRepos').innerHTML = reposHtml;
-			document.getElementById('recentReposSection').style.display = 'block';
-		}
+        if (d.recent_repos && d.recent_repos.length) {
+            var reposHtml = '';
+            d.recent_repos.forEach(function(r) {
+                reposHtml += '<a href="' + (r.repository_url || '#') + '" target="_blank" class="tut-repo-item"><div class="tut-repo-info"><span class="tut-repo-name"><svg width="14" height="14" viewBox="0 0 24 24" fill="#24292e" class="me-1"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>' + (r.repository_name || r.name) + '</span><span class="tut-repo-url">' + (r.repository_url || '') + '</span></div><span class="tut-repo-btn">Open ↗</span></a>';
+            });
+            document.getElementById('recentRepos').innerHTML = reposHtml;
+            document.getElementById('recentReposSection').style.display = 'block';
+        }
 
-		document.getElementById('dashboardLoading').style.display = 'none';
-		document.getElementById('dashboardContent').style.display = 'block';
-	} catch(e) {
-		tutToast('Network error: ' + e.message, 'error');
-	}
+        document.getElementById('dashboardLoading').style.display = 'none';
+        document.getElementById('dashboardContent').style.display = 'block';
+    } catch(e) {
+        tutToast('Network error: ' + e.message, 'error');
+    }
 }
 </script>
 {% endblock %}
