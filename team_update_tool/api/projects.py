@@ -450,7 +450,7 @@ def get_projects_for_user(user=None):
 
 @frappe.whitelist(allow_guest=True)
 def get_repositories(limit=20, offset=0):
-	"""Get GitHub repositories."""
+	"""Get GitHub repositories - fetches from GitHub Repository doctype or Project.github_repository field."""
 	try:
 		repos = frappe.get_all("GitHub Repository",
 			fields=["name", "repository_url", "repository_name", "commit_hash",
@@ -460,6 +460,44 @@ def get_repositories(limit=20, offset=0):
 			order_by="creation desc"
 		)
 		total = frappe.db.count("GitHub Repository")
+		
+		# If no GitHub Repository records, fetch from projects with github_repository field
+		if total == 0:
+			projects_with_github = frappe.get_all("Project",
+				fields=["name", "project_title", "github_repository", "creation"],
+				filters={"github_repository": ["is", "set"]},
+				limit=limit,
+				start=offset,
+				order_by="creation desc"
+			)
+			repos = []
+			for p in projects_with_github:
+				repo_name = p.github_repository
+				# Try to get the GitHub Repository doc
+				try:
+					repo_doc = frappe.get_cached_doc("GitHub Repository", repo_name)
+					repos.append({
+						"name": repo_doc.name,
+						"repository_url": repo_doc.repository_url or "",
+						"repository_name": repo_doc.repository_name or p.project_title,
+						"commit_hash": repo_doc.commit_hash or "",
+						"default_branch": repo_doc.default_branch or "main",
+						"languages": repo_doc.languages or "",
+						"creation": str(p.creation),
+					})
+				except Exception:
+					# GitHub Repository doc doesn't exist, use project info
+					repos.append({
+						"name": repo_name,
+						"repository_url": "",
+						"repository_name": p.project_title or "GitHub Repository",
+						"commit_hash": "",
+						"default_branch": "main",
+						"languages": "",
+						"creation": str(p.creation),
+					})
+			total = len(repos)
+		
 		return {"repositories": repos, "total": total, "has_more": (offset + limit) < total}
 	except Exception as e:
 		frappe.log_error(f"Error fetching repositories: {str(e)}", "get_repositories Error")
@@ -470,7 +508,7 @@ def get_repositories(limit=20, offset=0):
 def get_documents(limit=20, offset=0):
 	"""Get all project files/documents grouped by project."""
 	try:
-		filters, is_admin, is_viewer = _get_visible_filters()
+		roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
 		
 		# Validate limit and offset
 		limit = min(max(int(limit) if limit else 20, 1), 100)
@@ -481,16 +519,23 @@ def get_documents(limit=20, offset=0):
 			frappe.log_error("Project DocType does not exist in database", "get_documents Error")
 			return {"documents": [], "total": 0, "has_more": False, "error": "Project doctype not found"}
 		
+		# Build filters - for viewers, only show approved projects
+		filters = {}
+		if is_viewer and not is_admin and not is_team_member:
+			try:
+				approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+				if approved:
+					filters["status"] = approved
+			except Exception:
+				pass
+		
 		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
 		all_files = []
-		projects_with_files = 0
 		for p_name in projects:
 			try:
 				doc = frappe.get_cached_doc("Project", p_name)
-				has_files = False
 				for f in doc.project_files or []:
-					has_files = True
 					all_files.append({
 						"file": f.file,
 						"file_name": f.file_name or f.file,
@@ -499,8 +544,6 @@ def get_documents(limit=20, offset=0):
 						"project": p_name,
 						"project_title": getattr(doc, "project_title", p_name),
 					})
-				if has_files:
-					projects_with_files += 1
 			except Exception as proj_error:
 				frappe.log_error(f"Error loading project {p_name}: {str(proj_error)}", "get_documents Project Error")
 				continue
@@ -509,17 +552,7 @@ def get_documents(limit=20, offset=0):
 		total = len(all_files)
 		limited = all_files[offset:offset + limit]
 
-		return {
-			"documents": limited, 
-			"total": total, 
-			"has_more": (offset + limit) < total,
-			"debug": {
-				"projects_count": len(projects),
-				"projects_with_files": projects_with_files,
-				"is_admin": is_admin,
-				"is_viewer": is_viewer
-			}
-		}
+		return {"documents": limited, "total": total, "has_more": (offset + limit) < total}
 	except Exception as e:
 		frappe.log_error(f"Error in get_documents: {str(e)}", "get_documents Error")
 		return {"documents": [], "total": 0, "has_more": False, "error": str(e)}
@@ -529,7 +562,7 @@ def get_documents(limit=20, offset=0):
 def get_gallery(limit=30, offset=0):
 	"""Get all screenshots from visible projects."""
 	try:
-		filters, is_admin, is_viewer = _get_visible_filters()
+		roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
 		
 		# Validate limit and offset
 		limit = min(max(int(limit) if limit else 30, 1), 100)
@@ -539,6 +572,16 @@ def get_gallery(limit=30, offset=0):
 		if not frappe.db.exists("DocType", "Project"):
 			frappe.log_error("Project DocType does not exist in database", "get_gallery Error")
 			return {"screenshots": [], "total": 0, "has_more": False, "error": "Project doctype not found"}
+		
+		# Build filters - for viewers, only show approved projects
+		filters = {}
+		if is_viewer and not is_admin and not is_team_member:
+			try:
+				approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+				if approved:
+					filters["status"] = approved
+			except Exception:
+				pass
 		
 		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
