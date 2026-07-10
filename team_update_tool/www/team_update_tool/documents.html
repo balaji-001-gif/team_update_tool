@@ -28,6 +28,7 @@
 		<div id="docsContent" style="display:none;">
 			<div class="row g-3 mb-4">
 				<div class="col-md-3 col-sm-6" id="docsStats"></div>
+				<div class="col-md-3 col-sm-6" id="docsProjects"></div>
 			</div>
 
 			<div id="docsList"></div>
@@ -37,7 +38,7 @@
 					<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
 				</div>
 				<h4>No Documents</h4>
-				<p>No project files have been uploaded yet.</p>
+				<p id="docsEmptyMsg">No project files have been uploaded yet.</p>
 			</div>
 
 			<div id="docsPagination" class="tut-pagination" style="display:none;"></div>
@@ -73,8 +74,14 @@ function loadDocuments(offset) {
 				return;
 			}
 			var d = data.message;
-
+			
+			// Show stats
 			document.getElementById('docsStats').innerHTML = '<div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg></div><div><div class="tut-stat-number">' + d.total + '</div><div class="tut-stat-label">Total Documents</div></div></div>';
+			
+			// Show debug info if available
+			if (d.debug) {
+				document.getElementById('docsProjects').innerHTML = '<div class="tut-stat-card"><div class="tut-stat-icon tut-stat-icon-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg></div><div><div class="tut-stat-number">' + d.debug.projects_count + '</div><div class="tut-stat-label">Visible Projects</div></div></div>';
+			}
 
 			if (d.documents && d.documents.length) {
 				var html = '';
@@ -94,6 +101,16 @@ function loadDocuments(offset) {
 				}
 				document.getElementById('docsContent').style.display = 'block';
 			} else {
+				// Show helpful message based on debug info
+				var emptyMsg = 'No project files have been uploaded yet.';
+				if (d.debug) {
+					if (d.debug.projects_count === 0) {
+						emptyMsg = 'No projects are visible to you. Either no projects exist, or (if you are a Viewer) projects must be approved first.';
+					} else if (d.debug.projects_with_files === 0) {
+						emptyMsg = 'There are ' + d.debug.projects_count + ' visible projects, but none of them have files attached yet.';
+					}
+				}
+				document.getElementById('docsEmptyMsg').textContent = emptyMsg;
 				document.getElementById('docsEmpty').style.display = 'block';
 				document.getElementById('docsContent').style.display = 'block';
 			}

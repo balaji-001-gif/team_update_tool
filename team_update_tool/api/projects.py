@@ -419,10 +419,13 @@ def get_documents(limit=20, offset=0):
 		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
 		all_files = []
+		projects_with_files = 0
 		for p_name in projects:
 			try:
 				doc = frappe.get_cached_doc("Project", p_name)
+				has_files = False
 				for f in doc.project_files or []:
+					has_files = True
 					all_files.append({
 						"file": f.file,
 						"file_name": f.file_name or f.file,
@@ -431,6 +434,8 @@ def get_documents(limit=20, offset=0):
 						"project": p_name,
 						"project_title": getattr(doc, "project_title", p_name),
 					})
+				if has_files:
+					projects_with_files += 1
 			except Exception as proj_error:
 				frappe.log_error(f"Error loading project {p_name}: {str(proj_error)}", "get_documents Project Error")
 				continue
@@ -439,7 +444,17 @@ def get_documents(limit=20, offset=0):
 		total = len(all_files)
 		limited = all_files[offset:offset + limit]
 
-		return {"documents": limited, "total": total, "has_more": (offset + limit) < total}
+		return {
+			"documents": limited, 
+			"total": total, 
+			"has_more": (offset + limit) < total,
+			"debug": {
+				"projects_count": len(projects),
+				"projects_with_files": projects_with_files,
+				"is_admin": is_admin,
+				"is_viewer": is_viewer
+			}
+		}
 	except Exception as e:
 		frappe.log_error(f"Error in get_documents: {str(e)}", "get_documents Error")
 		return {"documents": [], "total": 0, "has_more": False, "error": str(e)}
