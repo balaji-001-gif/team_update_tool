@@ -1204,6 +1204,17 @@ body {
   margin: 0;
 }
 
+/* New Project Button - Dashboard Hero */
+.tut-dash-hero .btn:not(.btn-link) {
+  transition: all 0.2s ease;
+}
+.tut-dash-hero .btn:not(.btn-link):hover {
+  background: #15803d !important;
+  border-color: #15803d !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.3);
+}
+
 /* Dashboard Content */
 .tut-dash-content {
   background: #f8fafc;
