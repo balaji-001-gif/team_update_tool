@@ -214,12 +214,18 @@ def get_project_detail(name):
 	# README content - Fetch for all users (admin and view-only)
 	readme = {"readme_content": "", "readme_file": ""}
 	try:
-		# Try to get README from Project Readme doctype
-		readme_doc = frappe.db.get_value("Project Readme", {"project": name}, ["readme_content", "readme_file"], as_dict=1)
-		if readme_doc:
+		# Try direct SQL query to bypass any permission issues
+		readme_doc = frappe.db.sql("""
+			SELECT readme_content, readme_file 
+			FROM `tabProject Readme` 
+			WHERE project = %s 
+			LIMIT 1
+		""", (name,), as_dict=1)
+		
+		if readme_doc and len(readme_doc) > 0:
 			readme = {
-				"readme_content": readme_doc.get("readme_content") or "",
-				"readme_file": readme_doc.get("readme_file") or "",
+				"readme_content": readme_doc[0].get("readme_content") or "",
+				"readme_file": readme_doc[0].get("readme_file") or "",
 			}
 	except Exception as e:
 		frappe.log_error(f"Error getting README: {str(e)}", "get_project_detail README Error")
