@@ -21,9 +21,13 @@ def _get_visible_filters():
 	roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
 	filters = {}
 	if is_viewer:
-		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
-		if approved:
-			filters["status"] = approved
+		try:
+			approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+			if approved:
+				filters["status"] = approved
+		except Exception:
+			# If Project Status doesn't exist, don't apply filter
+			pass
 	return filters, is_admin, is_viewer
 
 
@@ -402,20 +406,34 @@ def get_documents(limit=20, offset=0):
 	"""Get all project files/documents grouped by project."""
 	try:
 		filters, is_admin, is_viewer = _get_visible_filters()
+		
+		# Validate limit and offset
+		limit = min(max(int(limit) if limit else 20, 1), 100)
+		offset = max(int(offset) if offset else 0, 0)
+		
+		# Check if Project doctype exists
+		if not frappe.db.exists("DocType", "Project"):
+			frappe.log_error("Project DocType does not exist in database", "get_documents Error")
+			return {"documents": [], "total": 0, "has_more": False, "error": "Project doctype not found"}
+		
 		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
 		all_files = []
 		for p_name in projects:
-			doc = frappe.get_cached_doc("Project", p_name)
-			for f in doc.project_files or []:
-				all_files.append({
-					"file": f.file,
-					"file_name": f.file_name or f.file,
-					"file_type": f.file_type or "",
-					"description": f.file_description or "",
-					"project": p_name,
-					"project_title": doc.project_title,
-				})
+			try:
+				doc = frappe.get_cached_doc("Project", p_name)
+				for f in doc.project_files or []:
+					all_files.append({
+						"file": f.file,
+						"file_name": f.file_name or f.file,
+						"file_type": f.file_type or "",
+						"description": f.file_description or "",
+						"project": p_name,
+						"project_title": getattr(doc, "project_title", p_name),
+					})
+			except Exception as proj_error:
+				frappe.log_error(f"Error loading project {p_name}: {str(proj_error)}", "get_documents Project Error")
+				continue
 
 		all_files.reverse()
 		total = len(all_files)
@@ -432,19 +450,33 @@ def get_gallery(limit=30, offset=0):
 	"""Get all screenshots from visible projects."""
 	try:
 		filters, is_admin, is_viewer = _get_visible_filters()
+		
+		# Validate limit and offset
+		limit = min(max(int(limit) if limit else 30, 1), 100)
+		offset = max(int(offset) if offset else 0, 0)
+		
+		# Check if Project doctype exists
+		if not frappe.db.exists("DocType", "Project"):
+			frappe.log_error("Project DocType does not exist in database", "get_gallery Error")
+			return {"screenshots": [], "total": 0, "has_more": False, "error": "Project doctype not found"}
+		
 		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
 		all_screenshots = []
 		for p_name in projects:
-			doc = frappe.get_cached_doc("Project", p_name)
-			for s in doc.screenshots or []:
-				all_screenshots.append({
-					"screenshot": s.screenshot,
-					"caption": s.caption or "",
-					"screenshot_type": s.screenshot_type or "",
-					"project": p_name,
-					"project_title": doc.project_title,
-				})
+			try:
+				doc = frappe.get_cached_doc("Project", p_name)
+				for s in doc.screenshots or []:
+					all_screenshots.append({
+						"screenshot": s.screenshot,
+						"caption": s.caption or "",
+						"screenshot_type": s.screenshot_type or "",
+						"project": p_name,
+						"project_title": getattr(doc, "project_title", p_name),
+					})
+			except Exception as proj_error:
+				frappe.log_error(f"Error loading project {p_name}: {str(proj_error)}", "get_gallery Project Error")
+				continue
 
 		all_screenshots.reverse()
 		total = len(all_screenshots)
