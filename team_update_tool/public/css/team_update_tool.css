@@ -1,33 +1,82 @@
 /* =====================================
-   Team Update Tool — Bootstrap 5 Professional UI
-   Uses Bootstrap 5 grid + components + custom styles
+   Team Update Tool — Premium Pro UI
+   Rich Gradient Colors & Modern Design
    ===================================== */
 
-/* --- Root Variables --- */
+/* --- Rich Professional Root Variables --- */
 :root {
-  --tut-primary: #16a34a;
-  --tut-primary-dark: #15803d;
-  --tut-primary-light: rgba(22, 163, 74, 0.08);
-  --tut-primary-gradient: linear-gradient(135deg, #16a34a 0%, #22c55e 100%);
-  --tut-primary-gradient-hover: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+  /* Primary Gradient Palette */
+  --tut-primary: #6366f1;
+  --tut-primary-dark: #4f46e5;
+  --tut-primary-light: rgba(99, 102, 241, 0.12);
+  --tut-primary-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
+  --tut-primary-gradient-hover: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+  
+  /* Secondary Accent Colors */
+  --tut-secondary: #ec4899;
+  --tut-secondary-dark: #db2777;
+  --tut-secondary-light: rgba(236, 72, 153, 0.12);
+  
+  /* Success/Violet Gradient */
+  --tut-success: #10b981;
+  --tut-success-gradient: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  
+  /* Warning/Orange Gradient */
+  --tut-warning: #f59e0b;
+  --tut-warning-gradient: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+  
+  /* Danger/Red Gradient */
+  --tut-danger: #ef4444;
+  --tut-danger-gradient: linear-gradient(135deg, #ef4444 0%, #f87171 100%);
+  
+  /* Info/Cyan Gradient */
+  --tut-info: #06b6d4;
+  --tut-info-gradient: linear-gradient(135deg, #06b6d4 0%, #22d3ee 100%);
+  
+  /* Rich Dark Theme */
+  --tut-dark: #0f172a;
+  --tut-dark-light: #1e293b;
+  --tut-dark-gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
+  
+  /* Background Colors */
   --tut-bg: #f8fafc;
-  --tut-card-bg: #fff;
-  --tut-border: rgba(0,0,0,0.07);
+  --tut-bg-dark: #f1f5f9;
+  --tut-card-bg: #ffffff;
+  
+  /* Border Colors */
+  --tut-border: rgba(0, 0, 0, 0.06);
   --tut-border-light: #e2e8f0;
-  --tut-text: #1e293b;
+  --tut-border-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+  
+  /* Text Colors */
+  --tut-text: #0f172a;
   --tut-text-muted: #64748b;
   --tut-text-light: #94a3b8;
-  --tut-navbar-height: 60px;
-  --tut-sidebar-width: 250px;
+  --tut-text-white: #ffffff;
+  
+  /* Glass Effect */
+  --tut-glass: rgba(255, 255, 255, 0.85);
+  --tut-glass-dark: rgba(15, 23, 42, 0.85);
+  
+  /* Layout */
+  --tut-navbar-height: 70px;
+  --tut-sidebar-width: 270px;
+  
+  /* Shadows */
   --tut-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-  --tut-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.1);
-  --tut-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-  --tut-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
-  --tut-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --tut-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --tut-shadow-md: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --tut-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --tut-shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --tut-shadow-glow: 0 0 40px rgba(99, 102, 241, 0.3);
+  --tut-shadow-glow-pink: 0 0 40px rgba(236, 72, 153, 0.3);
+  
+  /* Border Radius */
   --tut-radius-sm: 0.5rem;
   --tut-radius: 0.75rem;
   --tut-radius-lg: 1rem;
   --tut-radius-xl: 1.25rem;
+  --tut-radius-2xl: 1.5rem;
   --tut-radius-full: 9999px;
 }
 
