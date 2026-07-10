@@ -1,222 +1,435 @@
 {% extends "templates/web.html" %}
 
-{% block title %}Project - Team Update Tool{% endblock %}
+{% block title %}{{ title }} - Team Update Tool{% endblock %}
 
 {% block style %}
 <link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
 {% endblock %}
 
 {% block page_content %}
+<!-- Toast Container -->
+<div class="tut-toast-container" id="toastContainer"></div>
+
+<!-- Modern Page Header -->
+<div class="tut-project-header">
+    <div class="container">
+        <div class="tut-project-header-content">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="tut-breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/team_update_tool">Home</a></li>
+                    <li class="breadcrumb-item"><a href="/team_update_tool/projects">Projects</a></li>
+                    <li class="breadcrumb-item active" id="breadcrumbTitle">Loading...</li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
 <div class="tut-main-area">
-	<div class="container py-4">
-		<div class="tut-loading" id="projectLoading">
-			<div class="spinner-border text-success" role="status"></div>
-			<p class="text-muted mt-2">Loading project details...</p>
-		</div>
+    <div class="container py-4">
+        <!-- Loading State -->
+        <div class="tut-loading-modern" id="projectLoading">
+            <div class="tut-loading-spinner">
+                <div class="spinner"></div>
+            </div>
+            <p class="tut-loading-text">Loading project details...</p>
+        </div>
 
-		<div id="projectError" style="display:none;">
-			<div class="text-center py-5">
-				<div class="empty-icon mx-auto mb-2">
-					<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
-				</div>
-				<h4 id="errorMsg">Project not found</h4>
-				<a href="/team_update_tool/projects" class="btn btn-success rounded-pill px-4 mt-2">Back to Projects</a>
-			</div>
-		</div>
+        <!-- Error State -->
+        <div class="tut-error-state" id="projectError" style="display:none;">
+            <div class="tut-error-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="15" y1="9" x2="9" y2="15"/>
+                    <line x1="9" y1="9" x2="15" y2="15"/>
+                </svg>
+            </div>
+            <h3 class="tut-error-title" id="errorMsg">Project not found</h3>
+            <p class="tut-error-desc">The project you're looking for doesn't exist or has been removed.</p>
+            <a href="/team_update_tool/projects" class="tut-btn tut-btn-primary">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+                Back to Projects
+            </a>
+        </div>
 
-		<div id="projectDetail" style="display:none;"></div>
-	</div>
+        <!-- Project Detail -->
+        <div id="projectDetail" style="display:none;"></div>
+    </div>
 </div>
 {% endblock %}
 
 {% block script %}
-<script src="/assets/team_update_tool/js/team_update_tool.js"></script>
 <script>
 function escHtml(s) {
-	if (!s) return '';
-	return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    if (!s) return '';
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return '-';
+    var d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function getFileIcon(filename) {
+    var ext = filename.split('.').pop().toLowerCase();
+    var icons = {
+        'pdf': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        'doc': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>',
+        'docx': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+        'zip': '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>'
+    };
+    return icons[ext] || '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+}
+
+function formatFileSize(bytes) {
+    if (!bytes) return '';
+    var sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    var i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return Math.round(bytes / Math.pow(1024, i) * 100) / 100 + ' ' + sizes[i];
 }
 
 frappe.ready(function() {
-	var pathParts = window.location.pathname.split('/');
-	var projectName = pathParts[pathParts.length - 1];
-	if (projectName && projectName !== 'project' && projectName !== '') {
-		loadProject(projectName);
-	} else {
-		document.getElementById('projectLoading').style.display = 'none';
-		document.getElementById('projectError').style.display = 'block';
-		document.getElementById('errorMsg').textContent = 'No project specified.';
-	}
+    var pathParts = window.location.pathname.split('/');
+    var projectName = pathParts[pathParts.length - 1];
+    if (projectName && projectName !== 'project' && projectName !== '') {
+        loadProject(projectName);
+    } else {
+        document.getElementById('projectLoading').style.display = 'none';
+        document.getElementById('projectError').style.display = 'flex';
+        document.getElementById('errorMsg').textContent = 'No project specified.';
+    }
 });
 
 function loadProject(name) {
-	fetch('/api/method/team_update_tool.api.projects.get_project_detail?name=' + encodeURIComponent(name))
-		.then(function(r) { return r.json(); })
-		.then(function(data) {
-			if (data.message) {
-				renderProject(data.message);
-			} else if (data.exc) {
-				// Show actual server error
-				document.getElementById('projectLoading').style.display = 'none';
-				document.getElementById('projectError').style.display = 'block';
-				var errMsg = 'Error loading project.';
-				try {
-					var exc = JSON.parse(data.exc);
-					if (exc && exc[0] && exc[0].indexOf) {
-						errMsg = exc[0].indexOf('Error loading project') !== -1 ? exc[0].split(':').slice(1).join(':').trim() : exc[0];
-					}
-				} catch(e) {}
-				document.getElementById('errorMsg').textContent = errMsg;
-			} else {
-				document.getElementById('projectLoading').style.display = 'none';
-				document.getElementById('projectError').style.display = 'block';
-				document.getElementById('errorMsg').textContent = 'Project not found.';
-			}
-		})
-		.catch(function(err) {
-			document.getElementById('projectLoading').style.display = 'none';
-			document.getElementById('projectError').style.display = 'block';
-			document.getElementById('errorMsg').textContent = 'Network error: ' + err.message;
-		});
+    fetch('/api/method/team_update_tool.api.projects.get_project_detail?name=' + encodeURIComponent(name))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.message) {
+                renderProject(data.message);
+            } else if (data.exc) {
+                document.getElementById('projectLoading').style.display = 'none';
+                document.getElementById('projectError').style.display = 'flex';
+                var errMsg = 'Error loading project.';
+                try {
+                    var exc = JSON.parse(data.exc);
+                    if (exc && exc[0] && exc[0].indexOf) {
+                        errMsg = exc[0].indexOf('Error loading project') !== -1 ? exc[0].split(':').slice(1).join(':').trim() : exc[0];
+                    }
+                } catch(e) {}
+                document.getElementById('errorMsg').textContent = errMsg;
+            } else {
+                document.getElementById('projectLoading').style.display = 'none';
+                document.getElementById('projectError').style.display = 'flex';
+                document.getElementById('errorMsg').textContent = 'Project not found.';
+            }
+        })
+        .catch(function(err) {
+            document.getElementById('projectLoading').style.display = 'none';
+            document.getElementById('projectError').style.display = 'flex';
+            document.getElementById('errorMsg').textContent = 'Network error: ' + err.message;
+        });
 }
 
 function renderProject(p) {
-	var color = p.status && p.status.color ? p.status.color : '#6b7280';
-	var sname = p.status && p.status.status_name ? p.status.status_name : '';
-	var html = '';
+    var color = p.status && p.status.color ? p.status.color : '#16a34a';
+    var sname = p.status && p.status.status_name ? p.status.status_name : 'Active';
+    var html = '';
 
-	// Breadcrumb + Header
-	html += '<nav aria-label="breadcrumb" class="mb-3"><ol class="breadcrumb small">' +
-		'<li class="breadcrumb-item"><a href="/team_update_tool" class="text-decoration-none">Home</a></li>' +
-		'<li class="breadcrumb-item"><a href="/team_update_tool/projects" class="text-decoration-none">Projects</a></li>' +
-		'<li class="breadcrumb-item active" aria-current="page">' + escHtml(p.project_title) + '</li></ol></nav>';
+    // Hero Section
+    html += '<div class="tut-project-hero">' +
+        '<div class="tut-project-hero-bg"></div>' +
+        '<div class="tut-project-hero-content">' +
+            '<div class="tut-project-meta">' +
+                '<span class="tut-project-status" style="background:' + color + '20;color:' + color + ';border:1px solid ' + color + '30;">' +
+                    '<span class="tut-status-dot" style="background:' + color + '"></span>' + sname +
+                '</span>' +
+                (p.priority ? '<span class="tut-priority-badge ' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : '') +
+            '</div>' +
+            '<h1 class="tut-project-title">' + escHtml(p.project_title) + '</h1>' +
+            '<div class="tut-project-info-row">' +
+                '<div class="tut-project-info-item">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>' +
+                    '<span>' + escHtml(p.team_name || p.team || 'No Team') + '</span>' +
+                '</div>' +
+                (p.project_category ? '<div class="tut-project-info-item">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' +
+                    '<span>' + escHtml(p.project_category) + '</span>' +
+                '</div>' : '') +
+            '</div>' +
+        '</div>' +
+    '</div>';
 
-	html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-		'<div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-2">' +
-		'<h3 class="fw-bold m-0">' + escHtml(p.project_title) + '</h3>' +
-		'<span class="tut-status-badge" style="background:' + color + '15;color:' + color + ';border:1px solid ' + color + '30;font-size:0.82rem;padding:0.3rem 0.85rem;">' + sname + '</span></div>' +
-		'<div class="d-flex flex-wrap gap-3 mt-2">' +
-		'<span class="text-muted small"><strong>Team:</strong> ' + escHtml(p.team_name || p.team) + '</span>' +
-		(p.priority ? '<span class="small fw-semibold tut-priority-' + p.priority.toLowerCase() + '">' + p.priority + ' Priority</span>' : '') +
-		(p.project_category ? '<span class="text-muted small"><strong>Category:</strong> ' + escHtml(p.project_category) + '</span>' : '') +
-		'</div></div></div>';
+    // Main Content Grid
+    html += '<div class="tut-project-grid"><div class="tut-project-main">';
 
-	// Main grid
-	html += '<div class="row g-4"><div class="col-lg-8">';
+    // Description Section
+    if (p.description) {
+        html += '<div class="tut-content-card">' +
+            '<div class="tut-content-card-header">' +
+                '<div class="tut-content-card-icon green">' +
+                    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="tut-content-card-title">Description</h3>' +
+                    '<p class="tut-content-card-subtitle">Project overview and details</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="tut-content-card-body">' +
+                '<p class="tut-description-text">' + escHtml(p.description) + '</p>' +
+            '</div>' +
+        '</div>';
+    }
 
-	// Description
-	if (p.description) {
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h5 class="fw-bold mb-2">Description</h5>' +
-			'<p style="color:#334155;white-space:pre-wrap;">' + escHtml(p.description) + '</p></div></div>';
-	}
+    // README Section
+    if (p.readme) {
+        html += '<div class="tut-content-card">' +
+            '<div class="tut-content-card-header">' +
+                '<div class="tut-content-card-icon blue">' +
+                    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="tut-content-card-title">README</h3>' +
+                    '<p class="tut-content-card-subtitle">Project documentation</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="tut-content-card-body">';
+        
+        if (p.readme.readme_content) {
+            html += '<div class="tut-readme-content">' + escHtml(p.readme.readme_content) + '</div>';
+        }
+        
+        if (p.readme.readme_file) {
+            html += '<a href="' + p.readme.readme_file + '" target="_blank" class="tut-download-btn">' +
+                '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+                'Download README File' +
+            '</a>';
+        }
+        
+        html += '</div></div>';
+    }
 
-	// README Section
-	if (p.readme) {
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h5 class="fw-bold mb-3"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2" class="me-2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>README</h5>';
-		
-		if (p.readme.readme_content) {
-			html += '<div class="tut-readme-content">' + escHtml(p.readme.readme_content) + '</div>';
-		}
-		
-		if (p.readme.readme_file) {
-			html += '<div class="mt-3 pt-3 border-top">' +
-				'<a href="' + p.readme.readme_file + '" target="_blank" class="btn btn-success btn-sm rounded-pill">' +
-				'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download README File</a></div>';
-		}
-		
-		html += '</div></div>';
-	}
+    // Technologies Section
+    if (p.technologies && p.technologies.length) {
+        html += '<div class="tut-content-card">' +
+            '<div class="tut-content-card-header">' +
+                '<div class="tut-content-card-icon purple">' +
+                    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="tut-content-card-title">Technologies</h3>' +
+                    '<p class="tut-content-card-subtitle">Tech stack used in this project</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="tut-content-card-body">' +
+                '<div class="tut-tech-grid">';
+        p.technologies.forEach(function(t) { 
+            html += '<span class="tut-tech-badge">' + escHtml(t) + '</span>'; 
+        });
+        html += '</div></div></div>';
+    }
 
-	// Technologies
-	if (p.technologies && p.technologies.length) {
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h5 class="fw-bold mb-2">Technologies</h5><div>';
-		p.technologies.forEach(function(t) { html += '<span class="tut-tag">' + escHtml(t) + '</span> '; });
-		html += '</div></div></div>';
-	}
+    // Screenshots Section
+    if (p.screenshots && p.screenshots.length) {
+        html += '<div class="tut-content-card">' +
+            '<div class="tut-content-card-header">' +
+                '<div class="tut-content-card-icon teal">' +
+                    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="tut-content-card-title">Screenshots</h3>' +
+                    '<p class="tut-content-card-subtitle">' + p.screenshots.length + ' image(s)</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="tut-content-card-body">' +
+                '<div class="tut-screenshot-gallery">';
+        p.screenshots.forEach(function(s, i) {
+            html += '<div class="tut-screenshot-item" data-index="' + i + '">' +
+                '<img src="' + s.screenshot + '" alt="' + escHtml(s.caption || 'Screenshot ' + (i+1)) + '" loading="lazy">' +
+                '<div class="tut-screenshot-overlay">' +
+                    '<a href="' + s.screenshot + '" target="_blank" class="tut-screenshot-btn">' +
+                        '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>' +
+                    '</a>' +
+                '</div>' +
+                (s.caption ? '<div class="tut-screenshot-caption">' + escHtml(s.caption) + '</div>' : '') +
+            '</div>';
+        });
+        html += '</div></div></div>';
+    }
 
-	// Screenshots
-	if (p.screenshots && p.screenshots.length) {
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h5 class="fw-bold mb-3">Screenshots (' + p.screenshots.length + ')</h5>' +
-			'<div class="row g-2">';
-		p.screenshots.forEach(function(s) {
-			html += '<div class="col-md-6"><a href="' + s.screenshot + '" target="_blank" class="d-block rounded-3 overflow-hidden border" style="background:#f8f9fa;">' +
-				'<img src="' + s.screenshot + '" alt="' + escHtml(s.caption || 'Screenshot') + '" class="w-100" loading="lazy" style="display:block;">' +
-				(s.caption ? '<div class="p-2 small text-muted bg-white border-top">' + escHtml(s.caption) + '</div>' : '') +
-				'</a></div>';
-		});
-		html += '</div></div></div>';
-	}
+    // Files Section
+    if (p.files && p.files.length) {
+        html += '<div class="tut-content-card">' +
+            '<div class="tut-content-card-header">' +
+                '<div class="tut-content-card-icon orange">' +
+                    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="tut-content-card-title">Files</h3>' +
+                    '<p class="tut-content-card-subtitle">' + p.files.length + ' file(s)</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="tut-content-card-body">' +
+                '<div class="tut-file-list">';
+        p.files.forEach(function(f) {
+            html += '<a href="' + f.file + '" target="_blank" class="tut-file-card">' +
+                '<div class="tut-file-icon">' + getFileIcon(f.file_name || f.file) + '</div>' +
+                '<div class="tut-file-info">' +
+                    '<div class="tut-file-name">' + escHtml(f.file_name || f.file) + '</div>' +
+                    (f.description ? '<div class="tut-file-desc">' + escHtml(f.description) + '</div>' : '') +
+                '</div>' +
+                '<div class="tut-file-action">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+                '</div>' +
+            '</a>';
+        });
+        html += '</div></div></div>';
+    }
 
-	// Files
-	if (p.files && p.files.length) {
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h5 class="fw-bold mb-3">Files (' + p.files.length + ')</h5>';
-		p.files.forEach(function(f) {
-			html += '<a href="' + f.file + '" target="_blank" class="tut-file-item"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg><div><div class="tut-file-name">' + escHtml(f.file_name || f.file) + '</div>' + (f.description ? '<div class="tut-file-desc">' + escHtml(f.description) + '</div>' : '') + '</div></a>';
-		});
-		html += '</div></div>';
-	}
+    // Updates Section
+    if (p.updates && p.updates.length) {
+        html += '<div class="tut-content-card">' +
+            '<div class="tut-content-card-header">' +
+                '<div class="tut-content-card-icon green">' +
+                    '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="tut-content-card-title">Updates</h3>' +
+                    '<p class="tut-content-card-subtitle">Project progress and changes</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="tut-content-card-body">' +
+                '<div class="tut-timeline">';
+        p.updates.forEach(function(u) {
+            html += '<div class="tut-timeline-item">' +
+                '<div class="tut-timeline-marker"></div>' +
+                '<div class="tut-timeline-content">' +
+                    '<div class="tut-timeline-header">' +
+                        '<h4 class="tut-timeline-title">' + escHtml(u.update_title) + '</h4>' +
+                        '<span class="tut-timeline-date">' + (u.update_date ? formatDate(u.update_date) : '') + '</span>' +
+                    '</div>' +
+                    (u.update_description ? '<p class="tut-timeline-desc">' + escHtml(u.update_description) + '</p>' : '') +
+                    (u.updated_by ? '<div class="tut-timeline-author">' +
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+                        escHtml(u.updated_by) + '</div>' : '') +
+                '</div>' +
+            '</div>';
+        });
+        html += '</div></div></div>';
+    }
 
-	// Updates
-	if (p.updates && p.updates.length) {
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h5 class="fw-bold mb-3">Updates (' + p.updates.length + ')</h5>';
-		p.updates.forEach(function(u) {
-			html += '<div class="tut-update-item"><div class="d-flex justify-content-between align-items-start"><h5 class="m-0">' + escHtml(u.update_title) + '</h5><span class="tut-update-date">' + (u.update_date || '') + '</span></div>' +
-				(u.update_description ? '<div class="tut-update-desc">' + escHtml(u.update_description) + '</div>' : '') +
-				(u.updated_by ? '<div class="tut-update-author">— ' + escHtml(u.updated_by) + '</div>' : '') +
-				'</div>';
-		});
-		html += '</div></div>';
-	}
+    html += '</div>'; // end tut-project-main
 
-	html += '</div>'; // col-lg-8
+    // Sidebar
+    html += '<div class="tut-project-sidebar">';
 
-	// Sidebar
-	html += '<div class="col-lg-4">' +
-		'<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-		'<h6 class="fw-bold mb-3">Project Info</h6>' +
-		'<div class="d-flex flex-column gap-2 small">' +
-		'<div class="d-flex justify-content-between"><span class="text-muted">Created</span><span class="fw-medium">' + formatDate(p.creation) + '</span></div>' +
-		(p.start_date ? '<div class="d-flex justify-content-between"><span class="text-muted">Start</span><span class="fw-medium">' + p.start_date + '</span></div>' : '') +
-		(p.due_date ? '<div class="d-flex justify-content-between"><span class="text-muted">Due</span><span class="fw-medium">' + p.due_date + '</span></div>' : '') +
-		(p.completion_date ? '<div class="d-flex justify-content-between"><span class="text-muted">Completed</span><span class="fw-medium">' + p.completion_date + '</span></div>' : '') +
-		(p.approved_by ? '<div class="d-flex justify-content-between"><span class="text-muted">Approved By</span><span class="fw-medium">' + escHtml(p.approved_by) + '</span></div>' : '') +
-		'</div></div></div>';
+    // Project Info Card
+    html += '<div class="tut-sidebar-card">' +
+        '<div class="tut-sidebar-card-header">' +
+            '<h4 class="tut-sidebar-card-title">Project Details</h4>' +
+        '</div>' +
+        '<div class="tut-sidebar-card-body">' +
+            '<div class="tut-detail-list">';
 
-	// GitHub
-	if (p.github_repository) {
-		var g = p.github_info || {};
-		var repoUrl = (g && g.repository_url) ? g.repository_url : '#';
-		html += '<div class="card border-0 shadow-sm rounded-4 mb-4"><div class="card-body p-4">' +
-			'<h6 class="fw-bold mb-3"><svg width="18" height="18" viewBox="0 0 24 24" fill="#24292e" class="me-1"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>GitHub Repository</h6>' +
-			'<a href="' + repoUrl + '" target="_blank" class="btn btn-dark btn-sm w-100 rounded-pill mb-2 d-flex align-items-center justify-content-center gap-1"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg> Open Repository</a>' +
-			(g.default_branch ? '<div class="d-flex justify-content-between small text-muted mt-2"><span>Branch: ' + g.default_branch + '</span>' + (g.commit_hash ? '<span title="' + g.commit_hash + '">' + g.commit_hash.substring(0,7) + '...</span>' : '') + '</div>' : '') +
-			(g.languages ? '<div class="mt-1 small text-muted">' + escHtml(g.languages) + '</div>' : '') +
-			'</div></div>';
-	}
+    if (p.creation) {
+        html += '<div class="tut-detail-item">' +
+            '<div class="tut-detail-label">Created</div>' +
+            '<div class="tut-detail-value">' + formatDate(p.creation) + '</div>' +
+        '</div>';
+    }
+    if (p.start_date) {
+        html += '<div class="tut-detail-item">' +
+            '<div class="tut-detail-label">Start Date</div>' +
+            '<div class="tut-detail-value">' + formatDate(p.start_date) + '</div>' +
+        '</div>';
+    }
+    if (p.due_date) {
+        html += '<div class="tut-detail-item">' +
+            '<div class="tut-detail-label">Due Date</div>' +
+            '<div class="tut-detail-value">' + formatDate(p.due_date) + '</div>' +
+        '</div>';
+    }
+    if (p.completion_date) {
+        html += '<div class="tut-detail-item">' +
+            '<div class="tut-detail-label">Completed</div>' +
+            '<div class="tut-detail-value">' + formatDate(p.completion_date) + '</div>' +
+        '</div>';
+    }
+    if (p.approved_by) {
+        html += '<div class="tut-detail-item">' +
+            '<div class="tut-detail-label">Approved By</div>' +
+            '<div class="tut-detail-value">' + escHtml(p.approved_by) + '</div>' +
+        '</div>';
+    }
 
-	// Tags
-	if (p.tags) {
-		html += '<div class="card border-0 shadow-sm rounded-4"><div class="card-body p-4">' +
-			'<h6 class="fw-bold mb-2">Tags</h6><div class="d-flex flex-wrap gap-1">';
-		p.tags.split(',').forEach(function(t) {
-			t = t.trim();
-			if (t) html += '<span class="tut-tag">' + escHtml(t) + '</span>';
-		});
-		html += '</div></div></div>';
-	}
+    html += '</div></div></div>';
 
-	html += '</div></div>'; // end row
+    // GitHub Repository Card
+    if (p.github_repository) {
+        var g = p.github_info || {};
+        var repoUrl = (g && g.repository_url) ? g.repository_url : '#';
+        html += '<div class="tut-sidebar-card tut-github-card">' +
+            '<div class="tut-sidebar-card-header">' +
+                '<div class="tut-github-icon">' +
+                    '<svg width="24" height="24" viewBox="0 0 24 24" fill="#24292e"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>' +
+                '</div>' +
+                '<h4 class="tut-sidebar-card-title">Repository</h4>' +
+            '</div>' +
+            '<div class="tut-sidebar-card-body">' +
+                '<a href="' + repoUrl + '" target="_blank" class="tut-github-btn">' +
+                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>' +
+                    'Open Repository' +
+                '</a>';
+        
+        if (g.default_branch) {
+            html += '<div class="tut-github-info">' +
+                '<div class="tut-github-info-item">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>' +
+                    '<span>Branch: <strong>' + escHtml(g.default_branch) + '</strong></span>' +
+                '</div>';
+            if (g.commit_hash) {
+                html += '<div class="tut-github-info-item">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><line x1="1.05" y1="12" x2="7" y2="12"/><line x1="17.01" y1="12" x2="22.96" y2="12"/></svg>' +
+                    '<span>' + escHtml(g.commit_hash.substring(0,7)) + '...</span>' +
+                '</div>';
+            }
+            html += '</div>';
+        }
+        
+        if (g.languages) {
+            html += '<div class="tut-github-languages">' + escHtml(g.languages) + '</div>';
+        }
+        
+        html += '</div></div>';
+    }
 
-	var loading = document.getElementById('projectLoading');
-	if (loading) loading.remove();
-	document.getElementById('projectDetail').innerHTML = html;
-	document.getElementById('projectDetail').style.display = 'block';
+    // Tags Card
+    if (p.tags) {
+        html += '<div class="tut-sidebar-card">' +
+            '<div class="tut-sidebar-card-header">' +
+                '<h4 class="tut-sidebar-card-title">Tags</h4>' +
+            '</div>' +
+            '<div class="tut-sidebar-card-body">' +
+                '<div class="tut-tag-list">';
+        p.tags.split(',').forEach(function(t) {
+            t = t.trim();
+            if (t) html += '<span class="tut-tag-item">' + escHtml(t) + '</span>';
+        });
+        html += '</div></div></div>';
+    }
+
+    html += '</div></div>'; // end tut-project-sidebar and tut-project-grid
+
+    // Update breadcrumb
+    document.getElementById('breadcrumbTitle').textContent = p.project_title;
+    document.title = p.project_title + ' - Team Update Tool';
+
+    var loading = document.getElementById('projectLoading');
+    if (loading) loading.remove();
+    document.getElementById('projectDetail').innerHTML = html;
+    document.getElementById('projectDetail').style.display = 'block';
 }
 </script>
 {% endblock %}
