@@ -4,9 +4,10 @@
 
 {% block style %}
 <link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
 <style>
 /* =====================================
-   ERPNext 15 Professional Project Detail UI
+   Royal Professional Project Detail UI
    ===================================== */
 
 /* Toast Container */
@@ -20,11 +21,11 @@
     gap: 10px;
 }
 
-/* Page Header - ERPNext 15 Style */
+/* Page Header - Royal Style */
 .erp-page-header {
-    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+    background: var(--tut-dark-gradient);
     border-bottom: none;
-    padding: 2rem 0 1.5rem;
+    padding: 2.5rem 0 2rem;
     position: relative;
     overflow: hidden;
 }
@@ -32,23 +33,24 @@
 .erp-page-header::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -10%;
-    width: 400px;
-    height: 400px;
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 50%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%237c3aed' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    opacity: 0.5;
 }
 
 .erp-page-header::after {
     content: '';
     position: absolute;
-    bottom: -30%;
-    left: 10%;
-    width: 300px;
-    height: 300px;
-    background: rgba(255, 255, 255, 0.03);
+    top: -30%;
+    right: -5%;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, transparent 70%);
     border-radius: 50%;
+    animation: royalPulse 8s ease-in-out infinite;
 }
 
 .erp-page-header .container {
@@ -56,7 +58,7 @@
     z-index: 1;
 }
 
-/* Breadcrumb */
+/* Royal Breadcrumb */
 .erp-breadcrumb {
     margin-bottom: 1rem;
 }
@@ -79,32 +81,32 @@
 .erp-breadcrumb li:not(:last-child)::after {
     content: '/';
     margin-left: 0.5rem;
-    color: rgba(255,255,255,0.5);
+    color: rgba(255,255,255,0.4);
 }
 
 .erp-breadcrumb a {
     color: rgba(255, 255, 255, 0.85);
     text-decoration: none;
-    transition: color 0.15s ease;
+    transition: color 0.2s ease;
 }
 
 .erp-breadcrumb a:hover {
-    color: #ffffff;
+    color: var(--tut-gold-light);
 }
 
 .erp-breadcrumb li.active {
     color: #ffffff;
-    font-weight: 500;
+    font-weight: 600;
 }
 
-/* Main Content Area */
+/* Main Content Area - Royal */
 .erp-project-content {
-    background: #f5f7fa;
+    background: var(--tut-bg);
     min-height: calc(100vh - var(--tut-navbar-height));
     padding: 2rem 0;
 }
 
-/* Loading State */
+/* Loading State - Royal */
 .erp-loading {
     display: flex;
     flex-direction: column;
@@ -114,10 +116,10 @@
 }
 
 .erp-spinner {
-    width: 40px;
-    height: 40px;
-    border: 3px solid #e8eaed;
-    border-top-color: #1a73e8;
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(124, 58, 237, 0.2);
+    border-top-color: var(--tut-primary);
     border-radius: 50%;
     animation: erp-spin 0.8s linear infinite;
 }
@@ -127,12 +129,12 @@
 }
 
 .erp-loading p {
-    color: #5f6368;
+    color: var(--tut-text-muted);
     margin-top: 1rem;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
 }
 
-/* Error State */
+/* Error State - Royal */
 .erp-error-state {
     display: flex;
     flex-direction: column;
@@ -143,35 +145,37 @@
 }
 
 .erp-error-icon {
-    width: 80px;
-    height: 80px;
-    background: #ffebee;
+    width: 100px;
+    height: 100px;
+    background: var(--tut-primary-gradient);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     margin-bottom: 1.5rem;
-    color: #c62828;
+    color: #fff;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
 }
 
 .erp-error-state h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1c1e21;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1e1b4b;
     margin: 0 0 0.5rem;
 }
 
 .erp-error-state p {
-    color: #5f6368;
+    color: var(--tut-text-muted);
     margin: 0 0 1.5rem;
 }
 
-/* Project Hero Section */
+/* Project Hero Section - Royal */
 .erp-project-hero {
-    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 1.5rem;
+    background: var(--tut-dark-gradient);
+    border-radius: 1.25rem;
+    padding: 2.5rem;
+    margin-bottom: 1.75rem;
     position: relative;
     overflow: hidden;
 }
@@ -179,22 +183,23 @@
 .erp-project-hero::before {
     content: '';
     position: absolute;
-    top: -50%;
-    right: -10%;
+    top: -30%;
+    right: -5%;
     width: 300px;
     height: 300px;
-    background: rgba(255, 255, 255, 0.05);
+    background: radial-gradient(circle, rgba(217, 119, 6, 0.15) 0%, transparent 70%);
     border-radius: 50%;
+    animation: royalPulse 8s ease-in-out infinite;
 }
 
 .erp-project-hero::after {
     content: '';
     position: absolute;
-    bottom: -30%;
-    left: 10%;
+    bottom: -20%;
+    left: 5%;
     width: 200px;
     height: 200px;
-    background: rgba(255, 255, 255, 0.03);
+    background: radial-gradient(circle, rgba(124, 58, 237, 0.1) 0%, transparent 70%);
     border-radius: 50%;
 }
 
@@ -211,17 +216,19 @@
     flex-wrap: wrap;
 }
 
-/* Status Badge */
+/* Status Badge - Royal */
 .erp-status-badge {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 6px 12px;
-    border-radius: 6px;
+    padding: 6px 14px;
+    border-radius: 50rem;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.05em;
+    background: rgba(255,255,255,0.15);
+    backdrop-filter: blur(10px);
 }
 
 .erp-status-dot {
@@ -231,30 +238,32 @@
     flex-shrink: 0;
 }
 
-/* Priority Badge */
+/* Priority Badge - Royal */
 .erp-priority-badge {
     display: inline-flex;
     align-items: center;
-    padding: 4px 10px;
-    border-radius: 4px;
+    padding: 4px 12px;
+    border-radius: 50rem;
     font-size: 0.7rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.05em;
 }
 
-.erp-priority-badge.high { background: #ffebee; color: #c62828; }
-.erp-priority-badge.medium { background: #fff3e0; color: #e65100; }
-.erp-priority-badge.low { background: #e8f5e9; color: #2e7d32; }
-.erp-priority-badge.urgent { background: #ff1744; color: #ffffff; }
-.erp-priority-badge.critical { background: #b71c1c; color: #ffffff; }
+.erp-priority-badge.high { background: rgba(220, 38, 38, 0.2); color: #ff6b6b; }
+.erp-priority-badge.medium { background: rgba(217, 119, 6, 0.2); color: var(--tut-gold-light); }
+.erp-priority-badge.low { background: rgba(5, 150, 105, 0.2); color: #34d399; }
+.erp-priority-badge.urgent { background: #dc2626; color: #ffffff; }
+.erp-priority-badge.critical { background: #991b1b; color: #ffffff; }
 
 .erp-project-title {
-    font-size: 1.75rem;
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
     font-weight: 700;
     color: #ffffff;
     margin: 0 0 1rem;
     line-height: 1.3;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
 }
 
 .erp-project-info-row {
@@ -269,20 +278,21 @@
     align-items: center;
     gap: 0.5rem;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 0.875rem;
+    font-size: 0.9rem;
 }
 
 .erp-project-info-item svg {
     width: 18px;
     height: 18px;
-    opacity: 0.8;
+    opacity: 0.9;
+    color: var(--tut-gold);
 }
 
 /* Main Grid Layout */
 .erp-project-grid {
     display: grid;
     grid-template-columns: 1fr 340px;
-    gap: 1.5rem;
+    gap: 1.75rem;
 }
 
 @media (max-width: 992px) {
@@ -291,73 +301,81 @@
     }
 }
 
-/* Content Cards */
+/* Content Cards - Royal */
 .erp-card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    background: var(--tut-glass);
+    backdrop-filter: blur(20px);
+    border-radius: 1.25rem;
+    box-shadow: var(--tut-shadow);
+    border: 1px solid var(--tut-royal-border);
     overflow: hidden;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.75rem;
+    transition: all 0.3s ease;
+}
+
+.erp-card:hover {
+    box-shadow: var(--tut-royal-shadow);
+    border-color: rgba(139, 92, 246, 0.3);
 }
 
 .erp-card-header {
-    padding: 1.25rem 1.5rem;
-    border-bottom: 1px solid #e8eaed;
+    padding: 1.5rem 1.75rem;
+    border-bottom: 1px solid var(--tut-border-light);
     display: flex;
     align-items: center;
     gap: 1rem;
-    background: linear-gradient(to bottom, #ffffff, #fafafa);
+    background: linear-gradient(to bottom, rgba(124, 58, 237, 0.03), transparent);
 }
 
 .erp-card-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 10px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-.erp-card-icon.blue { background: #e3f2fd; color: #1976d2; }
-.erp-card-icon.green { background: #e8f5e9; color: #388e3c; }
-.erp-card-icon.purple { background: #f3e5f5; color: #7b1fa2; }
-.erp-card-icon.orange { background: #fff3e0; color: #f57c00; }
-.erp-card-icon.cyan { background: #e0f7fa; color: #00838f; }
+.erp-card-icon.blue { background: linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(59, 130, 246, 0.1)); color: #3b82f6; }
+.erp-card-icon.green { background: linear-gradient(135deg, rgba(5, 150, 105, 0.15), rgba(16, 185, 129, 0.1)); color: #059669; }
+.erp-card-icon.purple { background: linear-gradient(135deg, rgba(124, 58, 237, 0.15), rgba(139, 92, 246, 0.1)); color: var(--tut-primary); }
+.erp-card-icon.orange { background: linear-gradient(135deg, rgba(217, 119, 6, 0.15), rgba(245, 158, 11, 0.1)); color: var(--tut-gold); }
+.erp-card-icon.cyan { background: linear-gradient(135deg, rgba(8, 145, 178, 0.15), rgba(34, 211, 238, 0.1)); color: #0891b2; }
 
 .erp-card-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
 }
 
 .erp-card-title {
-    font-size: 1rem;
-    font-weight: 600;
-    color: #1c1e21;
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e1b4b;
     margin: 0;
 }
 
 .erp-card-subtitle {
     font-size: 0.8rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
     margin: 0.15rem 0 0;
 }
 
 .erp-card-body {
-    padding: 1.5rem;
+    padding: 1.75rem;
 }
 
-/* Description Text */
+/* Description Text - Royal */
 .erp-description-text {
-    color: #1c1e21;
+    color: var(--tut-text);
     font-size: 0.95rem;
-    line-height: 1.7;
+    line-height: 1.8;
     margin: 0;
     white-space: pre-wrap;
 }
 
-/* Technologies Grid */
+/* Technologies Grid - Royal */
 .erp-tech-grid {
     display: flex;
     flex-wrap: wrap;
@@ -368,15 +386,21 @@
     display: inline-flex;
     align-items: center;
     padding: 0.5rem 1rem;
-    background: linear-gradient(135deg, #e3f2fd 0%, #e8eaf6 100%);
-    border: 1px solid #c5cae9;
-    border-radius: 8px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(139, 92, 246, 0.05));
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 50rem;
     font-size: 0.85rem;
-    font-weight: 500;
-    color: #3949ab;
+    font-weight: 600;
+    color: var(--tut-primary);
+    transition: all 0.3s ease;
+}
+.erp-tech-badge:hover {
+    background: var(--tut-primary);
+    color: #fff;
+    transform: translateY(-2px);
 }
 
-/* Screenshot Gallery */
+/* Screenshot Gallery - Royal */
 .erp-screenshot-gallery {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -385,22 +409,28 @@
 
 .erp-screenshot-item {
     position: relative;
-    border-radius: 8px;
+    border-radius: 1rem;
     overflow: hidden;
     aspect-ratio: 16/10;
-    border: 1px solid #e0e0e0;
-    transition: all 0.2s ease;
+    border: 1px solid var(--tut-royal-border);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .erp-screenshot-item:hover {
-    border-color: #1a73e8;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    border-color: var(--tut-primary);
+    box-shadow: var(--tut-royal-shadow);
+    transform: translateY(-4px);
 }
 
 .erp-screenshot-item img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform 0.4s ease;
+}
+
+.erp-screenshot-item:hover img {
+    transform: scale(1.08);
 }
 
 .erp-screenshot-caption {
@@ -408,16 +438,18 @@
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 0.5rem 0.75rem;
-    background: rgba(0, 0, 0, 0.7);
+    padding: 0.75rem 1rem;
+    background: rgba(30, 27, 75, 0.85);
+    backdrop-filter: blur(10px);
     color: #ffffff;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
+    font-weight: 500;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
-/* File List */
+/* File List - Royal */
 .erp-file-list {
     display: flex;
     flex-direction: column;
@@ -428,28 +460,29 @@
     display: flex;
     align-items: center;
     gap: 1rem;
-    padding: 1rem;
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    padding: 1rem 1.25rem;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.03), transparent);
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1rem;
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition: all 0.3s ease;
 }
 
 .erp-file-card:hover {
-    background: #e8eaed;
-    border-color: #d0d0d0;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(139, 92, 246, 0.04));
+    border-color: var(--tut-primary);
+    transform: translateX(6px);
 }
 
 .erp-file-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    background: #ffffff;
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(139, 92, 246, 0.05));
     display: flex;
     align-items: center;
     justify-content: center;
-    color: #5f6368;
+    color: var(--tut-primary);
     flex-shrink: 0;
 }
 
@@ -460,8 +493,8 @@
 
 .erp-file-name {
     font-size: 0.9rem;
-    font-weight: 600;
-    color: #1c1e21;
+    font-weight: 700;
+    color: #1e1b4b;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -469,34 +502,36 @@
 
 .erp-file-desc {
     font-size: 0.8rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
     margin-top: 0.15rem;
 }
 
 .erp-file-action {
-    color: #5f6368;
-    transition: color 0.15s ease;
+    color: var(--tut-primary);
+    transition: all 0.2s ease;
 }
 
 .erp-file-card:hover .erp-file-action {
-    color: #1a73e8;
+    color: var(--tut-primary-dark);
+    transform: translateX(4px);
 }
 
-/* README Content */
+/* README Content - Royal */
 .erp-readme-content {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.25rem;
-    font-size: 0.875rem;
-    line-height: 1.6;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(139, 92, 246, 0.02));
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1rem;
+    padding: 1.5rem;
+    font-size: 0.9rem;
+    line-height: 1.7;
     overflow-x: auto;
     margin: 0;
     white-space: pre-wrap;
     word-wrap: break-word;
+    color: var(--tut-text);
 }
 
-/* Timeline */
+/* Timeline - Royal Premium */
 .erp-timeline {
     position: relative;
     padding-left: 2rem;
@@ -509,7 +544,7 @@
     top: 8px;
     bottom: 8px;
     width: 2px;
-    background: linear-gradient(180deg, #1a73e8 0%, #e8eaed 100%);
+    background: linear-gradient(180deg, var(--tut-primary) 0%, rgba(124, 58, 237, 0.1) 100%);
     border-radius: 1px;
 }
 
@@ -529,16 +564,17 @@
     width: 14px;
     height: 14px;
     border-radius: 50%;
-    background: #1a73e8;
+    background: var(--tut-primary);
     border: 3px solid #ffffff;
-    box-shadow: 0 0 0 2px #1a73e8;
+    box-shadow: 0 0 0 2px var(--tut-primary);
 }
 
 .erp-timeline-content {
-    background: #f8f9fa;
-    padding: 1.25rem;
-    border-radius: 8px;
-    border: 1px solid #e0e0e0;
+    background: var(--tut-glass);
+    backdrop-filter: blur(10px);
+    padding: 1.5rem;
+    border-radius: 1rem;
+    border: 1px solid var(--tut-royal-border);
 }
 
 .erp-timeline-header {
@@ -551,20 +587,20 @@
 
 .erp-timeline-title {
     font-size: 0.95rem;
-    font-weight: 600;
-    color: #1c1e21;
+    font-weight: 700;
+    color: #1e1b4b;
     margin: 0;
 }
 
 .erp-timeline-date {
     font-size: 0.8rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
     white-space: nowrap;
 }
 
 .erp-timeline-desc {
     font-size: 0.875rem;
-    color: #5f6368;
+    color: var(--tut-text);
     line-height: 1.6;
     margin: 0 0 0.5rem;
 }
@@ -574,22 +610,23 @@
     align-items: center;
     gap: 0.35rem;
     font-size: 0.8rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
 }
 
-/* Sidebar */
+/* Sidebar - Royal */
 .erp-project-sidebar {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
 }
 
-/* Sidebar Card */
+/* Sidebar Card - Royal */
 .erp-sidebar-card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(0, 0, 0, 0.04);
+    background: var(--tut-glass);
+    backdrop-filter: blur(20px);
+    border-radius: 1.25rem;
+    box-shadow: var(--tut-shadow);
+    border: 1px solid var(--tut-royal-border);
     overflow: hidden;
 }
 
@@ -598,22 +635,23 @@
     align-items: center;
     gap: 0.75rem;
     padding: 1.25rem 1.5rem;
-    background: linear-gradient(to bottom, #ffffff, #fafafa);
-    border-bottom: 1px solid #e8eaed;
+    background: linear-gradient(to bottom, rgba(124, 58, 237, 0.03), transparent);
+    border-bottom: 1px solid var(--tut-border-light);
 }
 
 .erp-sidebar-card-title {
+    font-family: 'Playfair Display', serif;
     font-size: 0.95rem;
-    font-weight: 600;
-    color: #1c1e21;
+    font-weight: 700;
+    color: #1e1b4b;
     margin: 0;
 }
 
 .erp-sidebar-card-body {
-    padding: 1.25rem 1.5rem;
+    padding: 1.5rem;
 }
 
-/* Detail List */
+/* Detail List - Royal */
 .erp-detail-list {
     display: flex;
     flex-direction: column;
@@ -629,24 +667,24 @@
 
 .erp-detail-label {
     font-size: 0.85rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
 }
 
 .erp-detail-value {
     font-size: 0.85rem;
-    font-weight: 600;
-    color: #1c1e21;
+    font-weight: 700;
+    color: #1e1b4b;
     text-align: right;
 }
 
-/* GitHub Card */
+/* GitHub Card - Royal */
 .erp-github-card .erp-sidebar-card-header {
     gap: 0.75rem;
 }
 
 .erp-github-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -658,18 +696,21 @@
     justify-content: center;
     gap: 0.5rem;
     width: 100%;
-    padding: 0.875rem 1rem;
-    background: #24292e;
+    padding: 1rem 1.25rem;
+    background: var(--tut-dark-gradient);
     color: #ffffff;
-    border-radius: 8px;
+    border-radius: 1rem;
     font-size: 0.9rem;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(30, 27, 75, 0.3);
 }
 
 .erp-github-btn:hover {
-    background: #1a1f24;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(30, 27, 75, 0.4);
+    background: linear-gradient(135deg, #4c1d95 0%, #312e81 100%);
     color: #ffffff;
 }
 
@@ -685,16 +726,16 @@
     align-items: center;
     gap: 0.5rem;
     font-size: 0.85rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
 }
 
 .erp-github-languages {
     margin-top: 0.75rem;
     font-size: 0.8rem;
-    color: #5f6368;
+    color: var(--tut-text-muted);
 }
 
-/* Tag List */
+/* Tag List - Royal */
 .erp-tag-list {
     display: flex;
     flex-wrap: wrap;
@@ -704,34 +745,38 @@
 .erp-tag-item {
     display: inline-flex;
     align-items: center;
-    padding: 0.35rem 0.75rem;
-    background: #f1f3f4;
-    border-radius: 6px;
+    padding: 0.4rem 0.85rem;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.08), rgba(139, 92, 246, 0.04));
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 50rem;
     font-size: 0.8rem;
-    font-weight: 500;
-    color: #5f6368;
+    font-weight: 600;
+    color: var(--tut-primary);
 }
 
-/* Back Button */
+/* Back Button - Royal */
 .erp-back-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    background: #ffffff;
-    color: #1a73e8;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    padding: 0.75rem 1.25rem;
+    background: var(--tut-glass);
+    backdrop-filter: blur(10px);
+    color: var(--tut-primary);
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1rem;
     font-size: 0.875rem;
     font-weight: 600;
     text-decoration: none;
-    transition: all 0.15s ease;
+    transition: all 0.3s ease;
 }
 
 .erp-back-btn:hover {
-    background: #1a73e8;
+    background: var(--tut-primary);
     color: #ffffff;
-    border-color: #1a73e8;
+    border-color: var(--tut-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.3);
 }
 
 /* Card Actions */
@@ -741,30 +786,37 @@
     margin-left: auto;
 }
 
-/* Download Button */
+/* Download Button - Royal */
 .erp-download-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.4rem;
-    padding: 0.5rem 1rem;
-    background: #1a73e8;
+    padding: 0.6rem 1.25rem;
+    background: var(--tut-primary-gradient);
     color: #ffffff;
     border: none;
-    border-radius: 6px;
+    border-radius: 50rem;
     font-size: 0.8rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.15s ease;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);
 }
 
 .erp-download-btn:hover {
-    background: #1557b0;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(124, 58, 237, 0.4);
 }
 
 .erp-download-btn svg {
     width: 16px;
     height: 16px;
+}
+
+/* Royal Animation */
+@keyframes royalPulse {
+    0%, 100% { transform: scale(1); opacity: 0.5; }
+    50% { transform: scale(1.05); opacity: 0.8; }
 }
 
 /* Responsive */
