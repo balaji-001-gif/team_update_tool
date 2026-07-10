@@ -4,41 +4,864 @@
 
 {% block style %}
 <link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+<style>
+/* =====================================
+   ERPNext 15 Professional Create Project UI
+   ===================================== */
+
+/* Page Header - ERPNext 15 Style */
+.erp-page-header {
+    background: linear-gradient(135deg, #1a73e8 0%, #0d47a1 100%);
+    border-bottom: none;
+    padding: 2.5rem 0 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.erp-page-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -10%;
+    width: 400px;
+    height: 400px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.erp-page-header::after {
+    content: '';
+    position: absolute;
+    bottom: -30%;
+    left: 10%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 50%;
+}
+
+.erp-page-header .container {
+    position: relative;
+    z-index: 1;
+}
+
+.erp-page-header h1 {
+    font-size: 1.75rem;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0;
+    letter-spacing: -0.02em;
+}
+
+.erp-page-header p {
+    color: rgba(255, 255, 255, 0.85);
+    margin: 0.5rem 0 0;
+    font-size: 0.95rem;
+}
+
+/* Main Content Area */
+.erp-create-content {
+    background: #f5f7fa;
+    min-height: calc(100vh - var(--tut-navbar-height));
+    padding: 2rem 0;
+}
+
+/* Step Progress - ERPNext 15 Style */
+.erp-step-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    position: relative;
+    padding: 0 1rem;
+}
+
+.erp-step-progress::before {
+    content: '';
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    right: 40px;
+    height: 3px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    z-index: 0;
+}
+
+.erp-step-progress-fill {
+    position: absolute;
+    top: 20px;
+    left: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, #1a73e8, #34a853);
+    border-radius: 2px;
+    z-index: 1;
+    transition: width 0.3s ease;
+}
+
+.erp-step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 2;
+    flex: 1;
+    max-width: 120px;
+}
+
+.erp-step-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #ffffff;
+    border: 3px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #5f6368;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.erp-step-item.active .erp-step-circle {
+    background: #1a73e8;
+    border-color: #1a73e8;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
+}
+
+.erp-step-item.completed .erp-step-circle {
+    background: #34a853;
+    border-color: #34a853;
+    color: #ffffff;
+}
+
+.erp-step-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #1c1e21;
+    margin-bottom: 0.25rem;
+}
+
+.erp-step-desc {
+    font-size: 0.75rem;
+    color: #5f6368;
+    text-align: center;
+}
+
+.erp-step-item.active .erp-step-label {
+    color: #1a73e8;
+}
+
+/* Form Card */
+.erp-form-card {
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.erp-form-card-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid #e8eaed;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: linear-gradient(to bottom, #ffffff, #fafafa);
+}
+
+.erp-form-card-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.erp-form-card-icon.blue { background: #e3f2fd; color: #1976d2; }
+.erp-form-card-icon.green { background: #e8f5e9; color: #388e3c; }
+.erp-form-card-icon.purple { background: #f3e5f5; color: #7b1fa2; }
+.erp-form-card-icon.orange { background: #fff3e0; color: #f57c00; }
+.erp-form-card-icon.cyan { background: #e0f7fa; color: #00838f; }
+
+.erp-form-card-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.erp-form-card-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1c1e21;
+    margin: 0;
+}
+
+.erp-form-card-subtitle {
+    font-size: 0.85rem;
+    color: #5f6368;
+    margin: 0.25rem 0 0;
+}
+
+.erp-form-card-body {
+    padding: 1.5rem;
+}
+
+/* Form Group */
+.erp-form-group {
+    margin-bottom: 1.25rem;
+}
+
+.erp-form-group:last-child {
+    margin-bottom: 0;
+}
+
+.erp-form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1c1e21;
+    margin-bottom: 0.5rem;
+}
+
+.erp-form-label .required {
+    color: #c62828;
+}
+
+/* Input Styles */
+.erp-form-input,
+.erp-form-select,
+.erp-form-textarea {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    color: #1c1e21;
+    background: #ffffff;
+    border: 1px solid #d0d0d0;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.erp-form-input:focus,
+.erp-form-select:focus,
+.erp-form-textarea:focus {
+    outline: none;
+    border-color: #1a73e8;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15);
+}
+
+.erp-form-input::placeholder,
+.erp-form-textarea::placeholder {
+    color: #9aa0a6;
+}
+
+.erp-form-input.is-invalid,
+.erp-form-select.is-invalid,
+.erp-form-textarea.is-invalid {
+    border-color: #c62828;
+    background: #fff5f5;
+}
+
+.erp-form-select {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%235f6368' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 40px;
+}
+
+.erp-form-textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+/* Tech Grid */
+.erp-tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+}
+
+.erp-tech-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+    color: #1c1e21;
+}
+
+.erp-tech-label:hover {
+    background: #e8eaed;
+    border-color: #d0d0d0;
+}
+
+.erp-tech-label input {
+    width: 18px;
+    height: 18px;
+    accent-color: #1a73e8;
+}
+
+.erp-tech-label.selected {
+    background: #e3f2fd;
+    border-color: #1a73e8;
+    color: #1976d2;
+}
+
+/* File Upload Area */
+.erp-upload-area {
+    border: 2px dashed #d0d0d0;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.erp-upload-area:hover {
+    border-color: #1a73e8;
+    background: #f0f4ff;
+}
+
+.erp-upload-area.dragover {
+    border-color: #1a73e8;
+    background: #e3f2fd;
+}
+
+.erp-upload-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 1rem;
+    background: #e8eaed;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5f6368;
+}
+
+.erp-upload-text {
+    font-size: 0.95rem;
+    color: #1c1e21;
+    margin-bottom: 0.25rem;
+}
+
+.erp-upload-hint {
+    font-size: 0.8rem;
+    color: #5f6368;
+}
+
+/* Preview Images */
+.erp-preview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.erp-preview-item {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 16/10;
+    border: 1px solid #e0e0e0;
+}
+
+.erp-preview-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.erp-preview-remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    border: none;
+    color: #ffffff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.erp-preview-remove:hover {
+    background: #c62828;
+}
+
+/* File List */
+.erp-file-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+.erp-file-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+}
+
+.erp-file-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #5f6368;
+}
+
+.erp-file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.erp-file-name {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #1c1e21;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.erp-file-size {
+    font-size: 0.75rem;
+    color: #5f6368;
+}
+
+.erp-file-remove {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    color: #5f6368;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.erp-file-remove:hover {
+    background: #ffebee;
+    border-color: #c62828;
+    color: #c62828;
+}
+
+/* Alert */
+.erp-alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.erp-alert.warning {
+    background: #fff3e0;
+    border: 1px solid #ffb74d;
+    color: #e65100;
+}
+
+.erp-alert-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.erp-alert-content {
+    flex: 1;
+    font-size: 0.875rem;
+}
+
+/* Form Buttons */
+.erp-form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem;
+    background: #fafafa;
+    border-top: 1px solid #e8eaed;
+}
+
+.erp-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.erp-btn-primary {
+    background: #1a73e8;
+    color: #ffffff;
+}
+
+.erp-btn-primary:hover {
+    background: #1557b0;
+    transform: translateY(-1px);
+}
+
+.erp-btn-secondary {
+    background: #ffffff;
+    color: #1a73e8;
+    border: 1px solid #d0d0d0;
+}
+
+.erp-btn-secondary:hover {
+    background: #f5f7fa;
+    border-color: #1a73e8;
+}
+
+.erp-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Message */
+.erp-message {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.erp-message.success {
+    background: #e8f5e9;
+    border: 1px solid #81c784;
+    color: #2e7d32;
+}
+
+.erp-message.error {
+    background: #ffebee;
+    border: 1px solid #e57373;
+    color: #c62828;
+}
+
+.erp-message-icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.erp-message-content {
+    flex: 1;
+}
+
+.erp-message-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.erp-message-link {
+    color: #1a73e8;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.erp-message-link:hover {
+    text-decoration: underline;
+}
+
+/* GitHub Status */
+.erp-github-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    margin-top: 0.5rem;
+}
+
+.erp-github-status.valid {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.erp-github-status.invalid {
+    background: #ffebee;
+    color: #c62828;
+}
+
+/* Toast */
+.erp-toast-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.erp-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+    animation: erp-toast-in 0.3s ease;
+}
+
+.erp-toast-icon {
+    flex-shrink: 0;
+}
+
+.erp-toast-content {
+    flex: 1;
+}
+
+.erp-toast-success .erp-toast-icon { color: #34a853; }
+.erp-toast-error .erp-toast-icon { color: #ea4335; }
+
+@keyframes erp-toast-in {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Additional Classes */
+.erp-btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1rem;
+}
+
+.erp-toast {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 300px;
+    animation: erp-toast-in 0.3s ease;
+}
+
+.erp-toast-icon {
+    flex-shrink: 0;
+}
+
+.erp-toast-content {
+    flex: 1;
+}
+
+.erp-toast-success .erp-toast-icon { color: #34a853; }
+.erp-toast-error .erp-toast-icon { color: #ea4335; }
+
+.erp-preview-value {
+    font-size: 0.875rem;
+    color: #5f6368;
+    margin-bottom: 0.25rem;
+}
+
+.erp-preview-value.large {
+    font-size: 1rem;
+    color: #1c1e21;
+    font-weight: 600;
+}
+
+.erp-preview-section {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #e8eaed;
+}
+
+.erp-preview-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.erp-preview-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #5f6368;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin-bottom: 0.35rem;
+}
+
+.erp-preview-images-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+}
+
+.erp-preview-image-thumb {
+    border-radius: 8px;
+    overflow: hidden;
+    aspect-ratio: 16/10;
+    border: 1px solid #e0e0e0;
+}
+
+.erp-preview-image-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.erp-tech-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background: #e3f2fd;
+    color: #1976d2;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.erp-tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.erp-upload-formats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.erp-upload-format-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    background: #f1f3f4;
+    color: #5f6368;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.erp-preview-desc-box {
+    background: #f8f9fa;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    line-height: 1.6;
+    margin-top: 0.5rem;
+    max-height: 150px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .erp-page-header {
+        padding: 1.5rem 0 1.25rem;
+    }
+    
+    .erp-page-header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .erp-create-content {
+        padding: 1.5rem 0;
+    }
+    
+    .erp-step-progress {
+        overflow-x: auto;
+        padding-bottom: 0.5rem;
+    }
+    
+    .erp-step-item {
+        min-width: 80px;
+    }
+    
+    .erp-form-card-header,
+    .erp-form-card-body {
+        padding: 1rem;
+    }
+    
+    .erp-form-actions {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .erp-form-actions .erp-btn {
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}
 
 {% block page_content %}
 <!-- Toast Container -->
-<div class="tut-toast-container" id="toastContainer"></div>
+<div class="erp-toast-container" id="toastContainer"></div>
 
-<!-- Modern Page Header -->
-<div class="tut-create-header">
+<!-- ERPNext 15 Style Page Header -->
+<div class="erp-page-header">
 	<div class="container">
-		<div class="tut-create-header-content">
-			<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-				<div>
-					<h1>{{ title }}</h1>
-					<p id="stepIndicator">Step 1 of 5: Project Information</p>
-				</div>
-				<div class="tut-step-badge">
-					<span class="tut-step-current">1</span>
-					<span class="tut-step-separator">/</span>
-					<span class="tut-step-total">5</span>
-				</div>
+		<div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+			<div>
+				<h1>{{ title }}</h1>
+				<p id="stepIndicator">Step 1 of 5: Project Information</p>
+			</div>
+			<div class="erp-step-badge" style="display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.5rem 1rem; background: rgba(255,255,255,0.2); border-radius: 50px; color: #fff; font-weight: 600;">
+				<span id="currentStepDisplay">1</span> / 5
 			</div>
 		</div>
 	</div>
 </div>
 
 <!-- Main Content Area -->
-<div class="tut-main-area">
-	<div class="container py-4">
+<div class="erp-create-content">
+	<div class="container">
 		<div class="row justify-content-center">
-			<div class="col-lg-9 col-xl-8">
+			<div class="col-lg-10 col-xl-9">
 
 				<!-- Modern Step Progress -->
-				<div class="tut-step-progress-wrapper">
-					<div class="tut-step-progress" id="stepProgress">
-						<div class="tut-step-progress-line-fill" id="stepLineFill"></div>
+				<div class="">
+					<div class="erp-step-progress" id="stepProgress">
+						<div class="erp-step-progress-fill" id="stepLineFill"></div>
 						{% set steps = [
 							{ 'name': 'Info', 'desc': 'Basic details', 'icon': 'info' },
 							{ 'name': 'GitHub', 'desc': 'Repository', 'icon': 'code' },
@@ -47,15 +870,15 @@
 							{ 'name': 'Preview', 'desc': 'Review', 'icon': 'check' }
 						] %}
 						{% for s in steps %}
-						<div class="tut-step-item {{ 'active' if loop.index == 1 else '' }}" data-step="{{ loop.index }}">
-							<div class="tut-step-circle">
+						<div class="erp-step-item {{ 'active' if loop.index == 1 else '' }}" data-step="{{ loop.index }}">
+							<div class="erp-step-circle">
 								<span class="step-number">{{ loop.index }}</span>
 								<span class="step-check" style="display:none;">
 									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
 								</span>
 							</div>
-							<div class="tut-step-label">{{ s.name }}</div>
-							<div class="tut-step-desc">{{ s.desc }}</div>
+							<div class="erp-step-label">{{ s.name }}</div>
+							<div class="erp-step-desc">{{ s.desc }}</div>
 						</div>
 						{% endfor %}
 					</div>
@@ -64,62 +887,62 @@
 				<!-- Form -->
 				<form id="projectForm" novalidate>
 					<!-- Step 1: Project Information -->
-					<div class="tut-form-card-modern step-panel" id="step1">
-						<div class="tut-form-card-header">
-							<div class="tut-form-card-icon green">
+					<div class="erp-form-card step-panel" id="step1">
+						<div class="erp-form-card-header">
+							<div class="erp-form-card-icon green">
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
 							</div>
 							<div>
-								<h3 class="tut-form-card-title">Project Information</h3>
-								<p class="tut-form-card-subtitle">Enter the basic details about your project</p>
+								<h3 class="erp-form-card-title">Project Information</h3>
+								<p class="erp-form-card-subtitle">Enter the basic details about your project</p>
 							</div>
 						</div>
-						<div class="tut-form-card-body">
+						<div class="erp-form-card-body">
 							<div class="row g-4">
 								<div class="col-md-12">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Project Title <span class="required">*</span></label>
-										<input type="text" id="project_title" name="project_title" class="tut-form-input-modern" required placeholder="Enter a descriptive project title">
-										<div class="tut-invalid-feedback">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Project Title <span class="required">*</span></label>
+										<input type="text" id="project_title" name="project_title" class="erp-form-input" required placeholder="Enter a descriptive project title">
+										<div class="erp-invalid-feedback">
 											<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 											Project title is required.
 										</div>
 									</div>
 								</div>
 								<div class="col-md-6">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Category <span class="required">*</span></label>
-										<select id="project_category" name="project_category" class="tut-form-select-modern" required>
+									<div class="erp-form-group">
+										<label class="erp-form-label">Category <span class="required">*</span></label>
+										<select id="project_category" name="project_category" class="erp-form-select" required>
 											<option value="">Select a category</option>
 											{% for c in categories %}
 											<option value="{{ c.name }}">{{ c.category_name }}</option>
 											{% endfor %}
 										</select>
-										<div class="tut-invalid-feedback">
+										<div class="erp-invalid-feedback">
 											<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 											Please select a category.
 										</div>
 									</div>
 								</div>
 								<div class="col-md-6">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Team <span class="required">*</span></label>
-										<select id="team" name="team" class="tut-form-select-modern" required>
+									<div class="erp-form-group">
+										<label class="erp-form-label">Team <span class="required">*</span></label>
+										<select id="team" name="team" class="erp-form-select" required>
 											<option value="">Select a team</option>
 											{% for t in teams %}
 											<option value="{{ t.name }}">{{ t.team_name }}</option>
 											{% endfor %}
 										</select>
-										<div class="tut-invalid-feedback">
+										<div class="erp-invalid-feedback">
 											<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 											Please select a team.
 										</div>
 									</div>
 								</div>
 								<div class="col-md-4">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Priority</label>
-										<select id="priority" name="priority" class="tut-form-select-modern">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Priority</label>
+										<select id="priority" name="priority" class="erp-form-select">
 											<option value="Low">Low Priority</option>
 											<option value="Medium" selected>Medium Priority</option>
 											<option value="High">High Priority</option>
@@ -128,43 +951,43 @@
 									</div>
 								</div>
 								<div class="col-md-4">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Start Date</label>
-										<input type="date" id="start_date" name="start_date" class="tut-form-input-modern">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Start Date</label>
+										<input type="date" id="start_date" name="start_date" class="erp-form-input">
 									</div>
 								</div>
 								<div class="col-md-4">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Due Date</label>
-										<input type="date" id="due_date" name="due_date" class="tut-form-input-modern">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Due Date</label>
+										<input type="date" id="due_date" name="due_date" class="erp-form-input">
 									</div>
 								</div>
 								<div class="col-md-12">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Technologies <span class="required">*</span></label>
+									<div class="erp-form-group">
+										<label class="erp-form-label">Technologies <span class="required">*</span></label>
 										{% if technologies %}
-										<div class="tut-tech-grid-modern" id="techGrid">
+										<div class="erp-tech-grid" id="techGrid">
 											{% for t in technologies %}
-											<label class="tut-tech-label-modern">
+											<label class="erp-tech-label">
 												<input type="checkbox" name="technologies" value="{{ t.name }}">
 												<span>{{ t.technology_name }}</span>
 											</label>
 											{% endfor %}
 										</div>
-										<div id="techValidation" class="tut-invalid-feedback">At least one technology must be selected.</div>
+										<div id="techValidation" class="erp-invalid-feedback">At least one technology must be selected.</div>
 										{% else %}
-										<div class="tut-alert-modern warning">
-											<svg class="tut-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+										<div class="erp-alert warning">
+											<svg class="erp-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
 											<div>No technologies found. Please create Technology records in Desk first before creating a project.</div>
 										</div>
 										{% endif %}
 									</div>
 								</div>
 								<div class="col-md-12">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Description <span class="required">*</span></label>
-										<textarea id="description" name="description" class="tut-form-textarea-modern" rows="4" required placeholder="Describe your project goals, features, and deliverables..."></textarea>
-										<div class="tut-invalid-feedback">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Description <span class="required">*</span></label>
+										<textarea id="description" name="description" class="erp-form-textarea" rows="4" required placeholder="Describe your project goals, features, and deliverables..."></textarea>
+										<div class="erp-invalid-feedback">
 											<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 											Description is required.
 										</div>
@@ -172,148 +995,148 @@
 								</div>
 							</div>
 						</div>
-						<div class="tut-form-card-footer">
+						<div class="erp-form-actions">
 							<div></div>
-							<button type="button" class="tut-btn tut-btn-primary" onclick="goToStep(2)">
+							<button type="button" class="erp-btn erp-btn-primary" onclick="goToStep(2)">
 								Continue to GitHub
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
 							</button>
 						</div>
 					</div>
 
 					<!-- Step 2: GitHub Repository -->
-					<div class="tut-form-card-modern step-panel" id="step2" style="display:none;">
-						<div class="tut-form-card-header">
-							<div class="tut-form-card-icon blue">
+					<div class="erp-form-card step-panel" id="step2" style="display:none;">
+						<div class="erp-form-card-header">
+							<div class="erp-form-card-icon blue">
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="#24292e"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
 							</div>
 							<div>
-								<h3 class="tut-form-card-title">GitHub Repository</h3>
-								<p class="tut-form-card-subtitle">Connect your project's source code repository</p>
+								<h3 class="erp-form-card-title">GitHub Repository</h3>
+								<p class="erp-form-card-subtitle">Connect your project's source code repository</p>
 							</div>
 						</div>
-						<div class="tut-form-card-body">
-							<div class="tut-alert-modern info">
-								<svg class="tut-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+						<div class="erp-form-card-body">
+							<div class="erp-alert warning">
+								<svg class="erp-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
 								<div>A valid GitHub repository URL is required. Example: <strong>https://github.com/user/repo</strong></div>
 							</div>
 							<div class="row g-4">
 								<div class="col-md-8">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">GitHub URL <span class="required">*</span></label>
-										<div class="tut-github-input-wrapper">
-											<input type="url" id="github_url" name="github_url" class="tut-form-input-modern" placeholder="https://github.com/username/repository" style="padding-right: 3rem;">
-											<div id="githubValidation" class="tut-github-status" style="display:none;"></div>
+									<div class="erp-form-group">
+										<label class="erp-form-label">GitHub URL <span class="required">*</span></label>
+										<div class="erp-github-input-wrapper">
+											<input type="url" id="github_url" name="github_url" class="erp-form-input" placeholder="https://github.com/username/repository" style="padding-right: 3rem;">
+											<div id="githubValidation" class="erp-github-status" style="display:none;"></div>
 										</div>
 									</div>
 								</div>
 								<div class="col-md-4">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Branch</label>
-										<input type="text" id="github_branch" name="github_branch" class="tut-form-input-modern" value="main" placeholder="main">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Branch</label>
+										<input type="text" id="github_branch" name="github_branch" class="erp-form-input" value="main" placeholder="main">
 									</div>
 								</div>
 							</div>
 						</div>
-						<div class="tut-form-card-footer">
-							<button type="button" class="tut-btn tut-btn-secondary" onclick="goToStep(1)">
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+						<div class="erp-form-actions">
+							<button type="button" class="erp-btn erp-btn-secondary" onclick="goToStep(1)">
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
 								Back
 							</button>
-							<button type="button" class="tut-btn tut-btn-primary" onclick="goToStep(3)">
+							<button type="button" class="erp-btn erp-btn-primary" onclick="goToStep(3)">
 								Continue to Screenshots
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
 							</button>
 						</div>
 					</div>
 
 					<!-- Step 3: Screenshots -->
-					<div class="tut-form-card-modern step-panel" id="step3" style="display:none;">
-						<div class="tut-form-card-header">
-							<div class="tut-form-card-icon purple">
+					<div class="erp-form-card step-panel" id="step3" style="display:none;">
+						<div class="erp-form-card-header">
+							<div class="erp-form-card-icon purple">
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
 							</div>
 							<div>
-								<h3 class="tut-form-card-title">Project Screenshots</h3>
-								<p class="tut-form-card-subtitle">Upload images to showcase your project</p>
+								<h3 class="erp-form-card-title">Project Screenshots</h3>
+								<p class="erp-form-card-subtitle">Upload images to showcase your project</p>
 							</div>
 						</div>
-						<div class="tut-form-card-body">
-							<div class="tut-alert-modern info">
-								<svg class="tut-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+						<div class="erp-form-card-body">
+							<div class="erp-alert warning">
+								<svg class="erp-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
 								<div>Upload at least one screenshot (PNG, JPG, JPEG, or WEBP). You can add multiple images.</div>
 							</div>
-							<div class="tut-form-group">
-								<label class="tut-form-label-modern">Upload Screenshots</label>
-								<div class="tut-upload-zone-modern" id="screenshotDropZone">
+							<div class="erp-form-group">
+								<label class="erp-form-label">Upload Screenshots</label>
+								<div class="erp-upload-area" id="screenshotDropZone">
 									<input type="file" id="screenshotInput" accept="image/png,image/jpeg,image/webp" multiple class="d-none">
-									<div class="tut-upload-icon">
+									<div class="erp-upload-icon">
 										<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
 									</div>
 									<h5>Drag & drop images here</h5>
 									<p>or click to browse your files</p>
-									<div class="tut-upload-formats">
-										<span class="tut-upload-format-tag">PNG</span>
-										<span class="tut-upload-format-tag">JPG</span>
-										<span class="tut-upload-format-tag">JPEG</span>
-										<span class="tut-upload-format-tag">WEBP</span>
+									<div class="erp-upload-formats">
+										<span class="erp-upload-format-tag">PNG</span>
+										<span class="erp-upload-format-tag">JPG</span>
+										<span class="erp-upload-format-tag">JPEG</span>
+										<span class="erp-upload-format-tag">WEBP</span>
 									</div>
 								</div>
-								<div class="tut-invalid-feedback">
+								<div class="erp-invalid-feedback">
 									<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 									At least one screenshot is required.
 								</div>
 							</div>
-							<div id="screenshotPreview" class="tut-screenshot-grid"></div>
+							<div id="screenshotPreview" class="erp-screenshot-grid"></div>
 							<input type="hidden" id="screenshotsData" name="screenshots" value="">
 						</div>
-						<div class="tut-form-card-footer">
-							<button type="button" class="tut-btn tut-btn-secondary" onclick="goToStep(2)">
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+						<div class="erp-form-actions">
+							<button type="button" class="erp-btn erp-btn-secondary" onclick="goToStep(2)">
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
 								Back
 							</button>
-							<button type="button" class="tut-btn tut-btn-primary" onclick="goToStep(4)">
+							<button type="button" class="erp-btn erp-btn-primary" onclick="goToStep(4)">
 								Continue to Documents
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
 							</button>
 						</div>
 					</div>
 
 					<!-- Step 4: Documents -->
-					<div class="tut-form-card-modern step-panel" id="step4" style="display:none;">
-						<div class="tut-form-card-header">
-							<div class="tut-form-card-icon orange">
+					<div class="erp-form-card step-panel" id="step4" style="display:none;">
+						<div class="erp-form-card-header">
+							<div class="erp-form-card-icon orange">
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
 							</div>
 							<div>
-								<h3 class="tut-form-card-title">Documents</h3>
-								<p class="tut-form-card-subtitle">Upload project files and documentation</p>
+								<h3 class="erp-form-card-title">Documents</h3>
+								<p class="erp-form-card-subtitle">Upload project files and documentation</p>
 							</div>
 						</div>
-						<div class="tut-form-card-body">
-							<div class="tut-alert-modern info">
-								<svg class="tut-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+						<div class="erp-form-card-body">
+							<div class="erp-alert warning">
+								<svg class="erp-alert-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
 								<div>Upload PDF, DOCX, TXT, or ZIP files related to your project. At least one document is required.</div>
 							</div>
 							<div class="row g-4">
 								<div class="col-md-12">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Upload Files <span class="required">*</span></label>
-										<div class="tut-upload-zone-modern" id="fileDropZone">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Upload Files <span class="required">*</span></label>
+										<div class="erp-upload-area" id="fileDropZone">
 											<input type="file" id="fileInput" accept=".pdf,.docx,.txt,.zip,.png,.jpg,.jpeg" multiple class="d-none">
-											<div class="tut-upload-icon">
+											<div class="erp-upload-icon">
 												<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
 											</div>
 											<h5>Drag & drop files here</h5>
 											<p>or click to browse your files</p>
-											<div class="tut-upload-formats">
-												<span class="tut-upload-format-tag">PDF</span>
-												<span class="tut-upload-format-tag">DOCX</span>
-												<span class="tut-upload-format-tag">TXT</span>
-												<span class="tut-upload-format-tag">ZIP</span>
+											<div class="erp-upload-formats">
+												<span class="erp-upload-format-tag">PDF</span>
+												<span class="erp-upload-format-tag">DOCX</span>
+												<span class="erp-upload-format-tag">TXT</span>
+												<span class="erp-upload-format-tag">ZIP</span>
 											</div>
 										</div>
-										<div class="tut-invalid-feedback">
+										<div class="erp-invalid-feedback">
 											<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 											At least one document file is required.
 										</div>
@@ -321,17 +1144,17 @@
 									<div id="filePreview" class="d-flex flex-column gap-2 mt-3"></div>
 								</div>
 								<div class="col-md-12">
-									<div class="tut-form-group">
-										<label class="tut-form-label-modern">Reference Document <span class="required">*</span></label>
-										<div class="tut-upload-zone-modern" id="referDocDropZone">
+									<div class="erp-form-group">
+										<label class="erp-form-label">Reference Document <span class="required">*</span></label>
+										<div class="erp-upload-area" id="referDocDropZone">
 											<input type="file" id="referDocInput" accept=".pdf,.docx,.txt,.md" class="d-none">
-											<div class="tut-upload-icon">
+											<div class="erp-upload-icon">
 												<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
 											</div>
 											<h5>Upload Reference Document</h5>
 											<p>PDF, DOCX, TXT, or Markdown file</p>
 										</div>
-										<div class="tut-invalid-feedback">
+										<div class="erp-invalid-feedback">
 											<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
 											Reference document is required.
 										</div>
@@ -341,51 +1164,51 @@
 							</div>
 							<input type="hidden" id="filesData" name="files" value="">
 						</div>
-						<div class="tut-form-card-footer">
-							<button type="button" class="tut-btn tut-btn-secondary" onclick="goToStep(3)">
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+						<div class="erp-form-actions">
+							<button type="button" class="erp-btn erp-btn-secondary" onclick="goToStep(3)">
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
 								Back
 							</button>
-							<button type="button" class="tut-btn tut-btn-primary" onclick="goToStep(5)">
+							<button type="button" class="erp-btn erp-btn-primary" onclick="goToStep(5)">
 								Review Project
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
 							</button>
 						</div>
 					</div>
 
 					<!-- Step 5: Preview & Submit -->
-					<div class="tut-form-card-modern step-panel" id="step5" style="display:none;">
-						<div class="tut-form-card-header">
-							<div class="tut-form-card-icon teal">
+					<div class="erp-form-card step-panel" id="step5" style="display:none;">
+						<div class="erp-form-card-header">
+							<div class="erp-form-card-icon cyan">
 								<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
 							</div>
 							<div>
-								<h3 class="tut-form-card-title">Review Your Project</h3>
-								<p class="tut-form-card-subtitle">Verify all information before submitting</p>
+								<h3 class="erp-form-card-title">Review Your Project</h3>
+								<p class="erp-form-card-subtitle">Verify all information before submitting</p>
 							</div>
 						</div>
-						<div class="tut-form-card-body">
-							<div id="previewContent" class="tut-preview-card">
+						<div class="erp-form-card-body">
+							<div id="previewContent" class="erp-form-card">
 								<div class="text-center py-5">
 									<div class="spinner-border text-success" role="status"></div>
 									<p class="mt-3 text-muted">Loading preview...</p>
 								</div>
 							</div>
 						</div>
-						<div class="tut-form-card-footer">
-							<button type="button" class="tut-btn tut-btn-secondary" onclick="goToStep(4)">
-								<svg class="tut-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+						<div class="erp-form-actions">
+							<button type="button" class="erp-btn erp-btn-secondary" onclick="goToStep(4)">
+								<svg class="erp-btn-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
 								Back
 							</button>
-							<button type="submit" class="tut-btn tut-btn-primary tut-btn-lg" id="submitBtn">
-								<svg class="tut-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+							<button type="submit" class="erp-btn erp-btn-primary tut-btn-lg" id="submitBtn">
+								<svg class="erp-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg>
 								Submit Project
 							</button>
 						</div>
 					</div>
 				</form>
 
-				<div id="formMessage" class="tut-message-modern" style="display:none;"></div>
+				<div id="formMessage" class="erp-message" style="display:none;"></div>
 			</div>
 		</div>
 	</div>
@@ -397,7 +1220,7 @@
 // ============================
 // Toast Notification System
 // ============================
-function tutToast(message, type) {
+function erpToast(message, type) {
     type = type || 'info';
     var container = document.getElementById('toastContainer');
     var icons = {
@@ -408,18 +1231,18 @@ function tutToast(message, type) {
     };
     
     var toast = document.createElement('div');
-    toast.className = 'tut-toast ' + type;
+    toast.className = 'erp-toast ' + type;
     toast.innerHTML = 
-        '<div class="tut-toast-icon">' + icons[type] + '</div>' +
-        '<div class="tut-toast-content">' +
-            '<div class="tut-toast-message">' + message + '</div>' +
+        '<div class="erp-toast-icon">' + icons[type] + '</div>' +
+        '<div class="erp-toast-content">' +
+            '<div class="erp-toast-message">' + message + '</div>' +
         '</div>';
     
     container.appendChild(toast);
     
     // Auto remove after 4 seconds
     setTimeout(function() {
-        toast.style.animation = 'tutToastSlideOut 0.3s ease forwards';
+        toast.style.animation = 'erpToastSlideOut 0.3s ease forwards';
         setTimeout(function() {
             if (toast.parentNode) toast.parentNode.removeChild(toast);
         }, 300);
@@ -462,7 +1285,7 @@ function goToStep(step) {
     currentStep = step;
 
     // Update progress indicators
-    var progressItems = document.querySelectorAll('.tut-step-item');
+    var progressItems = document.querySelectorAll('.erp-step-item');
     progressItems.forEach(function(item) {
         var s = parseInt(item.dataset.step);
         item.classList.remove('active', 'completed');
@@ -479,7 +1302,7 @@ function goToStep(step) {
     lineFill.style.width = 'calc(' + progressWidth + '% - 48px)';
 
     // Update step badge
-    var currentBadge = document.querySelector('.tut-step-current');
+    var currentBadge = document.querySelector('#currentStepDisplay');
     if (currentBadge) currentBadge.textContent = step;
 
     // Update step indicator
@@ -537,10 +1360,10 @@ function validateStep(step) {
             if (!pattern.test(githubUrl)) {
                 valid = false;
                 msg = 'Invalid GitHub URL format.';
-                gv.className = 'tut-github-status invalid';
+                gv.className = 'erp-github-status invalid';
                 gv.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Invalid';
             } else {
-                gv.className = 'tut-github-status valid';
+                gv.className = 'erp-github-status valid';
                 gv.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Valid';
             }
         }
@@ -567,7 +1390,7 @@ function validateStep(step) {
     }
 
     if (!valid && msg) {
-        tutToast(msg, 'warning');
+        erpToast(msg, 'warning');
     }
     return valid;
 }
@@ -625,7 +1448,7 @@ document.getElementById('screenshotInput').addEventListener('change', function(e
     var validTypes = ['image/png', 'image/jpeg', 'image/webp'];
     files.forEach(function(file) {
         if (!validTypes.includes(file.type)) {
-            tutToast('Invalid file type: ' + file.name + '. Only PNG, JPG, JPEG, WEBP allowed.', 'error');
+            erpToast('Invalid file type: ' + file.name + '. Only PNG, JPG, JPEG, WEBP allowed.', 'error');
             return;
         }
         var reader = new FileReader();
@@ -646,9 +1469,9 @@ function renderScreenshots() {
     }
     var html = '';
     uploadedScreenshots.forEach(function(s, i) {
-        html += '<div class="tut-screenshot-item">' +
+        html += '<div class="erp-preview-item">' +
             '<img src="' + s.dataUrl + '" alt="Screenshot">' +
-            '<button type="button" class="tut-screenshot-remove" onclick="removeScreenshot(' + i + ')">' +
+            '<button type="button" class="erp-preview-remove" onclick="removeScreenshot(' + i + ')">' +
                 '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
             '</button>' +
         '</div>';
@@ -693,12 +1516,12 @@ function renderFiles() {
         
         var icon = ext === 'pdf' ? '📄' : ext === 'docx' ? '📝' : ext === 'zip' ? '📦' : '📎';
         
-        html += '<div class="tut-file-preview-item">' +
-            '<div class="tut-file-preview-icon ' + iconClass + '">' + icon + '</div>' +
-            '<div class="tut-file-preview-info">' +
-                '<div class="tut-file-preview-name">' + escHtml(f.name) + '</div>' +
+        html += '<div class="erp-preview-item">' +
+            '<div class="erp-file-icon ' + iconClass + '">' + icon + '</div>' +
+            '<div class="erp-file-info">' +
+                '<div class="erp-file-name">' + escHtml(f.name) + '</div>' +
             '</div>' +
-            '<button type="button" class="tut-file-preview-remove" onclick="removeFile(' + i + ')">' +
+            '<button type="button" class="erp-preview-remove" onclick="removeFile(' + i + ')">' +
                 '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
             '</button>' +
         '</div>';
@@ -728,12 +1551,12 @@ document.getElementById('referDocInput').addEventListener('change', function(e) 
         if (ext === 'pdf') iconClass = 'pdf';
         else if (ext === 'md') iconClass = 'pdf';
         
-        container.innerHTML = '<div class="tut-file-preview-item mt-3">' +
-            '<div class="tut-file-preview-icon ' + iconClass + '">' + icon + '</div>' +
-            '<div class="tut-file-preview-info">' +
-                '<div class="tut-file-preview-name">' + escHtml(file.name) + '</div>' +
+        container.innerHTML = '<div class="erp-preview-item mt-3">' +
+            '<div class="erp-file-icon ' + iconClass + '">' + icon + '</div>' +
+            '<div class="erp-file-info">' +
+                '<div class="erp-file-name">' + escHtml(file.name) + '</div>' +
             '</div>' +
-            '<button type="button" class="tut-file-preview-remove" onclick="removeReferDoc()">' +
+            '<button type="button" class="erp-preview-remove" onclick="removeReferDoc()">' +
                 '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
             '</button>' +
         '</div>';
@@ -772,67 +1595,67 @@ function refreshPreview() {
     else if (priority === 'High') priorityClass = 'high';
     else if (priority === 'Urgent') priorityClass = 'urgent';
 
-    var html = '<div class="tut-preview-section">' +
-        '<div class="tut-preview-label">Project Title</div>' +
-        '<div class="tut-preview-value large">' + escHtml(title) + '</div>' +
+    var html = '<div class="erp-preview-section">' +
+        '<div class="erp-preview-label">Project Title</div>' +
+        '<div class="erp-preview-value large">' + escHtml(title) + '</div>' +
     '</div>' +
     '<div class="row g-0">' +
         '<div class="col-md-6">' +
-            '<div class="tut-preview-section">' +
-                '<div class="tut-preview-label">Team</div>' +
-                '<div class="tut-preview-value">' + escHtml(team) + '</div>' +
+            '<div class="erp-preview-section">' +
+                '<div class="erp-preview-label">Team</div>' +
+                '<div class="erp-preview-value">' + escHtml(team) + '</div>' +
             '</div>' +
         '</div>' +
         '<div class="col-md-6">' +
-            '<div class="tut-preview-section">' +
-                '<div class="tut-preview-label">Category</div>' +
-                '<div class="tut-preview-value">' + escHtml(category) + '</div>' +
+            '<div class="erp-preview-section">' +
+                '<div class="erp-preview-label">Category</div>' +
+                '<div class="erp-preview-value">' + escHtml(category) + '</div>' +
             '</div>' +
         '</div>' +
         '<div class="col-md-6">' +
-            '<div class="tut-preview-section">' +
-                '<div class="tut-preview-label">Priority</div>' +
-                '<div><span class="tut-priority-modern ' + priorityClass + '">' + escHtml(priority) + '</span></div>' +
+            '<div class="erp-preview-section">' +
+                '<div class="erp-preview-label">Priority</div>' +
+                '<div><span class="erp-priority-modern ' + priorityClass + '">' + escHtml(priority) + '</span></div>' +
             '</div>' +
         '</div>' +
         '<div class="col-md-6">' +
-            '<div class="tut-preview-section">' +
-                '<div class="tut-preview-label">Repository</div>' +
-                '<div class="tut-preview-value">' + escHtml(githubBranch) + '</div>' +
+            '<div class="erp-preview-section">' +
+                '<div class="erp-preview-label">Repository</div>' +
+                '<div class="erp-preview-value">' + escHtml(githubBranch) + '</div>' +
             '</div>' +
         '</div>' +
     '</div>' +
-    (techLabels.length ? '<div class="tut-preview-section">' +
-        '<div class="tut-preview-label">Technologies</div>' +
-        '<div class="tut-tech-tags">' + techLabels.map(function(t) { 
-            return '<span class="tut-tech-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ' + t + '</span>'; 
+    (techLabels.length ? '<div class="erp-preview-section">' +
+        '<div class="erp-preview-label">Technologies</div>' +
+        '<div class="erp-tech-tags">' + techLabels.map(function(t) { 
+            return '<span class="erp-tech-tag"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> ' + t + '</span>'; 
         }).join('') + '</div>' +
     '</div>' : '') +
-    '<div class="tut-preview-section">' +
-        '<div class="tut-preview-label">GitHub URL</div>' +
-        '<div class="tut-preview-value"><a href="' + escHtml(githubUrl) + '" target="_blank" style="color: var(--tut-primary);">' + escHtml(githubUrl) + '</a></div>' +
+    '<div class="erp-preview-section">' +
+        '<div class="erp-preview-label">GitHub URL</div>' +
+        '<div class="erp-preview-value"><a href="' + escHtml(githubUrl) + '" target="_blank" style="color: var(--tut-primary);">' + escHtml(githubUrl) + '</a></div>' +
     '</div>' +
-    '<div class="tut-preview-section">' +
-        '<div class="tut-preview-label">Description</div>' +
-        '<div class="tut-preview-desc-box">' + escHtml(desc) + '</div>' +
+    '<div class="erp-preview-section">' +
+        '<div class="erp-preview-label">Description</div>' +
+        '<div class="erp-preview-desc-box">' + escHtml(desc) + '</div>' +
     '</div>';
     
     if (uploadedScreenshots.length > 0) {
-        html += '<div class="tut-preview-section">' +
-            '<div class="tut-preview-label">Screenshots (' + uploadedScreenshots.length + ')</div>' +
-            '<div class="tut-preview-images-grid">' + uploadedScreenshots.map(function(s) { 
-                return '<div class="tut-preview-image-thumb"><img src="' + s.dataUrl + '" alt="Screenshot"></div>'; 
+        html += '<div class="erp-preview-section">' +
+            '<div class="erp-preview-label">Screenshots (' + uploadedScreenshots.length + ')</div>' +
+            '<div class="erp-preview-grid">' + uploadedScreenshots.map(function(s) { 
+                return '<div class="erp-preview-image-thumb"><img src="' + s.dataUrl + '" alt="Screenshot"></div>'; 
             }).join('') + '</div>' +
         '</div>';
     }
     
     if (uploadedFiles.length > 0) {
-        html += '<div class="tut-preview-section">' +
-            '<div class="tut-preview-label">Documents (' + uploadedFiles.length + ')</div>' +
-            '<div class="tut-preview-file-list">' + uploadedFiles.map(function(f) { 
+        html += '<div class="erp-preview-section">' +
+            '<div class="erp-preview-label">Documents (' + uploadedFiles.length + ')</div>' +
+            '<div class="erp-file-list">' + uploadedFiles.map(function(f) { 
                 var ext = f.name.split('.').pop().toLowerCase();
                 var icon = ext === 'pdf' ? '📄' : ext === 'docx' ? '📝' : ext === 'zip' ? '📦' : '📎';
-                return '<div class="tut-preview-file-item"><span>' + icon + '</span> ' + escHtml(f.name) + '</div>'; 
+                return '<div class="erp-file-item"><span>' + icon + '</span> ' + escHtml(f.name) + '</div>'; 
             }).join('') + '</div>' +
         '</div>';
     }
@@ -840,9 +1663,9 @@ function refreshPreview() {
     if (referDocFile) {
         var refExt = referDocFile.name.split('.').pop().toLowerCase();
         var refIcon = refExt === 'pdf' ? '📄' : refExt === 'docx' || refExt === 'doc' ? '📝' : refExt === 'md' ? '📑' : '📎';
-        html += '<div class="tut-preview-section">' +
-            '<div class="tut-preview-label">Reference Document</div>' +
-            '<div class="tut-preview-file-item"><span>' + refIcon + '</span> ' + escHtml(referDocFile.name) + '</div>' +
+        html += '<div class="erp-preview-section">' +
+            '<div class="erp-preview-label">Reference Document</div>' +
+            '<div class="erp-file-item"><span>' + refIcon + '</span> ' + escHtml(referDocFile.name) + '</div>' +
         '</div>';
     }
 
@@ -896,13 +1719,13 @@ document.getElementById('projectForm').addEventListener('submit', async function
         if (!projectResult.message || !projectResult.message.name) {
             if (projectResult.exc) {
                 var err = JSON.parse(projectResult.exc);
-                msgEl.className = 'tut-message-modern error';
-                msgEl.innerHTML = '<svg class="tut-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' +
-                    '<div class="tut-message-content"><div class="tut-message-title">Error</div>' + (err[0] || 'An error occurred') + '</div>';
+                msgEl.className = 'erp-message error';
+                msgEl.innerHTML = '<svg class="erp-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' +
+                    '<div class="erp-message-content"><div class="erp-message-title">Error</div>' + (err[0] || 'An error occurred') + '</div>';
                 msgEl.style.display = 'flex';
             }
             submitBtn.disabled = false;
-            submitBtn.innerHTML = '<svg class="tut-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Project';
+            submitBtn.innerHTML = '<svg class="erp-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Project';
             return;
         }
         
@@ -994,24 +1817,24 @@ document.getElementById('projectForm').addEventListener('submit', async function
         var successMsg = 'Project created successfully!';
         if (hasErrors) successMsg += ' Some files could not be uploaded.';
 
-        msgEl.className = 'tut-message-modern success';
-        msgEl.innerHTML = '<svg class="tut-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
-            '<div class="tut-message-content"><div class="tut-message-title">' + successMsg + '</div>' +
-            '<a href="/team_update_tool/project/' + projectName + '" class="tut-message-link">View Project →</a></div>';
+        msgEl.className = 'erp-message success';
+        msgEl.innerHTML = '<svg class="erp-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
+            '<div class="erp-message-content"><div class="erp-message-title">' + successMsg + '</div>' +
+            '<a href="/team_update_tool/project/' + projectName + '" class="erp-message-link">View Project →</a></div>';
         msgEl.style.display = 'flex';
         submitBtn.disabled = true;
-        submitBtn.innerHTML = '<svg class="tut-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Submitted';
+        submitBtn.innerHTML = '<svg class="erp-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Submitted';
 
         // Scroll to message
         msgEl.scrollIntoView({ behavior: 'smooth' });
 
     } catch (err) {
-        msgEl.className = 'tut-message-modern error';
-        msgEl.innerHTML = '<svg class="tut-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' +
-            '<div class="tut-message-content"><div class="tut-message-title">Error</div>Network error: ' + err.message + '</div>';
+        msgEl.className = 'erp-message error';
+        msgEl.innerHTML = '<svg class="erp-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>' +
+            '<div class="erp-message-content"><div class="erp-message-title">Error</div>Network error: ' + err.message + '</div>';
         msgEl.style.display = 'flex';
         submitBtn.disabled = false;
-        submitBtn.innerHTML = '<svg class="tut-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Project';
+        submitBtn.innerHTML = '<svg class="erp-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4 20-7z"/></svg> Submit Project';
     }
 });
 
@@ -1028,17 +1851,17 @@ document.getElementById('github_url').addEventListener('input', function() {
     var pattern = /^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/;
     gv.style.display = 'flex';
     if (pattern.test(url)) {
-        gv.className = 'tut-github-status valid';
+        gv.className = 'erp-github-status valid';
         gv.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Valid';
     } else {
-        gv.className = 'tut-github-status invalid';
+        gv.className = 'erp-github-status invalid';
         gv.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg> Invalid';
     }
 });
 
 // Add CSS for toast animation
 var style = document.createElement('style');
-style.textContent = '@keyframes tutToastSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }';
+style.textContent = '@keyframes erpToastSlideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }';
 document.head.appendChild(style);
 
 frappe.ready(function() {
