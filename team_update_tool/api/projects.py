@@ -606,6 +606,8 @@ def get_documents(limit=20, offset=0):
 		frappe.log_error(f"Error in get_documents: {str(e)}", "get_documents Error")
 		return {"documents": [], "total": 0, "has_more": False, "error": str(e)}
 
+
+@frappe.whitelist(allow_guest=True)
 def get_gallery(limit=30, offset=0):
 	"""Get all screenshots from visible projects."""
 	try:
