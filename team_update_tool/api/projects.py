@@ -512,7 +512,7 @@ def get_repositories(limit=20, offset=0):
 
 @frappe.whitelist(allow_guest=True)
 def get_documents(limit=20, offset=0):
-	"""Get all project files/documents grouped by project."""
+	"""Get all project files/documents and README files grouped by project."""
 	try:
 		roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
 		
@@ -527,7 +527,7 @@ def get_documents(limit=20, offset=0):
 		
 		# Build filters - show all projects to all users (no status restriction)
 		filters = {}
-		# Removed: No status filtering for view-only users - everyone can see all screenshots
+		# Removed: No status filtering for view-only users - everyone can see all documents
 		
 		projects = frappe.get_all("Project", filters=filters, pluck="name")
 
@@ -535,7 +535,7 @@ def get_documents(limit=20, offset=0):
 		for p_name in projects:
 			try:
 				doc = frappe.get_cached_doc("Project", p_name)
-				
+					
 				# Get project status info
 				status_name = "Unknown"
 				status_color = "#6b7280"
@@ -549,6 +549,9 @@ def get_documents(limit=20, offset=0):
 					except:
 						status_name = doc.status
 				
+				project_title = getattr(doc, "project_title", p_name)
+					
+				# Get project files
 				for f in doc.project_files or []:
 					all_files.append({
 						"file": f.file,
@@ -556,11 +559,40 @@ def get_documents(limit=20, offset=0):
 						"file_type": f.file_type or "",
 						"description": f.file_description or "",
 						"project": p_name,
-						"project_title": getattr(doc, "project_title", p_name),
+						"project_title": project_title,
 						"status": status_name,
 						"status_color": status_color,
 						"is_approved": is_approved,
+						"document_type": "file",
 					})
+				
+				# Get README files from Project Readme doctype
+				try:
+					readme_list = frappe.get_all("Project Readme",
+						filters={"project": p_name},
+						fields=["name", "readme_content", "readme_file"]
+					)
+					for rm in readme_list:
+						readme_desc = ""
+						if rm.readme_content:
+							readme_desc = rm.readme_content[:200] + "..." if len(rm.readme_content) > 200 else rm.readme_content
+						readme_name = rm.readme_file.split("/")[-1] if rm.readme_file else "README - " + project_title
+						all_files.append({
+							"file": rm.readme_file or "",
+							"file_name": readme_name,
+							"file_type": "md",
+							"description": readme_desc,
+							"project": p_name,
+							"project_title": project_title,
+							"status": status_name,
+							"status_color": status_color,
+							"is_approved": is_approved,
+							"document_type": "readme",
+							"readme_content": rm.readme_content or "",
+						})
+				except Exception:
+					pass
+						
 			except Exception as proj_error:
 				frappe.log_error(f"Error loading project {p_name}: {str(proj_error)}", "get_documents Project Error")
 				continue
@@ -574,8 +606,6 @@ def get_documents(limit=20, offset=0):
 		frappe.log_error(f"Error in get_documents: {str(e)}", "get_documents Error")
 		return {"documents": [], "total": 0, "has_more": False, "error": str(e)}
 
-
-@frappe.whitelist(allow_guest=True)
 def get_gallery(limit=30, offset=0):
 	"""Get all screenshots from visible projects."""
 	try:
