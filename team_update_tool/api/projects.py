@@ -464,53 +464,68 @@ def get_projects_for_user(user=None):
 def get_repositories(limit=20, offset=0):
 	"""Get GitHub repositories - fetches from GitHub Repository doctype or Project.github_repository field."""
 	try:
-		repos = frappe.get_all("GitHub Repository",
-			fields=["name", "repository_url", "repository_name", "commit_hash",
-					"default_branch", "languages", "creation"],
-			limit=limit,
-			start=offset,
-			order_by="creation desc",
-			ignore_permissions=True
-		)
-		total = len(frappe.get_all("GitHub Repository", pluck="name", ignore_permissions=True))
+		# Validate limit and offset
+		limit = min(max(int(limit) if limit else 20, 1), 100)
+		offset = max(int(offset) if offset else 0, 0)
 		
-		# If no GitHub Repository records, fetch from projects with github_repository field
-		if total == 0:
-			projects_with_github = frappe.get_all("Project",
-				fields=["name", "project_title", "github_repository", "creation"],
-				filters={"github_repository": ["is", "set"]},
-				limit=limit,
-				start=offset,
-				order_by="creation desc",
+		repos = []
+		total = 0
+		
+		# Method 1: Try to fetch from GitHub Repository doctype
+		try:
+			repos = frappe.get_all("GitHub Repository",
+				fields=["name", "repository_url", "repository_name", "commit_hash",
+						"default_branch", "languages", "creation"],
+				limit_page_length=limit,
 				ignore_permissions=True
 			)
-			repos = []
-			for p in projects_with_github:
-				repo_name = p.github_repository
-				# Try to get the GitHub Repository doc
-				try:
-					repo_doc = frappe.get_cached_doc("GitHub Repository", repo_name)
-					repos.append({
-						"name": repo_doc.name,
-						"repository_url": repo_doc.repository_url or "",
-						"repository_name": repo_doc.repository_name or p.project_title,
-						"commit_hash": repo_doc.commit_hash or "",
-						"default_branch": repo_doc.default_branch or "main",
-						"languages": repo_doc.languages or "",
-						"creation": str(p.creation),
-					})
-				except Exception:
-					# GitHub Repository doc doesn't exist, use project info
-					repos.append({
-						"name": repo_name,
-						"repository_url": "",
-						"repository_name": p.project_title or "GitHub Repository",
-						"commit_hash": "",
-						"default_branch": "main",
-						"languages": "",
-						"creation": str(p.creation),
-					})
-			total = len(repos)
+			
+			# Get total count
+			total = len(frappe.get_all("GitHub Repository", pluck="name", ignore_permissions=True))
+		except Exception as repo_error:
+			frappe.log_error(f"Error fetching GitHub Repository: {str(repo_error)}", "get_repositories Error")
+		
+		# Method 2: If no GitHub Repository records, fetch from projects with github_repository field
+		if total == 0:
+			try:
+				projects_with_github = frappe.get_all("Project",
+					fields=["name", "project_title", "github_repository", "creation"],
+					filters={"github_repository": ["is", "set"]},
+					ignore_permissions=True
+				)
+				
+				total = len(projects_with_github)
+				
+				# Apply pagination manually
+				paginated = projects_with_github[offset:offset + limit]
+				
+				for p in paginated:
+					repo_name = p.github_repository
+					# Try to get the GitHub Repository doc
+					try:
+						repo_doc = frappe.get_cached_doc("GitHub Repository", repo_name, ignore_permissions=True)
+						repos.append({
+							"name": repo_doc.name,
+							"repository_url": repo_doc.repository_url or "",
+							"repository_name": repo_doc.repository_name or p.project_title,
+							"commit_hash": repo_doc.commit_hash or "",
+							"default_branch": repo_doc.default_branch or "main",
+							"languages": repo_doc.languages or "",
+							"creation": str(p.creation),
+						})
+					except Exception:
+						# GitHub Repository doc doesn't exist, use project info
+						repos.append({
+							"name": repo_name,
+							"repository_url": "",
+							"repository_name": p.project_title or "GitHub Repository",
+							"commit_hash": "",
+							"default_branch": "main",
+							"languages": "",
+							"creation": str(p.creation),
+						})
+			except Exception as proj_error:
+				frappe.log_error(f"Error fetching projects with github_repository: {str(proj_error)}", "get_repositories Error")
 		
 		return {"repositories": repos, "total": total, "has_more": (offset + limit) < total}
 	except Exception as e:
