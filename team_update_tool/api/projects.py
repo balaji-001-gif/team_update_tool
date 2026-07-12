@@ -83,7 +83,7 @@ def get_projects(status=None, category=None, team=None, technology=None,
 
 			# Get first screenshot as preview
 			try:
-				project_doc = frappe.get_cached_doc("Project", p.name)
+				project_doc = frappe.get_cached_doc("Project", p.name, ignore_permissions=True)
 				p.screenshot_preview = ""
 				if project_doc.screenshots and len(project_doc.screenshots) > 0:
 					p.screenshot_preview = project_doc.screenshots[0].screenshot
@@ -743,7 +743,7 @@ def get_gallery(limit=30, offset=0):
 				project_title = ss.project
 				try:
 					if ss.project:
-						proj_doc = frappe.get_cached_doc("Project", ss.project)
+						proj_doc = frappe.get_cached_doc("Project", ss.project, ignore_permissions=True)
 						project_title = getattr(proj_doc, "project_title", ss.project)
 				except:
 					pass
@@ -765,7 +765,7 @@ def get_gallery(limit=30, offset=0):
 			for proj in projects:
 				p_name = proj.name
 				try:
-					doc = frappe.get_cached_doc("Project", p_name)
+					doc = frappe.get_cached_doc("Project", p_name, ignore_permissions=True)
 					for s in doc.screenshots or []:
 						# Check if this screenshot is already added
 						screenshot_url = s.screenshot
