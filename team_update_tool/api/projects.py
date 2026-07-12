@@ -793,12 +793,6 @@ def get_gallery(limit=30, offset=0):
 				
 				# Get project title
 				project_title = get_project_title(ss.project) if ss.project else "Project"
-				if ss.project:
-					try:
-						proj_doc = frappe.get_doc("Project", ss.project, ignore_permissions=True)
-						project_title = getattr(proj_doc, "project_title", ss.project)
-					except:
-						pass
 				
 				screenshot_path = get_screenshot_path(ss.screenshot)
 				if screenshot_path:
