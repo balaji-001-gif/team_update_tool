@@ -741,16 +741,25 @@ def get_gallery(limit=30, offset=0):
 		if screenshot_value.startswith("http://") or screenshot_value.startswith("https://"):
 			return screenshot_value
 		
-		# Get base URL using Frappe's utility
-		base_url = frappe.utils.get_url()
+		# Get base URL - try multiple methods
+		try:
+			base_url = frappe.utils.get_url()
+		except:
+			base_url = "http://team.update.bizaxl.local"
+		
+		# Handle private files first
+		if "private/files" in screenshot_value:
+			# For private files, we need to use the web proxy
+			path = screenshot_value.replace("/private/files/", "").replace("private/files/", "")
+			return base_url + "/files/" + path
 		
 		# Remove leading slash if present for joining
 		screenshot_value = screenshot_value.lstrip("/")
 		
-		# Handle files directory
+		# Handle files directory - direct file access
 		if screenshot_value.startswith("files/"):
 			return base_url + "/" + screenshot_value
-		elif screenshot_value.startswith("private/files/"):
+		elif screenshot_value.startswith("files/"):
 			return base_url + "/" + screenshot_value
 		else:
 			return base_url + "/files/" + screenshot_value
@@ -762,6 +771,12 @@ def get_gallery(limit=30, offset=0):
 		# Validate limit and offset
 		limit = min(max(int(limit) if limit else 30, 1), 100)
 		offset = max(int(offset) if offset else 0, 0)
+		
+		# Get base URL for debug
+		try:
+			debug_info["base_url"] = frappe.utils.get_url()
+		except:
+			debug_info["base_url"] = "http://team.update.bizaxl.local"
 		
 		# Helper function to get project title
 		def get_project_title(project_name):
@@ -776,7 +791,7 @@ def get_gallery(limit=30, offset=0):
 						 getattr(proj_doc, "name", None))
 				return title if title else project_name
 			except Exception as e:
-				debug_info["project_error_" + project_name] = str(e)
+				debug_info["project_error_" + str(project_name)] = str(e)
 				return project_name
 		
 		# Method 1: Fetch from Project Screenshots doctype directly
@@ -794,12 +809,16 @@ def get_gallery(limit=30, offset=0):
 				if not ss.screenshot:
 					continue
 				
+				# Debug: store original screenshot value
+				debug_info["method1_screenshot_" + str(ss.name)] = ss.screenshot
+				
 				# Get project title
 				project_id = ss.project or ""
 				project_title = get_project_title(project_id) if project_id else "Project"
 				
 				# Build full URL
 				full_url = build_full_url(ss.screenshot)
+				debug_info["method1_url_" + str(ss.name)] = full_url
 				
 				if full_url:
 					debug_info["method1_count"] = debug_info.get("method1_count", 0) + 1
@@ -809,6 +828,7 @@ def get_gallery(limit=30, offset=0):
 						"screenshot_type": ss.screenshot_type or "",
 						"project": project_id,
 						"project_title": project_title,
+						"original_path": ss.screenshot,
 					})
 		except Exception as ss_error:
 			debug_info["method1_error"] = str(ss_error)
@@ -816,36 +836,45 @@ def get_gallery(limit=30, offset=0):
 		
 		# Method 2: Fetch from Project child table (screenshots)
 		try:
-			projects = frappe.db.sql("SELECT name FROM `tabProject`", as_dict=True)
+			projects = frappe.db.sql("SELECT name, project_title FROM `tabProject`", as_dict=True)
 			debug_info["projects_count"] = len(projects)
+			debug_info["projects"] = [p.name for p in projects]
 			
 			for proj in projects:
 				p_name = proj.name
+				project_title = proj.project_title or p_name
+				
 				try:
 					doc = frappe.get_doc("Project", p_name, ignore_permissions=True)
-					project_title = get_project_title(p_name)
 					child_screenshot_count = 0
 					
-					for s in doc.screenshots or []:
-						if not s.screenshot:
-							continue
-						
-						# Build full URL
-						full_url = build_full_url(s.screenshot)
-						
-						# Check for duplicates
-						if full_url and not any(ss.get("screenshot") == full_url for ss in all_screenshots):
-							child_screenshot_count += 1
-							all_screenshots.append({
-								"screenshot": full_url,
-								"caption": s.caption or "",
-								"screenshot_type": s.screenshot_type or "",
-								"project": p_name,
-								"project_title": project_title,
-							})
+					# Check child table screenshots
+					if doc.screenshots:
+						for s in doc.screenshots:
+							if not s.screenshot:
+								continue
+							
+							debug_info["method2_screenshot_" + str(p_name)] = s.screenshot
+							
+							# Build full URL
+							full_url = build_full_url(s.screenshot)
+							debug_info["method2_url_" + str(p_name)] = full_url
+							
+							# Check for duplicates
+							if full_url and not any(ss.get("screenshot") == full_url for ss in all_screenshots):
+								child_screenshot_count += 1
+								all_screenshots.append({
+									"screenshot": full_url,
+									"caption": s.caption or "",
+									"screenshot_type": s.screenshot_type or "",
+									"project": p_name,
+									"project_title": project_title,
+									"original_path": s.screenshot,
+								})
 					
 					if child_screenshot_count > 0:
 						debug_info["method2_count"] = debug_info.get("method2_count", 0) + child_screenshot_count
+						debug_info["project_" + p_name + "_screenshots"] = child_screenshot_count
 				except Exception as proj_error:
 					debug_info["project_error_" + p_name] = str(proj_error)
 					continue
