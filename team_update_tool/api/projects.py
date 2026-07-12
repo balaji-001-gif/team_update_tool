@@ -749,8 +749,18 @@ def get_gallery(limit=30, offset=0):
 					pass
 				
 				if ss.screenshot:
+					# Build correct file URL
+					screenshot_url = ss.screenshot
+					if screenshot_url:
+						if not screenshot_url.startswith("http://") and not screenshot_url.startswith("https://"):
+							if screenshot_url.startswith("/files/"):
+								screenshot_url = (frappe.request.host_url or "http://localhost").rstrip("/") + screenshot_url
+							elif screenshot_url.startswith("files/"):
+								screenshot_url = (frappe.request.host_url or "http://localhost").rstrip("/") + "/" + screenshot_url
+							else:
+								screenshot_url = (frappe.request.host_url or "http://localhost").rstrip("/") + "/files/" + screenshot_url
 					all_screenshots.append({
-						"screenshot": ss.screenshot,
+						"screenshot": screenshot_url,
 						"caption": ss.caption or "",
 						"screenshot_type": ss.screenshot_type or "",
 						"project": ss.project or "",
@@ -768,10 +778,19 @@ def get_gallery(limit=30, offset=0):
 					doc = frappe.get_cached_doc("Project", p_name, ignore_permissions=True)
 					for s in doc.screenshots or []:
 						# Check if this screenshot is already added
-						screenshot_url = s.screenshot
-						if screenshot_url and not any(ss.get('screenshot') == screenshot_url for ss in all_screenshots):
+						# Build correct file URL
+						final_url = s.screenshot
+						if final_url:
+							if not final_url.startswith("http://") and not final_url.startswith("https://"):
+								if final_url.startswith("/files/"):
+									final_url = (frappe.request.host_url or "http://localhost").rstrip("/") + final_url
+								elif final_url.startswith("files/"):
+									final_url = (frappe.request.host_url or "http://localhost").rstrip("/") + "/" + final_url
+								else:
+									final_url = (frappe.request.host_url or "http://localhost").rstrip("/") + "/files/" + final_url
+						if final_url and not any(ss.get('screenshot') == final_url for ss in all_screenshots):
 							all_screenshots.append({
-								"screenshot": s.screenshot,
+								"screenshot": final_url,
 								"caption": s.caption or "",
 								"screenshot_type": s.screenshot_type or "",
 								"project": p_name,
