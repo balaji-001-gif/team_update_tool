@@ -172,7 +172,7 @@ function loadGallery(offset) {
 					html += '<div class="tut-gallery-card"><a href="' + screenshotUrl + '" target="_blank"><img src="' + screenshotUrl + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy"></a>' +
 						'<div class="card-body">' +
 						'<div class="d-flex align-items-center justify-content-between gap-2">' +
-						'<a href="/team_update_tool/project/' + s.project + '" class="fw-semibold small text-truncate text-decoration-none" style="color:#0f172a;">' + escHtml(s.project_title || 'View Project') + '</a>' +
+						'<a href="/team_update_tool/project/' + s.project + '" class="fw-semibold small text-truncate text-decoration-none" style="color:#0f172a;">' + escHtml(s.project_title || s.project || 'Project') + '</a>' +
 						(s.screenshot_type ? '<span class="badge bg-light text-muted fw-normal" style="font-size:0.7rem;">' + escHtml(s.screenshot_type) + '</span>' : '') +
 						'</div></div></div>';
 				});

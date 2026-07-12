@@ -761,6 +761,21 @@ def get_gallery(limit=30, offset=0):
 		limit = min(max(int(limit) if limit else 30, 1), 100)
 		offset = max(int(offset) if offset else 0, 0)
 		
+
+		# Helper function to get project title
+		def get_project_title(project_name):
+			"""Get the display title for a project."""
+			if not project_name:
+				return "Project"
+			try:
+				proj_doc = frappe.get_doc("Project", project_name, ignore_permissions=True)
+				title = (getattr(proj_doc, "project_title", None) or
+						getattr(proj_doc, "title", None) or
+						getattr(proj_doc, "name", None))
+				return title if title else project_name
+			except:
+				return project_name
+
 		# Method 1: Fetch from Project Screenshots doctype directly
 		try:
 			screenshot_records = frappe.db.sql("""
@@ -777,10 +792,10 @@ def get_gallery(limit=30, offset=0):
 					continue
 				
 				# Get project title
-				project_title = ss.project or "Unknown Project"
+				project_title = get_project_title(ss.project) if ss.project else "Project"
 				if ss.project:
 					try:
-						proj_doc = frappe.get_cached_doc("Project", ss.project, ignore_permissions=True)
+						proj_doc = frappe.get_doc("Project", ss.project, ignore_permissions=True)
 						project_title = getattr(proj_doc, "project_title", ss.project)
 					except:
 						pass
@@ -807,8 +822,8 @@ def get_gallery(limit=30, offset=0):
 			for proj in projects:
 				p_name = proj.name
 				try:
-					doc = frappe.get_cached_doc("Project", p_name, ignore_permissions=True)
-					project_title = getattr(doc, "project_title", p_name)
+					doc = frappe.get_doc("Project", p_name, ignore_permissions=True)
+					project_title = get_project_title(p_name)
 					child_screenshot_count = 0
 					
 					for s in doc.screenshots or []:
