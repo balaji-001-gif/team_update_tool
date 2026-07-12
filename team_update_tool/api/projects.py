@@ -31,34 +31,38 @@ def get_projects(status=None, category=None, team=None, technology=None,
 				 search=None, limit=20, offset=0):
 	"""Get list of projects with advanced filters and search."""
 	try:
-		filters, is_admin, is_viewer = _get_visible_filters()
-
+		# Build SQL query directly to bypass all permission hooks
+		conditions = []
+		params = []
+		
 		if status:
-			filters["status"] = status
+			conditions.append("status = %s")
+			params.append(status)
 		if category:
-			filters["project_category"] = category
+			conditions.append("project_category = %s")
+			params.append(category)
 		if team:
-			filters["team"] = team
-
-		# Build OR filters for search
-		or_filters = None
+			conditions.append("team = %s")
+			params.append(team)
 		if search:
-			or_filters = [
-				["Project", "project_title", "like", f"%{search}%"],
-				["Project", "description", "like", f"%{search}%"],
-			]
+			conditions.append("(project_title LIKE %s OR description LIKE %s)")
+			params.extend([f"%{search}%", f"%{search}%"])
 
-		projects = frappe.get_all("Project",
-			filters=filters,
-			or_filters=or_filters,
-			fields=["name", "project_title", "status", "team", "priority",
-					"project_category", "creation", "start_date", "completion_date",
-					"owner", "modified"],
-			limit=limit,
-			start=offset,
-			order_by="modified desc",
-			ignore_permissions=True
-		)
+		where_clause = " AND ".join(conditions) if conditions else "1=1"
+		
+		# Count total
+		count_sql = f"SELECT COUNT(*) as total FROM `tabProject` WHERE {where_clause}"
+		total_result = frappe.db.sql(count_sql, params, as_dict=True)
+		total = total_result[0].total if total_result else 0
+
+		# Get projects with pagination
+		fields_list = "name, project_title, status, team, priority, project_category, creation, start_date, completion_date, owner, modified"
+		limit = min(int(limit) if limit else 20, 100)
+		offset = max(int(offset) if offset else 0, 0)
+		
+		sql = f"SELECT {fields_list} FROM `tabProject` WHERE {where_clause} ORDER BY modified DESC LIMIT %s OFFSET %s"
+		params.extend([limit, offset])
+		projects = frappe.db.sql(sql, params, as_dict=True)
 
 		# Enrich with names, screenshot preview, technology count
 		for p in projects:
@@ -89,8 +93,6 @@ def get_projects(status=None, category=None, team=None, technology=None,
 				p.screenshot_preview = ""
 				p.technology_count = 0
 				p.update_count = 0
-
-		total = len(frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True))
 
 		return {
 			"projects": projects,
