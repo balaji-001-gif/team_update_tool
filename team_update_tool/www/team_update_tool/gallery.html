@@ -145,6 +145,7 @@
 
 {% block script %}
 <script>
+console.log('Gallery script loaded');
 var galleryLimit = 30;
 function escHtml(str) {
 if (!str) return '';
@@ -152,14 +153,16 @@ return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&
 }
 
 function loadGallery(offset) {
-document.getElementById('galleryLoading').style.display = 'block';
+console.log('Step 1: Starting gallery load');
+			document.getElementById('galleryLoading').style.display = 'block';
 document.getElementById('galleryContent').style.display = 'none';
 document.getElementById('galleryEmpty').style.display = 'none';
 
 // Use fetch API with proper Frappe URL format
 var apiUrl = '/api/method/team_update_tool.api.projects.get_gallery?limit=' + galleryLimit + '&offset=' + offset;
 
-fetch(apiUrl)
+console.log('Step 2: Fetching API');
+		fetch(apiUrl)
 .then(function(response) {
 if (!response.ok) {
 throw new Error('API request failed: ' + response.status);
