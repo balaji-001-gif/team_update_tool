@@ -56,7 +56,8 @@ def get_projects(status=None, category=None, team=None, technology=None,
 					"owner", "modified"],
 			limit=limit,
 			start=offset,
-			order_by="modified desc"
+			order_by="modified desc",
+			ignore_permissions=True
 		)
 
 		# Enrich with names, screenshot preview, technology count
@@ -89,7 +90,7 @@ def get_projects(status=None, category=None, team=None, technology=None,
 				p.technology_count = 0
 				p.update_count = 0
 
-		total = frappe.db.count("Project", filters=filters)
+		total = len(frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True))
 
 		return {
 			"projects": projects,
@@ -265,16 +266,16 @@ def get_dashboard_stats():
 	try:
 		filters, is_admin, is_viewer = _get_visible_filters()
 
-		total_projects = frappe.db.count("Project", filters=filters)
+		total_projects = len(frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True))
 
 		# Status-wise counts (even zero)
 		status_counts = []
 		try:
-			statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
+			statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc", ignore_permissions=True)
 			for s in statuses:
 				f = dict(filters)
 				f["status"] = s.name
-				count = frappe.db.count("Project", filters=f)
+				count = len(frappe.get_all("Project", filters=f, pluck="name", ignore_permissions=True))
 				status_counts.append({
 					"name": s.status_name,
 					"slug": s.name,
@@ -287,11 +288,11 @@ def get_dashboard_stats():
 		# Category counts
 		category_counts = []
 		try:
-			categories = frappe.get_all("Project Category", fields=["name", "category_name"])
+			categories = frappe.get_all("Project Category", fields=["name", "category_name"], ignore_permissions=True)
 			for c in categories:
 				f = dict(filters)
 				f["project_category"] = c.name
-				count = frappe.db.count("Project", filters=f)
+				count = len(frappe.get_all("Project", filters=f, pluck="name", ignore_permissions=True))
 				if count:
 					category_counts.append({
 						"name": c.category_name,
@@ -307,7 +308,8 @@ def get_dashboard_stats():
 				filters=filters,
 				fields=["name", "project_title", "status", "owner", "creation", "modified"],
 				limit=6,
-				order_by="modified desc"
+				order_by="modified desc",
+				ignore_permissions=True
 			)
 			for p in recent:
 				if p.status:
@@ -326,7 +328,8 @@ def get_dashboard_stats():
 			recent_repos = frappe.get_all("GitHub Repository",
 				fields=["name", "repository_name", "repository_url", "creation"],
 				limit=5,
-				order_by="creation desc"
+				order_by="creation desc",
+				ignore_permissions=True
 			)
 		except Exception:
 			recent_repos = []
@@ -334,7 +337,7 @@ def get_dashboard_stats():
 		# Recent screenshots
 		recent_screenshots = []
 		try:
-			projects = frappe.get_all("Project", filters=filters, pluck="name")
+			projects = frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True)
 			for p_name in projects[:10]:
 				try:
 					doc = frappe.get_cached_doc("Project", p_name)
@@ -360,9 +363,9 @@ def get_dashboard_stats():
 		total_technologies = 0
 		total_categories = 0
 		try:
-			total_teams = frappe.db.count("Team", filters={"is_active": 1})
-			total_technologies = frappe.db.count("Technology")
-			total_categories = frappe.db.count("Project Category")
+			total_teams = len(frappe.get_all("Team", filters={"is_active": 1}, pluck="name", ignore_permissions=True))
+			total_technologies = len(frappe.get_all("Technology", pluck="name", ignore_permissions=True))
+			total_categories = len(frappe.get_all("Project Category", pluck="name", ignore_permissions=True))
 		except Exception:
 			pass
 
@@ -370,7 +373,7 @@ def get_dashboard_stats():
 		my_projects = 0
 		if frappe.session.user != "Guest" and not is_viewer:
 			try:
-				my_projects = frappe.db.count("Project", filters={"owner": frappe.session.user})
+				my_projects = len(frappe.get_all("Project", filters={"owner": frappe.session.user}, pluck="name", ignore_permissions=True))
 			except Exception:
 				pass
 
@@ -444,7 +447,8 @@ def get_projects_for_user(user=None):
 		filters={"owner": user},
 		fields=["name", "project_title", "status", "team", "priority",
 				"project_category", "creation", "completion_date", "modified"],
-		order_by="modified desc"
+		order_by="modified desc",
+		ignore_permissions=True
 	)
 	for p in projects:
 		if p.status:
@@ -463,9 +467,10 @@ def get_repositories(limit=20, offset=0):
 					"default_branch", "languages", "creation"],
 			limit=limit,
 			start=offset,
-			order_by="creation desc"
+			order_by="creation desc",
+			ignore_permissions=True
 		)
-		total = frappe.db.count("GitHub Repository")
+		total = len(frappe.get_all("GitHub Repository", pluck="name", ignore_permissions=True))
 		
 		# If no GitHub Repository records, fetch from projects with github_repository field
 		if total == 0:
@@ -474,7 +479,8 @@ def get_repositories(limit=20, offset=0):
 				filters={"github_repository": ["is", "set"]},
 				limit=limit,
 				start=offset,
-				order_by="creation desc"
+				order_by="creation desc",
+				ignore_permissions=True
 			)
 			repos = []
 			for p in projects_with_github:
@@ -534,7 +540,8 @@ def get_documents(limit=20, offset=0):
 		# Method 1: Fetch from Project Files doctype directly
 		try:
 			file_records = frappe.get_all("Project Files",
-				fields=["name", "file", "file_name", "file_type", "file_description", "project"]
+				fields=["name", "file", "file_name", "file_type", "file_description", "project"],
+				ignore_permissions=True
 			)
 			
 			for fr in file_records:
@@ -578,7 +585,8 @@ def get_documents(limit=20, offset=0):
 		# Method 2: Fetch from Project Readme doctype directly
 		try:
 			readme_records = frappe.get_all("Project Readme",
-				fields=["name", "readme_content", "readme_file", "project"]
+				fields=["name", "readme_content", "readme_file", "project"],
+				ignore_permissions=True
 			)
 			
 			for rm in readme_records:
@@ -625,7 +633,7 @@ def get_documents(limit=20, offset=0):
 			frappe.log_error(f"Error fetching from Project Readme: {str(readme_error)}", "get_documents Error")
 		
 		# Method 3: Also check for files in Project child tables as fallback
-		projects = frappe.get_all("Project", filters=filters, pluck="name")
+		projects = frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True)
 		for p_name in projects:
 			try:
 				doc = frappe.get_cached_doc("Project", p_name)
@@ -664,7 +672,8 @@ def get_documents(limit=20, offset=0):
 				try:
 					readme_list = frappe.get_all("Project Readme",
 						filters={"project": p_name},
-						fields=["name", "readme_content", "readme_file"]
+						fields=["name", "readme_content", "readme_file"],
+                                                ignore_permissions=True
 					)
 					for rm in readme_list:
 						readme_desc = ""
@@ -748,7 +757,7 @@ def get_gallery(limit=30, offset=0):
 		
 		# Method 2: Also check for screenshots in Project child table
 		try:
-			projects = frappe.get_all("Project", pluck="name")
+			projects = frappe.get_all("Project", pluck="name", ignore_permissions=True)
 			for p_name in projects:
 				try:
 					doc = frappe.get_cached_doc("Project", p_name)
@@ -1084,21 +1093,20 @@ def add_project_update(name, update_title, update_description=None, status=None)
 @frappe.whitelist(allow_guest=True)
 def get_all_public_stats():
 	"""Get public stats for landing page (no login required)."""
-	approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+	# Don't filter by status - show all projects to all users
 	filters = {}
-	if approved:
-		filters["status"] = approved
 
-	total_projects = frappe.db.count("Project", filters=filters)
-	total_teams = frappe.db.count("Team", filters={"is_active": 1})
-	total_technologies = frappe.db.count("Technology")
-	total_categories = frappe.db.count("Project Category")
+	total_projects = len(frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True))
+	total_teams = len(frappe.get_all("Team", filters={"is_active": 1}, pluck="name", ignore_permissions=True))
+	total_technologies = len(frappe.get_all("Technology", pluck="name", ignore_permissions=True))
+	total_categories = len(frappe.get_all("Project Category", pluck="name", ignore_permissions=True))
 
 	featured = frappe.get_all("Project",
 		filters=filters,
 		fields=["name", "project_title", "status", "team", "project_category", "creation"],
 		limit=6,
-		order_by="creation desc"
+		order_by="creation desc",
+		ignore_permissions=True
 	)
 	for p in featured:
 		if p.status:
@@ -1107,14 +1115,18 @@ def get_all_public_stats():
 			p.status_color = s.color
 
 	categories = frappe.get_all("Project Category",
-		fields=["name", "category_name", "description"])
+		fields=["name", "category_name", "description"],
+		ignore_permissions=True)
 	technologies = frappe.get_all("Technology",
-		fields=["name", "technology_name", "description"])
+		fields=["name", "technology_name", "description"],
+		ignore_permissions=True)
 	statuses = frappe.get_all("Project Status",
-		fields=["name", "status_name", "color"])
+		fields=["name", "status_name", "color"],
+		ignore_permissions=True)
 	teams = frappe.get_all("Team",
 		fields=["name", "team_name"],
-		filters={"is_active": 1})
+		filters={"is_active": 1},
+		ignore_permissions=True)
 
 	return {
 		"total_projects": total_projects,
@@ -1138,11 +1150,11 @@ def get_reports():
 		# Project Summary
 		status_summary = []
 		try:
-			statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"])
+			statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], ignore_permissions=True)
 			for s in statuses:
 				f = dict(filters)
 				f["status"] = s.name
-				count = frappe.db.count("Project", filters=f)
+				count = len(frappe.get_all("Project", filters=f, pluck="name", ignore_permissions=True))
 				status_summary.append({
 					"status": s.status_name or s.name,
 					"count": count,
@@ -1154,11 +1166,11 @@ def get_reports():
 		# Category summary
 		category_summary = []
 		try:
-			categories = frappe.get_all("Project Category", fields=["name", "category_name"])
+			categories = frappe.get_all("Project Category", fields=["name", "category_name"], ignore_permissions=True)
 			for c in categories:
 				f = dict(filters)
 				f["project_category"] = c.name
-				count = frappe.db.count("Project", filters=f)
+				count = len(frappe.get_all("Project", filters=f, pluck="name", ignore_permissions=True))
 				if count:
 					category_summary.append({"category": c.category_name or c.name, "count": count})
 		except Exception as e:
@@ -1167,9 +1179,9 @@ def get_reports():
 		# Team summary
 		team_summary = []
 		try:
-			teams = frappe.get_all("Team", fields=["name", "team_name"])
+			teams = frappe.get_all("Team", fields=["name", "team_name"], ignore_permissions=True)
 			for t in teams:
-				count = frappe.db.count("Project", filters={**filters, "team": t.name})
+				count = len(frappe.get_all("Project", filters={**filters, "team": t.name}, pluck="name", ignore_permissions=True))
 				if count:
 					team_summary.append({"team": t.team_name or t.name, "count": count})
 		except Exception as e:
@@ -1187,7 +1199,8 @@ def get_reports():
 					fields=["name", "project_title", "team", "completion_date", "owner",
 							"project_category", "priority"],
 					order_by="completion_date desc",
-					limit=50
+					limit=50,
+					ignore_permissions=True
 				)
 		except Exception as e:
 			frappe.log_error(f"Error getting completed projects: {str(e)}", "get_reports Error")
@@ -1198,7 +1211,8 @@ def get_reports():
 			repos = frappe.get_all("GitHub Repository",
 				fields=["name", "repository_name", "repository_url", "default_branch", "languages", "commit_hash", "creation"],
 				order_by="creation desc",
-				limit=50
+				limit=50,
+				ignore_permissions=True
 			)
 			for r in repos:
 				github_repos.append({
@@ -1216,7 +1230,7 @@ def get_reports():
 		# Total projects
 		total_projects = 0
 		try:
-			total_projects = frappe.db.count("Project", filters=filters)
+			total_projects = len(frappe.get_all("Project", filters=filters, pluck="name", ignore_permissions=True))
 		except Exception as e:
 			frappe.log_error(f"Error counting projects: {str(e)}", "get_reports Error")
 
@@ -1260,7 +1274,7 @@ def get_user_notifications():
 	notifications = []
 
 	# Updates on user's projects
-	my_projects = frappe.get_all("Project", filters={"owner": user}, pluck="name")
+	my_projects = frappe.get_all("Project", filters={"owner": user}, pluck="name", ignore_permissions=True)
 	if my_projects:
 		updates = frappe.db.get_all("Project Update",
 			filters={"parent": ["in", my_projects]},
@@ -1283,7 +1297,8 @@ def get_user_notifications():
 		recent = frappe.get_all("Project",
 			fields=["name", "project_title", "owner", "creation"],
 			limit=10,
-			order_by="creation desc"
+			order_by="creation desc",
+                        ignore_permissions=True
 		)
 		for p in recent:
 			notifications.append({
