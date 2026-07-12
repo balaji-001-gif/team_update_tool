@@ -732,9 +732,11 @@ def get_gallery(limit=30, offset=0):
 		# Method 1: Try to fetch from Project Screenshots doctype directly
 		try:
 			# Get all screenshots from Project Screenshots doctype
-			screenshot_records = frappe.get_all("Project Screenshots",
-				fields=["name", "screenshot", "caption", "screenshot_type", "project"]
-			)
+			screenshot_records = frappe.db.sql("""
+				SELECT name, screenshot, caption, screenshot_type, project
+				FROM `tabProject Screenshots`
+				ORDER BY creation DESC
+			""", as_dict=True)
 			
 			for ss in screenshot_records:
 				# Get project title
@@ -759,8 +761,9 @@ def get_gallery(limit=30, offset=0):
 		
 		# Method 2: Also check for screenshots in Project child table
 		try:
-			projects = frappe.get_all("Project", pluck="name", ignore_permissions=True)
-			for p_name in projects:
+			projects = frappe.db.sql("SELECT name FROM `tabProject`", as_dict=True)
+			for proj in projects:
+				p_name = proj.name
 				try:
 					doc = frappe.get_cached_doc("Project", p_name)
 					for s in doc.screenshots or []:
