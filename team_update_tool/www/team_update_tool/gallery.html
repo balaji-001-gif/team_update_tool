@@ -183,11 +183,12 @@ if (d.screenshots && d.screenshots.length) {
 var html = '';
 d.screenshots.forEach(function(s) {
 var screenshotUrl = s.screenshot || '';
-var imgPlaceholder = '<div class="tut-gallery-card"><div class="tut-placeholder"><i class="fas fa-image"></i></div>';
-html += '<div class="tut-gallery-card"><a href="' + screenshotUrl + '" target="_blank"><img src="' + screenshotUrl + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';"><div class="tut-img-error" style="display:none;"><i class="fas fa-image"></i><small>Image not found</small></div></a>' +
+var projectTitle = s.project_title || s.project || 'Project';
+var origPath = s.original_path || '';
+html += '<div class="tut-gallery-card"><a href="' + screenshotUrl + '" target="_blank"><img src="' + screenshotUrl + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"><div class="tut-img-error" style="display:none;"><i class="fas fa-image"></i><small>Image not found</small><small class="d-block mt-1 text-break" style="font-size:0.6rem;">' + escHtml(origPath) + '</small></div></a>' +
 '<div class="card-body">' +
 '<div class="d-flex align-items-center justify-content-between gap-2">' +
-'<a href="/team_update_tool/project/' + s.project + '" class="fw-semibold small text-truncate text-decoration-none" style="color:#0f172a;">' + escHtml(s.project_title || s.project || 'Project') + '</a>' +
+'<a href="/team_update_tool/project/' + s.project + '" class="fw-semibold small text-truncate text-decoration-none" style="color:#0f172a;">' + escHtml(projectTitle) + '</a>' +
 (s.screenshot_type ? '<span class="badge bg-light text-muted fw-normal" style="font-size:0.7rem;">' + escHtml(s.screenshot_type) + '</span>' : '') +
 '</div></div></div>';
 });

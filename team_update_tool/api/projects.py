@@ -785,11 +785,15 @@ def get_gallery(limit=30, offset=0):
 				return "Project"
 			try:
 				proj_doc = frappe.get_doc("Project", project_name, ignore_permissions=True)
-				title = (getattr(proj_doc, "project_title", None) or
-						 getattr(proj_doc, "title", None) or
-						 getattr(proj_doc, "project_name", None) or
-						 getattr(proj_doc, "name", None))
-				return title if title else project_name
+				# Try project_title field first
+				title = proj_doc.get("project_title") if proj_doc else None
+				if not title:
+					title = proj_doc.get("title") if proj_doc else None
+				if not title:
+					title = proj_doc.get("project_name") if proj_doc else None
+				if not title:
+					title = proj_doc.get("name") if proj_doc else project_name
+				return title
 			except Exception as e:
 				debug_info["project_error_" + str(project_name)] = str(e)
 				return project_name
