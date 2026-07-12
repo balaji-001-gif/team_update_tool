@@ -732,36 +732,37 @@ def get_gallery(limit=30, offset=0):
 	"""Get all screenshots from visible projects."""
 	import frappe
 	
-	def get_screenshot_path(screenshot_value):
-		"""Get the correct screenshot path (relative) for frontend URL construction."""
+	def build_full_url(screenshot_value):
+		"""Build a complete URL from screenshot value."""
 		if not screenshot_value:
 			return None
 		
-		# If it's already a full URL, return as is
+		# If already a full URL, return as is
 		if screenshot_value.startswith("http://") or screenshot_value.startswith("https://"):
 			return screenshot_value
 		
-		# Handle different path formats that might be stored in Frappe
-		# Return relative path starting with /
-		if screenshot_value.startswith("/files/"):
-			return screenshot_value
-		elif screenshot_value.startswith("files/"):
-			return "/" + screenshot_value
-		elif screenshot_value.startswith("/"):
-			return "/files" + screenshot_value
+		# Get base URL using Frappe's utility
+		base_url = frappe.utils.get_url()
+		
+		# Remove leading slash if present for joining
+		screenshot_value = screenshot_value.lstrip("/")
+		
+		# Handle files directory
+		if screenshot_value.startswith("files/"):
+			return base_url + "/" + screenshot_value
+		elif screenshot_value.startswith("private/files/"):
+			return base_url + "/" + screenshot_value
 		else:
-			return "/files/" + screenshot_value
-
+			return base_url + "/files/" + screenshot_value
 	
 	try:
 		all_screenshots = []
-		debug_info = {"method1_count": 0, "method2_count": 0, "errors": []}
+		debug_info = {}
 		
 		# Validate limit and offset
 		limit = min(max(int(limit) if limit else 30, 1), 100)
 		offset = max(int(offset) if offset else 0, 0)
 		
-
 		# Helper function to get project title
 		def get_project_title(project_name):
 			"""Get the display title for a project."""
@@ -770,12 +771,14 @@ def get_gallery(limit=30, offset=0):
 			try:
 				proj_doc = frappe.get_doc("Project", project_name, ignore_permissions=True)
 				title = (getattr(proj_doc, "project_title", None) or
-						getattr(proj_doc, "title", None) or
-						getattr(proj_doc, "name", None))
+						 getattr(proj_doc, "title", None) or
+						 getattr(proj_doc, "project_name", None) or
+						 getattr(proj_doc, "name", None))
 				return title if title else project_name
-			except:
+			except Exception as e:
+				debug_info["project_error_" + project_name] = str(e)
 				return project_name
-
+		
 		# Method 1: Fetch from Project Screenshots doctype directly
 		try:
 			screenshot_records = frappe.db.sql("""
@@ -792,21 +795,24 @@ def get_gallery(limit=30, offset=0):
 					continue
 				
 				# Get project title
-				project_title = get_project_title(ss.project) if ss.project else "Project"
+				project_id = ss.project or ""
+				project_title = get_project_title(project_id) if project_id else "Project"
 				
-				screenshot_path = get_screenshot_path(ss.screenshot)
-				if screenshot_path:
-					debug_info["method1_count"] += 1
+				# Build full URL
+				full_url = build_full_url(ss.screenshot)
+				
+				if full_url:
+					debug_info["method1_count"] = debug_info.get("method1_count", 0) + 1
 					all_screenshots.append({
-						"screenshot": screenshot_path,
+						"screenshot": full_url,
 						"caption": ss.caption or "",
 						"screenshot_type": ss.screenshot_type or "",
-						"project": ss.project or "",
+						"project": project_id,
 						"project_title": project_title,
 					})
 		except Exception as ss_error:
-			debug_info["errors"].append(f"Method 1: {str(ss_error)}")
-			frappe.log_error(f"Error fetching from Project Screenshots: {str(ss_error)}", "get_gallery Error")
+			debug_info["method1_error"] = str(ss_error)
+			frappe.log_error("Error in Method 1 get_gallery: " + str(ss_error), "get_gallery Error")
 		
 		# Method 2: Fetch from Project child table (screenshots)
 		try:
@@ -824,32 +830,35 @@ def get_gallery(limit=30, offset=0):
 						if not s.screenshot:
 							continue
 						
-						screenshot_path = get_screenshot_path(s.screenshot)
+						# Build full URL
+						full_url = build_full_url(s.screenshot)
 						
 						# Check for duplicates
-						if screenshot_path and not any(ss.get("screenshot") == screenshot_path for ss in all_screenshots):
-								debug_info["method2_count"] += 1
-								child_screenshot_count += 1
-								all_screenshots.append({
-									"screenshot": screenshot_path,
-									"caption": s.caption or "",
-									"screenshot_type": s.screenshot_type or "",
+						if full_url and not any(ss.get("screenshot") == full_url for ss in all_screenshots):
+							child_screenshot_count += 1
+							all_screenshots.append({
+								"screenshot": full_url,
+								"caption": s.caption or "",
+								"screenshot_type": s.screenshot_type or "",
 								"project": p_name,
 								"project_title": project_title,
 							})
 					
 					if child_screenshot_count > 0:
-						debug_info[f"project_{p_name}_screenshots"] = child_screenshot_count
+						debug_info["method2_count"] = debug_info.get("method2_count", 0) + child_screenshot_count
 				except Exception as proj_error:
+					debug_info["project_error_" + p_name] = str(proj_error)
 					continue
 		except Exception as proj_error:
-			debug_info["errors"].append(f"Method 2: {str(proj_error)}")
-			frappe.log_error(f"Error loading project screenshots: {str(proj_error)}", "get_gallery Error")
+			debug_info["method2_error"] = str(proj_error)
+			frappe.log_error("Error in Method 2 get_gallery: " + str(proj_error), "get_gallery Error")
 		
 		# Sort by creation (newest first) and apply pagination
 		all_screenshots.reverse()
 		total = len(all_screenshots)
 		limited = all_screenshots[offset:offset + limit]
+		
+		debug_info["total_screenshots"] = total
 		
 		return {
 			"screenshots": limited, 
@@ -858,149 +867,14 @@ def get_gallery(limit=30, offset=0):
 			"debug": debug_info
 		}
 	except Exception as e:
-		frappe.log_error(f"Error in get_gallery: {str(e)}", "get_gallery Error")
-		return {"screenshots": [], "total": 0, "has_more": False, "error": str(e)}
-
-def create_project(project_title, team, status=None, project_category=None,
-				   priority="Medium", description=None, tags=None,
-				   start_date=None, due_date=None,
-				   technologies=None, github_url=None,
-				   github_repo_name=None, github_branch=None):
-	"""Create a new project from the website.
-	Supports multi-step form with technologies, GitHub repo, screenshots, and files.
-	"""
-	__roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
-	if is_viewer and not is_admin and not is_team_member:
-		frappe.throw(_("You do not have permission to create projects."), frappe.PermissionError)
-
-	if not project_title:
-		frappe.throw(_("Project title is required."))
-	if not team:
-		frappe.throw(_("Team is required."))
-	if not github_url:
-		frappe.throw(_("GitHub repository URL is required. Every project must have a linked GitHub repository."))
-
-	if not status:
-		# Default to "Pending Review" for new projects
-		pending_review = frappe.db.get_value("Project Status", {"status_name": "Pending Review"}, "name")
-		if not pending_review:
-			# Fallback to first available status
-			statuses = frappe.db.get_all("Project Status", fields=["name"], order_by="creation asc", limit=1)
-			if statuses:
-				status = statuses[0].name
-		else:
-			status = pending_review
-
-	# Validate GitHub URL
-	import re
-	github_pattern = r'^https:\/\/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(\/.*)?$'
-	if not re.match(github_pattern, github_url.strip()):
-		frappe.throw(_("Invalid GitHub URL. Must be like https://github.com/user/repo"))
-
-	# Create or find GitHub Repository
-	repo_name = github_repo_name or github_url.strip().rstrip('/').split('/')[-1]
-	existing_repo = frappe.db.exists("GitHub Repository", {"repository_url": github_url.strip()})
-	if existing_repo:
-		github_repo_link = existing_repo
-	else:
-		# Generate a unique name for the GitHub Repository
-		# The autoname format in doctype is broken, so we insert directly using SQL
-		import hashlib
-		hash_suffix = hashlib.md5(github_url.strip().encode()).hexdigest()[:8].upper()
-		repo_name_unique = f"GR-{hash_suffix}"
-		
-		# Ensure uniqueness in case of hash collision
-		while frappe.db.exists("GitHub Repository", repo_name_unique):
-			hash_suffix = hashlib.md5((github_url.strip() + frappe.generate_hash(length=8)).encode()).hexdigest()[:8].upper()
-			repo_name_unique = f"GR-{hash_suffix}"
-		
-		# Insert directly using SQL to bypass broken autoname
-		now = frappe.utils.now()
-		frappe.db.sql("""
-			INSERT INTO `tabGitHub Repository` 
-			(name, repository_url, repository_name, default_branch, creation, modified, owner, modified_by)
-			VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
-		""", (
-			repo_name_unique,
-			github_url.strip(),
-			repo_name,
-			github_branch or "main",
-			now, now, frappe.session.user, frappe.session.user
-		))
-		frappe.db.commit()
-		github_repo_link = repo_name_unique
-
-	# Validate technologies
-	tech_list = []
-	if technologies:
-		if isinstance(technologies, str):
-			import json
-			technologies = json.loads(technologies)
-		tech_list = technologies if isinstance(technologies, list) else []
-
-		for tech in tech_list:
-			if not frappe.db.exists("Technology", tech):
-				frappe.throw(_(f"Technology '{tech}' does not exist."))
-
-	if not tech_list:
-		frappe.throw(_("At least one technology must be selected."))
-
-	# Generate a unique name for the Project
-	# The autoname format in doctype is broken, so we insert directly using SQL
-	import hashlib
-	hash_suffix = hashlib.md5((project_title + team + frappe.session.user).encode()).hexdigest()[:8].upper()
-	proj_name_unique = f"PRJ-{hash_suffix}"
-	
-	# Ensure uniqueness in case of hash collision
-	while frappe.db.exists("Project", proj_name_unique):
-		hash_suffix = hashlib.md5((project_title + team + frappe.session.user + frappe.generate_hash(length=8)).encode()).hexdigest()[:8].upper()
-		proj_name_unique = f"PRJ-{hash_suffix}"
-
-	# Insert directly using SQL to bypass broken autoname
-	now = frappe.utils.now()
-	frappe.db.sql("""
-		INSERT INTO `tabProject` 
-		(name, project_title, team, project_category, status, priority, description, tags, 
-		 start_date, due_date, github_repository, creation, modified, owner, modified_by)
-		VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
-	""", (
-		proj_name_unique,
-		project_title,
-		team,
-		project_category or None,
-		status or None,
-		priority,
-		description or "",
-		tags or "",
-		start_date or None,
-		due_date or None,
-		github_repo_link,
-		now, now, frappe.session.user, frappe.session.user
-	))
-	
-	# Add technologies to child table
-	for tech in tech_list:
-		tech_hash = hashlib.md5((proj_name_unique + tech).encode()).hexdigest()[:10].upper()
-		tech_name = f"PROJTECH-{tech_hash}"
-		frappe.db.sql("""
-			INSERT INTO `tabProject Technology` 
-			(name, parent, parentfield, parenttype, technology, idx, creation, modified, owner, modified_by)
-			VALUES (%s, %s, 'technologies', 'Project', %s, %s, %s, %s, %s, %s)
-		""", (
-			tech_name,
-			proj_name_unique,
-			tech,
-			1,  # idx
-			now, now, frappe.session.user, frappe.session.user
-		))
-	
-	frappe.db.commit()
-
-	return {
-		"message": _("Project created successfully."),
-		"name": proj_name_unique,
-		"route": f"/team_update_tool/project/{proj_name_unique}",
-	}
+		frappe.log_error("Error in get_gallery: " + str(e), "get_gallery Error")
+		return {
+			"screenshots": [], 
+			"total": 0, 
+			"has_more": False, 
+			"error": str(e),
+			"debug": {}
+		}
 
 
 @frappe.whitelist()
