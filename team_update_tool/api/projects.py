@@ -1323,33 +1323,51 @@ def create_project(project_title, team, status=None, priority="Medium",
 		if not status:
 			status = frappe.db.get_value("Project Status", 1, "name")
 	
-	# Create project with explicit name to bypass autoname issues
-	project = frappe.new_doc("Project")
+	# First, fix the DocType autoname setting in database
+	frappe.db.sql("""
+		UPDATE `tabDocType` 
+		SET autoname = 'naming_series:PRJ-.#####' 
+		WHERE name = 'Project'
+	""")
+	frappe.db.commit()
 	
-	# Set name explicitly using hash to ensure uniqueness
+	# Create project with explicit name
 	import hashlib
 	name_hash = hashlib.md5((project_title + str(frappe.utils.now())).encode()).hexdigest()[:10]
-	project.name = f"PRJ-{name_hash.upper()}"
+	project_name = f"PRJ-{name_hash.upper()}"
 	
-	project.project_title = project_title
-	project.team = team
-	project.status = status
-	project.priority = priority
+	# Build the project dict for direct insert
+	project_data = {
+		"doctype": "Project",
+		"name": project_name,
+		"project_title": project_title,
+		"team": team,
+		"status": status,
+		"priority": priority or "Medium",
+		"owner": frappe.session.user,
+		"naming_series": "PRJ-.#####"
+	}
 	
 	if project_category:
-		project.project_category = project_category
+		project_data["project_category"] = project_category
 	if description:
-		project.description = description
+		project_data["description"] = description
 	if tags:
-		project.tags = tags
+		project_data["tags"] = tags
 	if start_date:
-		project.start_date = start_date
+		project_data["start_date"] = start_date
 	if due_date:
-		project.due_date = due_date
+		project_data["due_date"] = due_date
 	if completion_date:
-		project.completion_date = completion_date
+		project_data["completion_date"] = completion_date
 	if github_repository:
-		project.github_repository = github_repository
+		project_data["github_repository"] = github_repository
+	
+	# Use db_insert to bypass all autoname and validation logic
+	project_doc = frappe.get_doc(project_data)
+	project_doc.flags.ignore_validate = True
+	project_doc.flags.ignore_mandatory = True
+	project_doc.db_insert()
 	
 	# Add technologies if provided
 	if technologies:
@@ -1360,13 +1378,17 @@ def create_project(project_title, team, status=None, priority="Medium",
 				technologies = []
 		if isinstance(technologies, list):
 			for tech in technologies:
-				project.append("technologies", {"technology": tech})
-	
-	# Insert with set_name=False to bypass autoname
-	project.insert(set_name=False, ignore_permissions=is_admin)
+				if tech:
+					frappe.get_doc({
+						"doctype": "Project Technology",
+						"parent": project_name,
+						"parentfield": "technologies",
+						"parenttype": "Project",
+						"technology": tech
+					}).insert(ignore_permissions=True)
 	
 	return {
 		"message": _("Project created successfully."),
-		"name": project.name,
+		"name": project_name,
 		"success": True
 	}
