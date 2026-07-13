@@ -1394,7 +1394,37 @@ def create_project(project_title, team, status=None, priority="Medium",
 						"technology": tech,
 						"project": project_name
 					}).insert(ignore_permissions=True)
-	
+
+		# Send email notification directly to all admin users
+		try:
+			admin_emails = frappe.db.sql("""
+				SELECT DISTINCT u.email 
+				FROM tabUser u 
+				INNER JOIN `tabHas Role` hr ON hr.parent = u.name 
+				WHERE hr.role = 'Admin' AND u.enabled = 1 AND u.email IS NOT NULL
+		""", as_dict=1)
+			
+			for admin in admin_emails:
+				if admin.email:
+					frappe.sendmail(
+						recipients=admin.email,
+						subject=f"New Project Uploaded: {project_title}",
+						message=f"""
+						<p>A new project has been uploaded:</p>
+						<p><b>Project Title:</b> {project_title}</p>
+						<p><b>Team:</b> {team}</p>
+						<p><b>Status:</b> {status}</p>
+						<p><b>Priority:</b> {priority or 'Medium'}</p>
+						<p><b>Submitted by:</b> {frappe.session.user}</p>
+						<p><a href="{frappe.utils.get_url()}/app/project/{project_name}">View Project</a></p>
+						""",
+						reference_doctype="Project",
+						reference_name=project_name
+					)
+			frappe.log_error(f"Email notification sent for project {project_name}", "Project Email Notification")
+		except Exception as e:
+			frappe.log_error(f"Failed to send email notification: {str(e)}", "Project Email Error")
+
 	return {
 		"message": _("Project created successfully."),
 		"name": project_name,

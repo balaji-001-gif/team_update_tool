@@ -261,6 +261,17 @@ def create_seed_data():
 def create_notifications():
 	"""Create email notifications for project events."""
 	
+	# Get all admin user emails
+	admin_emails = frappe.db.sql("""
+		SELECT DISTINCT u.email 
+		FROM tabUser u 
+		INNER JOIN `tabHas Role` hr ON hr.parent = u.name 
+		WHERE hr.role = 'Admin' AND u.enabled = 1 AND u.email IS NOT NULL
+	""", as_dict=1)
+	
+	admin_email_list = [u.email for u in admin_emails]
+	send_email_to = ", ".join(admin_email_list) if admin_email_list else ""
+	
 	notifications = [
 		{
 			"name": "New Project Uploaded",
@@ -272,6 +283,7 @@ def create_notifications():
 			"subject": "New Project Uploaded: {{ doc.project_title }}",
 			"message": "<p>A new project has been uploaded:</p><p><b>{{ doc.project_title }}</b><br>Team: {{ doc.team }}<br>Status: {{ doc.status }}</p>",
 			"send_system_notification": 1,
+			"send_email_to": send_email_to,
 			"recipients": [{"receiver_by_role": "Admin"}],
 		},
 		{
@@ -286,6 +298,7 @@ def create_notifications():
 			"value_changed": "status",
 			"condition": "frappe.db.get_value('Project Status', doc.status, 'status_name') == 'Approved'",
 			"send_system_notification": 1,
+			"send_email_to": send_email_to,
 			"recipients": [
 				{"receiver_by_role": "Admin"},
 				{"receiver_by_role": "View-Only User"},
@@ -302,6 +315,7 @@ def create_notifications():
 			"message": "<p>Project status has been updated:</p><p><b>{{ doc.project_title }}</b><br>New Status: {{ doc.status }}<br>Team: {{ doc.team }}</p>",
 			"value_changed": "status",
 			"send_system_notification": 1,
+			"send_email_to": send_email_to,
 			"recipients": [{"receiver_by_role": "Admin"}],
 		},
 	]
@@ -328,7 +342,7 @@ def create_notifications():
 				
 				doc.save(ignore_permissions=True)
 				frappe.db.commit()
-				frappe.log_error(f"Created notification: {notif['name']}", "Notification Setup")
+				frappe.log_error(f"Created notification: {notif['name']} for {send_email_to}", "Notification Setup")
 			else:
 				# Update existing notification
 				doc = frappe.get_doc("Notification", notif["name"])
@@ -336,8 +350,10 @@ def create_notifications():
 				doc.channel = "Email"
 				doc.event = notif.get("event", "New")
 				doc.send_system_notification = 1
+				doc.send_email_to = send_email_to
 				doc.save(ignore_permissions=True)
 				frappe.db.commit()
+				frappe.log_error(f"Updated notification: {notif['name']} for {send_email_to}", "Notification Setup")
 		except Exception as e:
 			frappe.log_error(f"Error creating notification {notif.get('name')}: {str(e)}", "Notification Setup Error")
 			frappe.db.rollback()
