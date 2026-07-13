@@ -1359,15 +1359,9 @@ def create_project(project_title, team, project_category=None, description=None,
     if not github_repository:
         github_repository = frappe.form_dict.get('github_url')
     
-    # Create project with explicit name
-    import hashlib
-    name_hash = hashlib.md5((project_title + str(frappe.utils.now())).encode()).hexdigest()[:10]
-    project_name = f"PRJ-{name_hash.upper()}"
-    
-    # Build the project dict
+    # Build the project dict (let Frappe auto-generate the name via naming series)
     project_data = {
         "doctype": "Project",
-        "name": project_name,
         "project_title": project_title,
         "team": team,
         "status": status,
@@ -1416,17 +1410,16 @@ def create_project(project_title, team, project_category=None, description=None,
     if github_repo_value:
         project_data["github_repository"] = github_repo_value
     
-    # Create and insert project with explicit name
-    # Using ignore_naming_series to preserve the explicitly set project name
+    # Create and insert project (let Frappe auto-generate the name via naming series)
     project_doc = frappe.get_doc(project_data)
-    project_doc.flags.ignore_validate = True
-    project_doc.flags.ignore_mandatory = True
     project_doc.flags.ignore_permissions = True
-    project_doc.flags.ignore_naming_series = True
     project_doc.insert()
     
+    # Capture the generated project name from the naming series
+    project_name = project_doc.name
+    
     # Log success
-    frappe.log_error(f"Project created: {project_name}", "Project Creation")
+    frappe.logger().info(f"Project created: {project_name}")
     
     # Add technologies if provided
     if technologies:
