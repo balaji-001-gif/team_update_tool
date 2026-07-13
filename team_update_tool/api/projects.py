@@ -1464,21 +1464,40 @@ def create_project(project_title, team, status=None, priority="Medium",
         if github_repo_value:
                 project_data["github_repository"] = github_repo_value
         
-        # Insert project using direct SQL
-        frappe.db.sql("""
-            INSERT INTO \`tabProject\` (name, project_title, team, status, priority, owner, naming_series, 
-                project_category, description, tags, start_date, due_date, completion_date, github_repository, creation, modified)
-            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
-        """, (
-            project_name, project_title, team, status, priority or "Medium", frappe.session.user, "PRJ-.#####",
-            project_data.get("project_category"), project_data.get("description"),
-            project_data.get("tags"), project_data.get("start_date"), project_data.get("due_date"),
-            project_data.get("completion_date"), github_repo_value
-        ))
+        # Create project using standard Frappe document
+        project_doc = frappe.get_doc({
+            "doctype": "Project",
+            "name": project_name,
+            "project_title": project_title,
+            "team": team,
+            "status": status,
+            "priority": priority or "Medium",
+            "owner": frappe.session.user,
+            "naming_series": "PRJ-.#####"
+        })
         
-        # Now get the doc to reload it with all data
-        project_doc = frappe.get_doc("Project", project_name)
+        # Add optional fields
+        if project_data.get("project_category"):
+            project_doc.project_category = project_data["project_category"]
+        if project_data.get("description"):
+            project_doc.description = project_data["description"]
+        if project_data.get("tags"):
+            project_doc.tags = project_data["tags"]
+        if project_data.get("start_date"):
+            project_doc.start_date = project_data["start_date"]
+        if project_data.get("due_date"):
+            project_doc.due_date = project_data["due_date"]
+        if project_data.get("completion_date"):
+            project_doc.completion_date = project_data["completion_date"]
+        if github_repo_value:
+            project_doc.github_repository = github_repo_value
+        
+        # Insert the document
+        project_doc.insert(ignore_permissions=True)
         frappe.db.commit()
+        
+        # Log for debugging
+        frappe.log_error(f"Project created: {project_name}", "Project Creation Debug")
 
     
     # Add technologies if provided
