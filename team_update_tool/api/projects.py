@@ -910,6 +910,7 @@ def get_gallery(limit=30, offset=0):
 		}
 
 
+
 @frappe.whitelist()
 def add_project_screenshot(project_name, file_url, caption=None):
 	"""Attach a screenshot to a project's child table after file upload."""
