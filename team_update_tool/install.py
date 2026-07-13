@@ -62,6 +62,11 @@ def force_sync_doctypes():
 			WHERE name = 'Project'
 		""")
 		frappe.db.commit()
+		
+		# Clear the DocType cache to ensure changes take effect
+		frappe.db.sql("DELETE FROM `tabSingles` WHERE doctype = 'DocType' AND field = 'autoname'")
+		frappe.clear_cache()
+		frappe.publish_realtime("clear_cache")
 		frappe.log_error("Updated Project doctype autoname to 'naming_series:PRJ-.#####'", "force_sync_doctypes")
 	
 	# Sync Reports

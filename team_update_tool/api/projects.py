@@ -1315,7 +1315,17 @@ def create_project(project_title, team, status=None, priority="Medium",
 	
 	# Verify team exists
 	if not frappe.db.exists("Team", team):
-		frappe.throw(_("Team does not exist."))
+		frappe.throw(_("Team '{0}' does not exist.").format(team))
+	
+	# Check DocType autoname setting
+	dt_autoname = frappe.db.get_value("DocType", "Project", "autoname")
+	if dt_autoname and dt_autoname.startswith("field:"):
+		field_name = dt_autoname.replace("field:", "")
+		if field_name not in ["project_title", "name"]:
+			# Fix the autoname if it's incorrectly set
+			frappe.db.set_value("DocType", "Project", "autoname", "naming_series:PRJ-.#####")
+			frappe.db.commit()
+			frappe.log_error(f"Fixed Project doctype autoname from '{dt_autoname}' to 'naming_series:PRJ-.#####'", "create_project")
 	
 	# Get default status if not provided
 	if not status:
@@ -1349,9 +1359,13 @@ def create_project(project_title, team, status=None, priority="Medium",
 	# Add technologies if provided
 	if technologies:
 		if isinstance(technologies, str):
-			technologies = frappe.parse_json(technologies)
-		for tech in technologies:
-			project.append("technologies", {"technology": tech})
+			try:
+				technologies = frappe.parse_json(technologies)
+			except:
+				technologies = []
+		if isinstance(technologies, list):
+			for tech in technologies:
+				project.append("technologies", {"technology": tech})
 	
 	project.insert(ignore_permissions=is_admin)
 	
