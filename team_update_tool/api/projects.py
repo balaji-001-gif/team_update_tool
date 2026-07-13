@@ -254,28 +254,31 @@ def get_project_detail(name):
                 "default_branch": "main",
                 "languages": "",
             }
-    elif github_url:
-        # Try to fetch as doc link
-        try:
-            repo = frappe.get_cached_doc("GitHub Repository", github_url)
+    elif github_url and "/" in github_url:
+        # It looks like owner/repo format, build URL from it
+        parts = github_url.split("/")
+        if len(parts) >= 2:
+            repo_owner = parts[0]
+            repo_name = parts[-1].replace('.git', '')
+            full_url = f"https://github.com/{repo_owner}/{repo_name}"
             github_info = {
-                "name": repo.name,
-                "repository_url": repo.repository_url,
-                "repository_name": repo.repository_name,
-                "commit_hash": repo.commit_hash or "",
-                "default_branch": repo.default_branch or "main",
-                "languages": repo.languages or "",
-            }
-        except Exception as e:
-            # Return basic info
-            github_info = {
-                "name": github_url,
-                "repository_url": github_url,
-                "repository_name": github_url.split('/')[-1] if '/' in github_url else github_url,
+                "name": f"{repo_owner}/{repo_name}",
+                "repository_url": full_url,
+                "repository_name": repo_name,
                 "commit_hash": "",
                 "default_branch": "main",
                 "languages": "",
             }
+    elif github_url:
+        # Return basic info for any other format
+        github_info = {
+            "name": github_url,
+            "repository_url": github_url if github_url.startswith('http') else f"https://github.com/{github_url}",
+            "repository_name": github_url.split('/')[-1] if '/' in github_url else github_url,
+            "commit_hash": "",
+            "default_branch": "main",
+            "languages": "",
+        }
     # Team name
     team_name = project.team
     try:
