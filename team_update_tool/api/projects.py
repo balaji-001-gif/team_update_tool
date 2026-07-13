@@ -1171,7 +1171,6 @@ def create_project(project_title, team, status=None, priority="Medium",
     
     # Handle GitHub Repository - find existing or create new
     github_repo_name = None
-    github_repo_url = github_repository
     if github_repository:
         import re
         match = re.search(r"github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)", github_repository)
@@ -1187,100 +1186,104 @@ def create_project(project_title, team, status=None, priority="Medium",
             if existing_repo:
                 github_repo_name = existing_repo
             else:
-                # Create new GitHub Repository document using direct SQL
+                # Create new GitHub Repository document
                 try:
-                    import uuid
-                    gr_name = f"GR-{frappe.utils.nowdate().replace('-', '.')}.{str(uuid.uuid4().int)[:5]}"
-                    frappe.db.sql("""
-                        INSERT INTO `tabGitHub Repository` (name, repository_name, repository_url, creation, modified, owner)
-                        VALUES (%s, %s, %s, NOW(), NOW(), %s)
-                    """, (gr_name, repo_full_name, github_repository, frappe.session.user))
-                    frappe.db.commit()
-                    github_repo_name = gr_name
+                    github_repo = frappe.get_doc({
+                        "doctype": "GitHub Repository",
+                        "repository_name": repo_full_name,
+                        "repository_url": github_repository,
+                    })
+                    github_repo.flags.ignore_permissions = True
+                    github_repo.insert(ignore_permissions=True)
+                    github_repo_name = github_repo.name
                 except Exception as e:
                     frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Creation Error")
+                    github_repo_name = None
         else:
             # Not a GitHub URL - check if it's already a GitHub Repository doc name
             if frappe.db.exists("GitHub Repository", github_repository):
                 github_repo_name = github_repository
-                github_repo_url = frappe.db.get_value("GitHub Repository", github_repository, "repository_url")
     
-    # Insert project using direct SQL to bypass all validation
-    frappe.db.sql("""
-        INSERT INTO `tabProject` (name, project_title, team, status, priority, owner, naming_series,
-        creation, modified, github_repository)
-        VALUES (%s, %s, %s, %s, %s, %s, 'PRJ-.#####', NOW(), NOW(), %s)
-    """, (project_name, project_title, team, status, priority or "Medium", 
-          frappe.session.user, github_repo_name))
-    frappe.db.commit()
+    # Create project using Frappe document API
+    try:
+        project_doc = frappe.get_doc({
+            "doctype": "Project",
+            "__islocal": 1,
+            "name": project_name,
+            "project_title": project_title,
+            "team": team,
+            "status": status,
+            "priority": priority or "Medium",
+            "naming_series": "PRJ-.#####",
+            "github_repository": github_repo_name,
+        })
+        
+        # Add optional fields
+        if project_category:
+            project_doc.project_category = project_category
+        if description:
+            project_doc.description = description
+        if tags:
+            project_doc.tags = tags
+        if start_date:
+            project_doc.start_date = start_date
+        if due_date:
+            project_doc.due_date = due_date
+        if completion_date:
+            project_doc.completion_date = completion_date
+        
+        # Add technologies to child table
+        if technologies:
+            if isinstance(technologies, str):
+                try:
+                    technologies = frappe.parse_json(technologies)
+                except:
+                    technologies = []
+            
+            if isinstance(technologies, list):
+                for tech in technologies:
+                    if tech:
+                        # Ensure technology exists
+                        if not frappe.db.exists("Technology", tech):
+                            try:
+                                tech_doc = frappe.get_doc({
+                                    "doctype": "Technology",
+                                    "technology_name": tech
+                                })
+                                tech_doc.flags.ignore_permissions = True
+                                tech_doc.insert(ignore_permissions=True)
+                            except Exception as e:
+                                frappe.log_error(f"Error creating technology {tech}: {str(e)}", "Technology Creation Error")
+                        
+                        # Add to project's technologies child table
+                        project_doc.append("technologies", {
+                            "project": project_name,
+                            "technology": tech
+                        })
+        
+        # Save the project
+        project_doc.flags.ignore_permissions = True
+        project_doc.flags.ignore_validate = True
+        project_doc.flags.ignore_mandatory = True
+        project_doc.insert(ignore_permissions=True, ignore_validate=True, ignore_mandatory=True)
+        
+    except Exception as e:
+        frappe.log_error(f"Error creating project: {str(e)}", "Create Project Error")
+        frappe.throw(_(f"Error creating project: {str(e)}"))
     
-    # Update optional fields
-    if project_category:
-        frappe.db.sql("UPDATE `tabProject` SET project_category = %s WHERE name = %s", 
-                     (project_category, project_name))
-    if description:
-        frappe.db.sql("UPDATE `tabProject` SET description = %s WHERE name = %s", 
-                     (description, project_name))
-    if tags:
-        frappe.db.sql("UPDATE `tabProject` SET tags = %s WHERE name = %s", 
-                     (tags, project_name))
-    if start_date:
-        frappe.db.sql("UPDATE `tabProject` SET start_date = %s WHERE name = %s", 
-                     (start_date, project_name))
-    if due_date:
-        frappe.db.sql("UPDATE `tabProject` SET due_date = %s WHERE name = %s", 
-                     (due_date, project_name))
-    if completion_date:
-        frappe.db.sql("UPDATE `tabProject` SET completion_date = %s WHERE name = %s", 
-                     (completion_date, project_name))
-    frappe.db.commit()
-    
-    # Add technologies if provided
-    if technologies:
-        if isinstance(technologies, str):
-            try:
-                technologies = frappe.parse_json(technologies)
-            except:
-                technologies = []
-        if isinstance(technologies, list):
-            for tech in technologies:
-                if tech:
-                    # Check if technology exists
-                    tech_name = tech
-                    if not frappe.db.exists("Technology", tech):
-                        # Create technology using direct SQL
-                        try:
-                            frappe.db.sql("""
-                                INSERT INTO `tabTechnology` (name, technology_name, creation, modified, owner)
-                                VALUES (%s, %s, NOW(), NOW(), %s)
-                            """, (tech, tech, frappe.session.user))
-                            frappe.db.commit()
-                        except Exception as e:
-                            frappe.log_error(f"Error creating technology {tech}: {str(e)}", "Technology Creation Error")
-                    
-                    # Insert project technology using direct SQL
-                    try:
-                        import uuid
-                        pt_name = f"PROJTECH-{str(uuid.uuid4().int)[:5]}"
-                        frappe.db.sql("""
-                            INSERT INTO `tabProject Technology` (name, parent, parentfield, parenttype, 
-                            project, technology, idx, creation, modified, owner)
-                            VALUES (%s, %s, 'technologies', 'Project', %s, %s, 1, NOW(), NOW(), %s)
-                        """, (pt_name, project_name, project_name, tech_name, frappe.session.user))
-                        frappe.db.commit()
-                    except Exception as e:
-                        frappe.log_error(f"Error creating Project Technology: {str(e)}", "Project Technology Error")
-    
-    # Save README / Referral Document using direct SQL
+    # Save README / Referral Document
     if readme_content or readme_file:
         try:
-            # Project Readme has autoname "field:project", so name = project_name
-            frappe.db.sql("""
-                INSERT INTO `tabProject Readme` (name, project, readme_content, readme_file, 
-                creation, modified, owner)
-                VALUES (%s, %s, %s, %s, NOW(), NOW(), %s)
-            """, (project_name, project_name, readme_content or "", readme_file or "", frappe.session.user))
-            frappe.db.commit()
+            readme_doc = frappe.get_doc({
+                "doctype": "Project Readme",
+                "project": project_name,
+                "readme_content": readme_content or "",
+                "readme_file": readme_file or "",
+            })
+            readme_doc.flags.ignore_permissions = True
+            readme_doc.flags.ignore_validate = True
+            readme_doc.flags.ignore_mandatory = True
+            readme_doc.insert(ignore_permissions=True, ignore_validate=True, ignore_mandatory=True)
         except Exception as e:
             frappe.log_error(f"Error saving README: {str(e)}", "README Save Error")
     
