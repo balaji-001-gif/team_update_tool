@@ -207,28 +207,27 @@ def get_project_detail(name):
 
     # GitHub repo info
     github_info = None
-    github_url = project.github_repository or ""
+    github_repo_value = project.github_repository or ""
     
-    # Check if it is a URL or a doc link
-    if github_url:
+    if github_repo_value:
         import re
         # Check if it's a full URL (contains github.com)
-        if "github.com" in github_url.lower():
-            match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_url, re.IGNORECASE)
+        if "github.com" in github_repo_value.lower():
+            match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_repo_value, re.IGNORECASE)
             if match:
                 repo_owner = match.group(1)
                 repo_name = match.group(2).replace('.git', '')
                 github_info = {
                     "name": f"{repo_owner}/{repo_name}",
-                    "repository_url": github_url,
+                    "repository_url": github_repo_value,
                     "repository_name": repo_name,
                     "commit_hash": "",
                     "default_branch": "main",
                     "languages": "",
                 }
         # Check if it's an owner/repo format (e.g., "Sudhakar1110/interview_scheduler")
-        elif '/' in github_url and not github_url.startswith('http'):
-            parts = github_url.split('/')
+        elif '/' in github_repo_value and not github_repo_value.startswith('http') and not github_repo_value.startswith('GR-'):
+            parts = github_repo_value.split('/')
             if len(parts) == 2:
                 repo_owner, repo_name = parts
                 repo_name = repo_name.replace('.git', '')
@@ -241,23 +240,27 @@ def get_project_detail(name):
                     "languages": "",
                 }
         else:
-            # Try to fetch as doc link
+            # It's a GitHub Repository doc name (like GR-2026.-.00001) - fetch from doc
             try:
-                repo = frappe.get_cached_doc("GitHub Repository", github_url)
+                repo = frappe.get_cached_doc("GitHub Repository", github_repo_value)
+                # Construct URL from repository_name if repository_url is empty
+                repo_url = repo.repository_url
+                if not repo_url and repo.repository_name:
+                    repo_url = f"https://github.com/{repo.repository_name}"
                 github_info = {
-                    "name": repo.name,
-                    "repository_url": repo.repository_url,
-                    "repository_name": repo.repository_name,
+                    "name": repo.repository_name or repo.name,
+                    "repository_url": repo_url,
+                    "repository_name": repo.repository_name or "",
                     "commit_hash": repo.commit_hash or "",
                     "default_branch": repo.default_branch or "main",
                     "languages": repo.languages or "",
                 }
-            except Exception as e:
-                # Return basic info without throwing error
+            except Exception:
+                # Return basic info without throwing error - construct URL from the doc name
                 github_info = {
-                    "name": github_url,
-                    "repository_url": github_url,
-                    "repository_name": github_url.split('/')[-1] if '/' in github_url else github_url,
+                    "name": github_repo_value,
+                    "repository_url": "",
+                    "repository_name": github_repo_value,
                     "commit_hash": "",
                     "default_branch": "main",
                     "languages": "",
@@ -1167,46 +1170,14 @@ def create_project(project_title, team, status=None, priority="Medium",
         if not status:
             status = frappe.db.get_value("Project Status", 1, "name")
     
-    # First, fix the DocType autoname setting in database
-    frappe.db.sql("""
-        UPDATE `tabDocType` 
-        SET autoname = 'naming_series:PRJ-.#####' 
-        WHERE name = 'Project'
-    """)
-    frappe.db.commit()
-    
-    # Create project with explicit name
+    # Create project with explicit name using hash
     import hashlib
     name_hash = hashlib.md5((project_title + str(frappe.utils.now())).encode()).hexdigest()[:10]
     project_name = f"PRJ-{name_hash.upper()}"
     
-    # Build the project dict for direct insert
-    project_data = {
-        "doctype": "Project",
-        "name": project_name,
-        "project_title": project_title,
-        "team": team,
-        "status": status,
-        "priority": priority or "Medium",
-        "owner": frappe.session.user,
-        "naming_series": "PRJ-.#####"
-    }
-    
-    if project_category:
-        project_data["project_category"] = project_category
-    if description:
-        project_data["description"] = description
-    if tags:
-        project_data["tags"] = tags
-    if start_date:
-        project_data["start_date"] = start_date
-    if due_date:
-        project_data["due_date"] = due_date
-    if completion_date:
-        project_data["completion_date"] = completion_date
-    
     # Handle GitHub Repository - find existing or create new
     github_repo_name = None
+    github_repo_url = github_repository
     if github_repository:
         import re
         match = re.search(r"github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)", github_repository)
@@ -1222,41 +1193,54 @@ def create_project(project_title, team, status=None, priority="Medium",
             if existing_repo:
                 github_repo_name = existing_repo
             else:
-                # Create new GitHub Repository document
+                # Create new GitHub Repository document using direct SQL
                 try:
-                    github_repo = frappe.get_doc({
-                        "doctype": "GitHub Repository",
-                        "repository_name": repo_full_name,
-                        "repository_url": github_repository,
-                    })
-                    github_repo.insert(ignore_permissions=True)
-                    github_repo_name = github_repo.name
+                    import uuid
+                    gr_name = f"GR-{frappe.utils.nowdate().replace('-', '.')}.{str(uuid.uuid4().int)[:5]}"
+                    frappe.db.sql("""
+                        INSERT INTO `tabGitHub Repository` (name, doctype, repository_name, repository_url, creation, modified, owner)
+                        VALUES (%s, 'GitHub Repository', %s, %s, NOW(), NOW(), %s)
+                    """, (gr_name, repo_full_name, github_repository, frappe.session.user))
+                    frappe.db.commit()
+                    github_repo_name = gr_name
                 except Exception as e:
                     frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Creation Error")
         else:
             # Not a GitHub URL - check if it's already a GitHub Repository doc name
             if frappe.db.exists("GitHub Repository", github_repository):
                 github_repo_name = github_repository
+                github_repo_url = frappe.db.get_value("GitHub Repository", github_repository, "repository_url")
     
-    # Set github_repository in project_data (Link field expects the doc name)
-    if github_repo_name:
-        project_data["github_repository"] = github_repo_name
+    # Insert project using direct SQL to bypass all validation
+    frappe.db.sql("""
+        INSERT INTO `tabProject` (name, doctype, project_title, team, status, priority, owner, naming_series,
+        creation, modified, github_repository)
+        VALUES (%s, 'Project', %s, %s, %s, %s, %s, 'PRJ-.#####', NOW(), NOW(), %s)
+    """, (project_name, project_title, team, status, priority or "Medium", 
+          frappe.session.user, github_repo_name))
+    frappe.db.commit()
     
-    # Use db_insert to bypass all autoname and validation logic
-    project_doc = frappe.get_doc(project_data)
-    project_doc.flags.ignore_validate = True
-    project_doc.flags.ignore_mandatory = True
-    project_doc.db_insert()
+    # Update optional fields
+    if project_category:
+        frappe.db.sql("UPDATE `tabProject` SET project_category = %s WHERE name = %s", 
+                     (project_category, project_name))
+    if description:
+        frappe.db.sql("UPDATE `tabProject` SET description = %s WHERE name = %s", 
+                     (description, project_name))
+    if tags:
+        frappe.db.sql("UPDATE `tabProject` SET tags = %s WHERE name = %s", 
+                     (tags, project_name))
+    if start_date:
+        frappe.db.sql("UPDATE `tabProject` SET start_date = %s WHERE name = %s", 
+                     (start_date, project_name))
+    if due_date:
+        frappe.db.sql("UPDATE `tabProject` SET due_date = %s WHERE name = %s", 
+                     (due_date, project_name))
+    if completion_date:
+        frappe.db.sql("UPDATE `tabProject` SET completion_date = %s WHERE name = %s", 
+                     (completion_date, project_name))
+    frappe.db.commit()
     
-    # Now update github_repository using direct SQL to ensure it is saved
-    if github_repo_name:
-        frappe.db.sql("""
-            UPDATE `tabProject` 
-            SET github_repository = %s 
-            WHERE name = %s
-        """, (github_repo_name, project_name))
-        frappe.db.commit()
-
     # Add technologies if provided
     if technologies:
         if isinstance(technologies, str):
@@ -1268,59 +1252,45 @@ def create_project(project_title, team, status=None, priority="Medium",
             for tech in technologies:
                 if tech:
                     # Check if technology exists
-                    if frappe.db.exists("Technology", tech):
-                        tech_doc = frappe.get_doc({
-                            "doctype": "Project Technology",
-                            "parent": project_name,
-                            "parentfield": "technologies",
-                            "parenttype": "Project",
-                            "technology": tech,
-                            "project": project_name
-                        })
-                        tech_doc.flags.ignore_validate = True
-                        tech_doc.flags.ignore_mandatory = True
-                        tech_doc.db_insert()
-                    else:
-                        # Create the technology if it doesn't exist
+                    tech_name = tech
+                    if not frappe.db.exists("Technology", tech):
+                        # Create technology using direct SQL
                         try:
-                            new_tech = frappe.get_doc({
-                                "doctype": "Technology",
-                                "technology_name": tech
-                            })
-                            new_tech.insert(ignore_permissions=True)
-                            # Now insert the project technology
-                            tech_doc = frappe.get_doc({
-                                "doctype": "Project Technology",
-                                "parent": project_name,
-                                "parentfield": "technologies",
-                                "parenttype": "Project",
-                                "technology": new_tech.name,
-                                "project": project_name
-                            })
-                            tech_doc.flags.ignore_validate = True
-                            tech_doc.flags.ignore_mandatory = True
-                            tech_doc.db_insert()
+                            frappe.db.sql("""
+                                INSERT INTO `tabTechnology` (name, doctype, technology_name, creation, modified, owner)
+                                VALUES (%s, 'Technology', %s, NOW(), NOW(), %s)
+                            """, (tech, tech, frappe.session.user))
+                            frappe.db.commit()
                         except Exception as e:
                             frappe.log_error(f"Error creating technology {tech}: {str(e)}", "Technology Creation Error")
-
-    # Save README / Referral Document
+                    
+                    # Insert project technology using direct SQL
+                    try:
+                        import uuid
+                        pt_name = f"PROJTECH-{str(uuid.uuid4().int)[:5]}"
+                        frappe.db.sql("""
+                            INSERT INTO `tabProject Technology` (name, doctype, parent, parentfield, parenttype, 
+                            project, technology, idx, creation, modified, owner)
+                            VALUES (%s, 'Project Technology', %s, 'technologies', 'Project', %s, %s, 1, NOW(), NOW(), %s)
+                        """, (pt_name, project_name, project_name, tech_name, frappe.session.user))
+                        frappe.db.commit()
+                    except Exception as e:
+                        frappe.log_error(f"Error creating Project Technology: {str(e)}", "Project Technology Error")
+    
+    # Save README / Referral Document using direct SQL
     if readme_content or readme_file:
         try:
-            readme_doc = frappe.get_doc({
-                "doctype": "Project Readme",
-                "project": project_name,
-                "readme_content": readme_content or "",
-                "readme_file": readme_file or ""
-            })
-            readme_doc.flags.ignore_validate = True
-            readme_doc.flags.ignore_mandatory = True
-            readme_doc.db_insert()
+            import uuid
+            rm_name = f"RM-{str(uuid.uuid4().int)[:8]}"
+            frappe.db.sql("""
+                INSERT INTO `tabProject Readme` (name, doctype, project, readme_content, readme_file, 
+                creation, modified, owner)
+                VALUES (%s, 'Project Readme', %s, %s, %s, NOW(), NOW(), %s)
+            """, (rm_name, project_name, readme_content or "", readme_file or "", frappe.session.user))
+            frappe.db.commit()
         except Exception as e:
             frappe.log_error(f"Error saving README: {str(e)}", "README Save Error")
-
-    # Reload the project document from database to ensure proper child table loading
-    project_doc = frappe.get_doc("Project", project_name)
-
+    
     # Send email notification directly to all admin users
     try:
         admin_emails = frappe.db.sql("""
