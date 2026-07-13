@@ -796,10 +796,6 @@ def get_documents(limit=20, offset=0):
         return {"documents": [], "total": 0, "has_more": False, "error": str(e)}
 
 
-@frappe.whitelist(allow_guest=True)
-def get_gallery(limit=30, offset=0):
-    """Get gallery data - screenshots feature removed."""
-    return {"screenshots": [], "total": 0, "has_more": False}
 
 def create_project_readme(project_name, readme_file=None, readme_content=None):
     """Create or update Project Readme for a project."""
