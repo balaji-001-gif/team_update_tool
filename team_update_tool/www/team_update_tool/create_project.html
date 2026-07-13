@@ -1453,8 +1453,10 @@ function removeFile(index) {
 // ============================
 document.getElementById('referDocInput').addEventListener('change', function(e) {
     var file = e.target.files[0];
+    console.log('referDocInput changed, file:', file);
     if (file) {
         referDocFile = file;
+        console.log('referDocFile set to:', file.name);
         var container = document.getElementById('referDocPreview');
         var ext = file.name.split('.').pop().toLowerCase();
         var icon = ext === 'pdf' ? '📄' : ext === 'docx' || ext === 'doc' ? '📝' : ext === 'md' ? '📑' : '📎';
@@ -1474,12 +1476,14 @@ document.getElementById('referDocInput').addEventListener('change', function(e) 
         this.classList.remove('is-invalid');
     } else {
         referDocFile = null;
+        console.log('referDocFile set to null (no file)');
         document.getElementById('referDocPreview').innerHTML = '';
     }
 });
 
 function removeReferDoc() {
     referDocFile = null;
+    console.log('removeReferDoc called, referDocFile set to null');
     document.getElementById('referDocInput').value = '';
     document.getElementById('referDocPreview').innerHTML = '';
 }
