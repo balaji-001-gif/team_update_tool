@@ -210,43 +210,58 @@ def get_project_detail(name):
     github_url = project.github_repository or ""
     
     # Check if it is a URL or a doc link
-    if "github.com" in github_url.lower():
-        # It is a URL, extract info
+    if github_url:
         import re
-        match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_url, re.IGNORECASE)
-        if match:
-            repo_owner = match.group(1)
-            repo_name = match.group(2).replace('.git', '')
-            github_info = {
-                "name": f"{repo_owner}/{repo_name}",
-                "repository_url": github_url,
-                "repository_name": repo_name,
-                "commit_hash": "",
-                "default_branch": "main",
-                "languages": "",
-            }
-    elif github_url:
-        # Try to fetch as doc link
-        try:
-            repo = frappe.get_cached_doc("GitHub Repository", github_url)
-            github_info = {
-                "name": repo.name,
-                "repository_url": repo.repository_url,
-                "repository_name": repo.repository_name,
-                "commit_hash": repo.commit_hash or "",
-                "default_branch": repo.default_branch or "main",
-                "languages": repo.languages or "",
-            }
-        except Exception as e:
-            # Return basic info
-            github_info = {
-                "name": github_url,
-                "repository_url": github_url,
-                "repository_name": github_url.split('/')[-1] if '/' in github_url else github_url,
-                "commit_hash": "",
-                "default_branch": "main",
-                "languages": "",
-            }
+        # Check if it's a full URL (contains github.com)
+        if "github.com" in github_url.lower():
+            match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_url, re.IGNORECASE)
+            if match:
+                repo_owner = match.group(1)
+                repo_name = match.group(2).replace('.git', '')
+                github_info = {
+                    "name": f"{repo_owner}/{repo_name}",
+                    "repository_url": github_url,
+                    "repository_name": repo_name,
+                    "commit_hash": "",
+                    "default_branch": "main",
+                    "languages": "",
+                }
+        # Check if it's an owner/repo format (e.g., "Sudhakar1110/interview_scheduler")
+        elif '/' in github_url and not github_url.startswith('http'):
+            parts = github_url.split('/')
+            if len(parts) == 2:
+                repo_owner, repo_name = parts
+                repo_name = repo_name.replace('.git', '')
+                github_info = {
+                    "name": f"{repo_owner}/{repo_name}",
+                    "repository_url": f"https://github.com/{repo_owner}/{repo_name}",
+                    "repository_name": repo_name,
+                    "commit_hash": "",
+                    "default_branch": "main",
+                    "languages": "",
+                }
+        else:
+            # Try to fetch as doc link
+            try:
+                repo = frappe.get_cached_doc("GitHub Repository", github_url)
+                github_info = {
+                    "name": repo.name,
+                    "repository_url": repo.repository_url,
+                    "repository_name": repo.repository_name,
+                    "commit_hash": repo.commit_hash or "",
+                    "default_branch": repo.default_branch or "main",
+                    "languages": repo.languages or "",
+                }
+            except Exception as e:
+                # Return basic info without throwing error
+                github_info = {
+                    "name": github_url,
+                    "repository_url": github_url,
+                    "repository_name": github_url.split('/')[-1] if '/' in github_url else github_url,
+                    "commit_hash": "",
+                    "default_branch": "main",
+                    "languages": "",
+                }
     # Team name
     team_name = project.team
     try:
@@ -520,29 +535,64 @@ def get_repositories(limit=20, offset=0):
                 
                 for p in paginated:
                     repo_name = p.github_repository
-                    # Try to get the GitHub Repository doc
-                    try:
-                        repo_doc = frappe.get_cached_doc("GitHub Repository", repo_name, ignore_permissions=True)
-                        repos.append({
-                            "name": repo_doc.name,
-                            "repository_url": repo_doc.repository_url or "",
-                            "repository_name": repo_doc.repository_name or p.project_title,
-                            "commit_hash": repo_doc.commit_hash or "",
-                            "default_branch": repo_doc.default_branch or "main",
-                            "languages": repo_doc.languages or "",
-                            "creation": str(p.creation),
-                        })
-                    except Exception:
-                        # GitHub Repository doc doesn't exist, use project info
-                        repos.append({
-                            "name": repo_name,
-                            "repository_url": "",
-                            "repository_name": p.project_title or "GitHub Repository",
-                            "commit_hash": "",
-                            "default_branch": "main",
-                            "languages": "",
-                            "creation": str(p.creation),
-                        })
+                    
+                    # Build repository info from the field value
+                    if repo_name:
+                        # Check if it's a full URL
+                        if "github.com" in repo_name.lower():
+                            import re
+                            match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', repo_name, re.IGNORECASE)
+                            if match:
+                                repo_owner = match.group(1)
+                                repo_short_name = match.group(2).replace('.git', '')
+                                repos.append({
+                                    "name": f"{repo_owner}/{repo_short_name}",
+                                    "repository_url": repo_name,
+                                    "repository_name": repo_short_name,
+                                    "commit_hash": "",
+                                    "default_branch": "main",
+                                    "languages": "",
+                                    "creation": str(p.creation),
+                                })
+                        # Check if it's an owner/repo format
+                        elif '/' in repo_name and not repo_name.startswith('http'):
+                            parts = repo_name.split('/')
+                            if len(parts) == 2:
+                                repo_owner, repo_short_name = parts
+                                repo_short_name = repo_short_name.replace('.git', '')
+                                repos.append({
+                                    "name": f"{repo_owner}/{repo_short_name}",
+                                    "repository_url": f"https://github.com/{repo_owner}/{repo_short_name}",
+                                    "repository_name": repo_short_name,
+                                    "commit_hash": "",
+                                    "default_branch": "main",
+                                    "languages": "",
+                                    "creation": str(p.creation),
+                                })
+                        else:
+                            # Try to get the GitHub Repository doc
+                            try:
+                                repo_doc = frappe.get_cached_doc("GitHub Repository", repo_name, ignore_permissions=True)
+                                repos.append({
+                                    "name": repo_doc.name,
+                                    "repository_url": repo_doc.repository_url or "",
+                                    "repository_name": repo_doc.repository_name or p.project_title,
+                                    "commit_hash": repo_doc.commit_hash or "",
+                                    "default_branch": repo_doc.default_branch or "main",
+                                    "languages": repo_doc.languages or "",
+                                    "creation": str(p.creation),
+                                })
+                            except Exception:
+                                # GitHub Repository doc doesn't exist, use project info
+                                repos.append({
+                                    "name": repo_name,
+                                    "repository_url": repo_name,
+                                    "repository_name": p.project_title or "GitHub Repository",
+                                    "commit_hash": "",
+                                    "default_branch": "main",
+                                    "languages": "",
+                                    "creation": str(p.creation),
+                                })
             except Exception as proj_error:
                 frappe.log_error(f"Error fetching projects with github_repository: {str(proj_error)}", "get_repositories Error")
         
