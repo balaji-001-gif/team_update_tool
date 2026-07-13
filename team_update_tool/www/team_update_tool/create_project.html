@@ -1600,6 +1600,10 @@ document.getElementById('projectForm').addEventListener('submit', async function
     submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span> Submitting...';
     msgEl.style.display = 'none';
 
+    // Debug: Log referDocFile status
+    console.log('referDocFile status:', referDocFile);
+    console.log('uploadedFiles:', uploadedFiles);
+
     try {
         var projectResp = await fetch('/api/method/team_update_tool.api.projects.create_project', {
             method: 'POST',
