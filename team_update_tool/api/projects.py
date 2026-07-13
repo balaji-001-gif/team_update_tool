@@ -1355,6 +1355,10 @@ def create_project(project_title, team, project_category=None, description=None,
         if not status:
             status = frappe.db.get_value("Project Status", 1, "name")
     
+    # Accept github_url from frontend (which sends github_url instead of github_repository)
+    if not github_repository:
+        github_repository = frappe.form_dict.get('github_url')
+    
     # Create project with explicit name
     import hashlib
     name_hash = hashlib.md5((project_title + str(frappe.utils.now())).encode()).hexdigest()[:10]
