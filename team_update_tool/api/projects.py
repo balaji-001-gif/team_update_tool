@@ -1399,12 +1399,13 @@ def create_project(project_title, team, project_category=None, description=None,
                 try:
                     github_repo = frappe.get_doc({
                         "doctype": "GitHub Repository",
+                        "name": repo_full_name,
                         "repository_name": repo_full_name,
                         "repository_url": github_repository,
                     })
-                    github_repo.insert(ignore_permissions=True, ignore_links=True)
+                    github_repo.insert(ignore_permissions=True, ignore_links=True, ignore_if_duplicate=True)
                 except Exception as e:
-                    frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Error")
+                    pass  # Ignore if already exists or other errors
             
             github_repo_value = repo_full_name
         else:
