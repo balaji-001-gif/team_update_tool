@@ -1046,37 +1046,43 @@ def add_project_screenshot(project_name, file_url, caption=None):
     return {"message": _("Screenshot added."), "success": True}
 
 
+@frappe.whitelist()
 def create_project_readme(project_name, readme_file=None, readme_content=None):
 	"""Create or update Project Readme for a project."""
-	__roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
-	if is_viewer and not is_admin and not is_team_member:
-		frappe.throw(_("Permission denied."), frappe.PermissionError)
+	try:
+		__roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
+		if is_viewer and not is_admin and not is_team_member:
+			return {"error": "Permission denied"}
 
-	if not project_name:
-		frappe.throw(_("Project name is required."))
+		if not project_name:
+			return {"error": "Project name is required"}
 
-	project = frappe.get_doc("Project", project_name)
-	if not is_admin and project.owner != frappe.session.user:
-		frappe.throw(_("You can only modify your own projects."), frappe.PermissionError)
+		if not frappe.db.exists("Project", project_name):
+			return {"error": "Project not found"}
 
-	# Check if Project Readme already exists for this project
-	existing = frappe.db.get_value("Project Readme", {"project": project_name}, "name")
-	if existing:
-		# Update existing
-		readme = frappe.get_doc("Project Readme", existing)
-	else:
-		# Create new
-		readme = frappe.new_doc("Project Readme")
-		readme.project = project_name
+		project = frappe.get_doc("Project", project_name)
+		
+		# Check if Project Readme already exists for this project
+		existing = frappe.db.get_value("Project Readme", {"project": project_name}, "name")
+		if existing:
+			# Update existing
+			readme = frappe.get_doc("Project Readme", existing)
+		else:
+			# Create new
+			readme = frappe.new_doc("Project Readme")
+			readme.project = project_name
 
-	if readme_file:
-		readme.readme_file = readme_file
-	if readme_content:
-		readme.readme_content = readme_content
+		if readme_file:
+			readme.readme_file = readme_file
+		if readme_content:
+			readme.readme_content = readme_content
 
-	readme.save(ignore_permissions=is_admin)
+		readme.save(ignore_permissions=True)
 
-	return {"message": _("Project Readme created."), "success": True}
+		return {"message": "Project Readme created.", "success": True}
+	except Exception as e:
+		frappe.log_error(f"Error creating README: {str(e)}", "create_project_readme Error")
+		return {"error": str(e)}
 
 
 @frappe.whitelist()
@@ -1549,15 +1555,11 @@ def add_project_screenshot(project_name, screenshot=None, caption=None, screensh
         if not frappe.db.exists("Project", project_name):
             return {"error": "Project not found"}
         
-        # Check permission
-        project = frappe.get_doc("Project", project_name)
-        __roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
+        # Use file_url (uploaded URL) first, then fallback to screenshot parameter
+        screenshot_url = file_url or screenshot or ""
         
-        if not is_admin and project.owner != frappe.session.user and not is_team_member:
-            return {"error": "Permission denied"}
-        
-        # Use file_url if screenshot is not provided (handles both parameter names)
-        screenshot_url = screenshot or file_url or ""
+        if not screenshot_url:
+            return {"error": "Screenshot URL is required"}
         
         # Add screenshot - use Project Screenshots doctype
         screenshot_doc = frappe.get_doc({
@@ -1567,7 +1569,7 @@ def add_project_screenshot(project_name, screenshot=None, caption=None, screensh
             "parenttype": "Project",
             "screenshot": screenshot_url,
             "caption": caption or "",
-            "screenshot_type": screenshot_type or ""
+            "screenshot_type": screenshot_type or "UI Screen"
         })
         screenshot_doc.insert(ignore_permissions=True)
         
@@ -1590,13 +1592,6 @@ def add_project_file(project_name, file_url=None, file_name=None, file_type=None
         
         if not frappe.db.exists("Project", project_name):
             return {"error": "Project not found"}
-        
-        # Check permission
-        project = frappe.get_doc("Project", project_name)
-        __roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
-        
-        if not is_admin and project.owner != frappe.session.user and not is_team_member:
-            return {"error": "Permission denied"}
         
         # Add file - use Project Files doctype
         file_doc = frappe.get_doc({
