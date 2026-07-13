@@ -37,6 +37,90 @@ def validate_project(doc, method=None):
 	pass
 
 
+def on_project_update(doc, method=None):
+	"""Hook called on project update to handle notifications."""
+	pass
+
+
+def send_new_project_notification(doc, method=None):
+	"""Send email notification to admin when a new project is created."""
+	try:
+		# Get all admin users
+		admin_users = frappe.get_all("Has Role",
+			filters={"role": "Admin"},
+			pluck="parent"
+		)
+		
+		if not admin_users:
+			# Fallback to System Manager if no Admin users
+			admin_users = frappe.get_all("Has Role",
+				filters={"role": "System Manager"},
+				pluck="parent"
+			)
+		
+		if not admin_users:
+			frappe.log_error("No Admin or System Manager users found for notification", "Project Notification Error")
+			return
+		
+		# Get project details
+		status_name = ""
+		if doc.status:
+			status_doc = frappe.get_cached_doc("Project Status", doc.status)
+			status_name = status_doc.status_name if hasattr(status_doc, 'status_name') else doc.status
+		
+		# Get team name
+		team_name = doc.team
+		if doc.team:
+			team_doc = frappe.get_cached_doc("Team", doc.team)
+			team_name = team_doc.team_name if hasattr(team_doc, 'team_name') else doc.team
+		
+		# Prepare notification message
+		subject = f"New Project Uploaded: {doc.project_title}"
+		message = f"""
+<p>A new project has been uploaded:</p>
+<p><b>{doc.project_title}</b><br>
+Team: {team_name}<br>
+Status: {status_name}<br>
+Priority: {doc.priority or 'Medium'}<br>
+Created by: {doc.owner}</p>
+<p><a href="{frappe.utils.get_url(f'/app/project/{doc.name}')}">View Project</a></p>
+"""
+		
+		# Send email to all admin users
+		for user in admin_users:
+			user_email = frappe.db.get_value("User", user, "email")
+			if user_email:
+				try:
+					frappe.sendmail(
+						recipients=[user_email],
+						subject=subject,
+						message=message,
+						reference_doctype="Project",
+						reference_name=doc.name,
+					)
+					frappe.log_error(f"Notification sent to {user_email} for project {doc.name}", "Project Notification")
+				except Exception as email_error:
+					frappe.log_error(f"Failed to send notification to {user_email}: {str(email_error)}", "Project Notification Error")
+		
+		# Create system notification as well
+		try:
+			from frappe.desk.doctype.notification_log import make_notification_log
+			for user in admin_users:
+				make_notification_log(
+					subject=subject,
+					message=message,
+					for_user=user,
+					reference_doctype="Project",
+					reference_name=doc.name,
+				)
+		except Exception as notification_error:
+			frappe.log_error(f"Failed to create system notification: {str(notification_error)}", "Project Notification Error")
+		
+	except Exception as e:
+		frappe.log_error(f"Error sending new project notification: {str(e)}", "Project Notification Error")
+		# Don't throw error - don't block project creation due to notification failure
+
+
 def get_permission_query_conditions(user):
 	"""Server-enforced list view filtering. View-Only Users see only projects with status 'Approved'."""
 	if not user:

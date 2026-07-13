@@ -23,5 +23,13 @@ fixtures = [
 	{"dt": "Role", "filters": [["role_name", "in", ["Admin", "Team Member", "View-Only User"]]]},
 	{"dt": "DocType", "filters": [["module", "in", ["Masters", "Transactions", "Reports"]]]},
 	{"dt": "Workspace", "filters": [["name", "in", ["Team Update Tool"]]]},
+	{"dt": "Notification", "filters": [["name", "in", ["New Project Uploaded", "Project Approved", "Project Status Updated"]]]},
 ]
+
+doc_events = {
+	"Project": {
+		"on_update": "team_update_tool.transactions.doctype.project.project.on_project_update",
+		"after_insert": "team_update_tool.transactions.doctype.project.project.send_new_project_notification",
+	}
+}
 

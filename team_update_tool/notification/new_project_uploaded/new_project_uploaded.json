@@ -1,5 +1,5 @@
 {
- "channel": "System Notification",
+ "channel": "Email",
  "creation": "2026-07-08 10:00:00",
  "docstatus": 0,
  "doctype": "Notification",
@@ -10,7 +10,7 @@
  "is_standard": 1,
  "message": "<p>A new project has been uploaded:</p><p><b>{{ doc.project_title }}</b><br>Team: {{ doc.team }}<br>Status: {{ doc.status }}</p>",
  "method": "",
- "modified": "2026-07-08 10:00:00",
+ "modified": "2026-07-13 04:00:00",
  "modified_by": "Administrator",
  "name": "New Project Uploaded",
  "owner": "Administrator",
