@@ -1532,6 +1532,9 @@ def create_project(project_title, team, status=None, priority="Medium",
         except Exception as e:
             frappe.log_error(f"Failed to send email notification: {str(e)}", "Project Email Error")
 
+    # Ensure all changes are committed to the database
+    frappe.db.commit()
+
     return {
         "message": _("Project created successfully."),
         "name": project_name,
