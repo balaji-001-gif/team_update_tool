@@ -1561,12 +1561,10 @@ def add_project_screenshot(project_name, screenshot=None, caption=None, screensh
         if not screenshot_url:
             return {"error": "Screenshot URL is required"}
         
-        # Add screenshot - use Project Screenshots doctype
+        # Add screenshot - use Project Screenshots doctype with 'project' field
         screenshot_doc = frappe.get_doc({
             "doctype": "Project Screenshots",
-            "parent": project_name,
-            "parentfield": "screenshots",
-            "parenttype": "Project",
+            "project": project_name,
             "screenshot": screenshot_url,
             "caption": caption or "",
             "screenshot_type": screenshot_type or "UI Screen"
@@ -1593,12 +1591,10 @@ def add_project_file(project_name, file_url=None, file_name=None, file_type=None
         if not frappe.db.exists("Project", project_name):
             return {"error": "Project not found"}
         
-        # Add file - use Project Files doctype
+        # Add file - use Project Files doctype with 'project' field
         file_doc = frappe.get_doc({
             "doctype": "Project Files",
-            "parent": project_name,
-            "parentfield": "project_files",
-            "parenttype": "Project",
+            "project": project_name,
             "file": file_url,
             "file_name": file_name or "Document",
             "file_type": file_type or "",
