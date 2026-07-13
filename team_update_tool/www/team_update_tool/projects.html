@@ -604,14 +604,6 @@ Showing <strong id="showingCount">0</strong> of <strong id="totalResults">0</str
 
 {% block script %}
 <script>
-
-function getCsrfToken() {
-    const cookies = document.cookie.split(';');
-    for (let i = 0; i < cookies.length; i++) {
-        const cookie = cookies[i].trim();
-        if (cookie.startsWith('csrf_token=')) {
-            return cookie.substring('csrf_token='.length);
-        }
     }
     return frappe.csrf_token || '';
 }
@@ -665,14 +657,7 @@ frappe.ready(function() {
     loadProjects(0);
   });
 
-  fetch('/api/method/team_update_tool.api.auth.get_current_user', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Frappe-CSRF-Token': getCsrfToken()
-            },
-            credentials: 'include'
-        })
+  fetch('/api/method/team_update_tool.api.auth.get_current_user')
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (d.message && !d.message.guest && !d.message.is_viewer) {
@@ -682,14 +667,7 @@ frappe.ready(function() {
   .catch(function() {});
 
   function loadFilterOptions() {
-    fetch('/api/method/team_update_tool.api.projects.get_all_public_stats', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Frappe-CSRF-Token': getCsrfToken()
-            },
-            credentials: 'include'
-        })
+    fetch('/api/method/team_update_tool.api.projects.get_all_public_stats')
     .then(function(r) {
       if (!r.ok) throw new Error('Failed to load filters');
       return r.json();

@@ -243,30 +243,9 @@ function escHtml(s) {
 }
 
 frappe.ready(function() { loadDashboard(); });
-
-async function get_csrf_token() {
-    const name = 'csrf_token';
-    let cookieValue = null;
-    document.cookie.split(';').forEach(function(val) {
-        const parts = val.trim().split('=');
-        if (parts[0] === name) {
-            cookieValue = parts.slice(1).join('=');
-        }
-    });
-    return cookieValue;
-}
-
 async function loadDashboard() {
     try {
-        var csrfToken = frappe.csrf_token || '';
-        var resp = await fetch('/api/method/team_update_tool.api.projects.get_dashboard_stats', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Frappe-CSRF-Token': csrfToken
-            },
-            credentials: 'include'
-        });
+        var resp = await fetch('/api/method/team_update_tool.api.projects.get_dashboard_stats');
         if (!resp.ok) { 
             console.error('Dashboard API error:', resp.status);
             tutToast('Failed to load dashboard data. Please try again.', 'error'); 
@@ -278,14 +257,7 @@ async function loadDashboard() {
 
         var fullName = 'User', isAdmin = d.is_admin || false;
         try {
-            var userResp = await fetch('/api/method/team_update_tool.api.auth.get_current_user', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Frappe-CSRF-Token': csrfToken
-                },
-                credentials: 'include'
-            });
+            var userResp = await fetch('/api/method/team_update_tool.api.auth.get_current_user');
             var userData = await userResp.json();
             if (userData.message && !userData.message.guest) {
                 fullName = userData.message.full_name;

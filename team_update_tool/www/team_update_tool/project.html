@@ -923,15 +923,6 @@ function formatDate(dateStr) {
     var d = new Date(dateStr);
     return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
-
-function getCsrfToken() {
-    const name = 'csrf_token';
-    let cookieValue = null;
-    document.cookie.split(';').forEach(function(val) {
-        const parts = val.trim().split('=');
-        if (parts[0] === name) {
-            cookieValue = parts.slice(1).join('=');
-        }
     });
     return cookieValue;
 }
