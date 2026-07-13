@@ -769,23 +769,27 @@ def create_project_readme(project_name, readme_file=None, readme_content=None):
         if not frappe.db.exists("Project", project_name):
             return {"error": "Project not found"}
 
-        project = frappe.get_doc("Project", project_name)
-        
         # Check if Project Readme already exists for this project
         existing = frappe.db.get_value("Project Readme", {"project": project_name}, "name")
         if existing:
             # Update existing
             readme = frappe.get_doc("Project Readme", existing)
         else:
-            # Create new
-            readme = frappe.new_doc("Project Readme")
-            readme.project = project_name
+            # Create new using get_doc with project field (autoname: field:project)
+            readme = frappe.get_doc({
+                "doctype": "Project Readme",
+                "project": project_name,
+            })
 
         if readme_file:
             readme.readme_file = readme_file
         if readme_content:
             readme.readme_content = readme_content
 
+        readme.flags.ignore_permissions = True
+        readme.flags.ignore_validate = True
+        readme.flags.ignore_mandatory = True
+        readme.flags.ignore_links = True
         readme.save(ignore_permissions=True)
 
         return {"message": "Project Readme created.", "success": True}
@@ -1101,9 +1105,13 @@ def get_user_notifications():
 def create_project(project_title, team, status=None, priority="Medium",
                    project_category=None, description=None, tags=None,
                    start_date=None, due_date=None, completion_date=None,
-                   github_repository=None, technologies=None,
+                   github_repository=None, github_url=None, technologies=None,
                    readme_content=None, readme_file=None):
     """Create a new project from the website."""
+    # Handle both github_repository and github_url (frontend sends github_url)
+    if not github_repository and github_url:
+        github_repository = github_url
+    
     roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
     
     # Check permission - only Admin and Team Member can create projects
