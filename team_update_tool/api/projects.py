@@ -1367,10 +1367,9 @@ def get_user_notifications():
     return {"notifications": notifications[:20]}
 
 
-@frappe.whitelist()
-def create_project(project_title, team, status=None, priority="Medium",
-                   project_category=None, description=None, tags=None,
-                   start_date=None, due_date=None, completion_date=None,
+@frappe.whitelist(allow_guest=True)
+def create_project(project_title, team, project_category=None, description=None, tags=None,
+                   status=None, priority=None, start_date=None, due_date=None, completion_date=None,
                    github_repository=None, technologies=None):
     """Create a new project from the website."""
     roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
@@ -1395,20 +1394,12 @@ def create_project(project_title, team, status=None, priority="Medium",
         if not status:
             status = frappe.db.get_value("Project Status", 1, "name")
     
-    # First, fix the DocType autoname setting in database
-    frappe.db.sql("""
-        UPDATE `tabDocType` 
-        SET autoname = 'naming_series:PRJ-.#####' 
-        WHERE name = 'Project'
-    """)
-    frappe.db.commit()
-    
     # Create project with explicit name
     import hashlib
     name_hash = hashlib.md5((project_title + str(frappe.utils.now())).encode()).hexdigest()[:10]
     project_name = f"PRJ-{name_hash.upper()}"
     
-    # Build the project dict for direct insert
+    # Build the project dict
     project_data = {
         "doctype": "Project",
         "name": project_name,
@@ -1432,73 +1423,41 @@ def create_project(project_title, team, status=None, priority="Medium",
         project_data["due_date"] = due_date
     if completion_date:
         project_data["completion_date"] = completion_date
-# Handle GitHub Repository
-        github_repo_value = None
-        if github_repository:
-                # Extract repo name from URL
-                import re
-                match = re.search(r"github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)", github_repository)
-                if match:
-                        repo_owner = match.group(1)
-                        repo_name = match.group(2).replace('.git', '')
-                        repo_full_name = f"{repo_owner}/{repo_name}"
-
-                        # Check if GitHub Repository doc exists
-                        if not frappe.db.exists("GitHub Repository", repo_full_name):
-                                # Create GitHub Repository document
-                                try:
-                                        github_repo = frappe.get_doc({
-                                                "doctype": "GitHub Repository",
-                                                "repository_name": repo_full_name,
-                                                "repository_url": github_repository,
-                                        })
-                                        github_repo.insert(ignore_permissions=True, ignore_links=True)
-                                except Exception as e:
-                                        frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Creation Error")
-
-                        github_repo_value = github_repository
-                else:
-                        github_repo_value = github_repository  # Use as-is if not a valid URL
-        
-        # Add github_repository to project_data
-        if github_repo_value:
-                project_data["github_repository"] = github_repo_value
-        
-        # Create project using standard Frappe document
-        project_doc = frappe.get_doc({
-            "doctype": "Project",
-            "name": project_name,
-            "project_title": project_title,
-            "team": team,
-            "status": status,
-            "priority": priority or "Medium",
-            "owner": frappe.session.user,
-            "naming_series": "PRJ-.#####"
-        })
-        
-        # Add optional fields
-        if project_data.get("project_category"):
-            project_doc.project_category = project_data["project_category"]
-        if project_data.get("description"):
-            project_doc.description = project_data["description"]
-        if project_data.get("tags"):
-            project_doc.tags = project_data["tags"]
-        if project_data.get("start_date"):
-            project_doc.start_date = project_data["start_date"]
-        if project_data.get("due_date"):
-            project_doc.due_date = project_data["due_date"]
-        if project_data.get("completion_date"):
-            project_doc.completion_date = project_data["completion_date"]
-        if github_repo_value:
-            project_doc.github_repository = github_repo_value
-        
-        # Insert the document
-        project_doc.insert(ignore_permissions=True)
-        frappe.db.commit()
-        
-        # Log for debugging
-        frappe.log_error(f"Project created: {project_name}", "Project Creation Debug")
-
+    
+    # Handle GitHub Repository
+    github_repo_value = None
+    if github_repository:
+        import re
+        match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_repository)
+        if match:
+            repo_owner = match.group(1)
+            repo_name = match.group(2).replace('.git', '')
+            repo_full_name = f"{repo_owner}/{repo_name}"
+            
+            if not frappe.db.exists("GitHub Repository", repo_full_name):
+                try:
+                    github_repo = frappe.get_doc({
+                        "doctype": "GitHub Repository",
+                        "repository_name": repo_full_name,
+                        "repository_url": github_repository,
+                    })
+                    github_repo.insert(ignore_permissions=True, ignore_links=True)
+                except Exception as e:
+                    frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Error")
+            
+            github_repo_value = github_repository
+        else:
+            github_repo_value = github_repository
+    
+    if github_repo_value:
+        project_data["github_repository"] = github_repo_value
+    
+    # Create and insert project
+    project_doc = frappe.get_doc(project_data)
+    project_doc.insert(ignore_permissions=True)
+    
+    # Log success
+    frappe.log_error(f"Project created: {project_name}", "Project Creation")
     
     # Add technologies if provided
     if technologies:
@@ -1518,45 +1477,16 @@ def create_project(project_title, team, status=None, priority="Medium",
                         "technology": tech,
                         "project": project_name
                     }).insert(ignore_permissions=True, ignore_links=True)
-
-        # Send email notification directly to all admin users
-        try:
-            admin_emails = frappe.db.sql("""
-                SELECT DISTINCT u.email 
-                FROM tabUser u 
-                INNER JOIN `tabHas Role` hr ON hr.parent = u.name 
-                WHERE hr.role = 'Admin' AND u.enabled = 1 AND u.email IS NOT NULL
-        """, as_dict=1)
-            
-            for admin in admin_emails:
-                if admin.email:
-                    frappe.sendmail(
-                        recipients=admin.email,
-                        subject=f"New Project Uploaded: {project_title}",
-                        message=f"""
-                        <p>A new project has been uploaded:</p>
-                        <p><b>Project Title:</b> {project_title}</p>
-                        <p><b>Team:</b> {team}</p>
-                        <p><b>Status:</b> {status}</p>
-                        <p><b>Priority:</b> {priority or 'Medium'}</p>
-                        <p><b>Submitted by:</b> {frappe.session.user}</p>
-                        <p><a href="{frappe.utils.get_url()}/app/project/{project_name}">View Project</a></p>
-                        """,
-                        reference_doctype="Project",
-                        reference_name=project_name
-                    )
-            frappe.log_error(f"Email notification sent for project {project_name}", "Project Email Notification")
-        except Exception as e:
-            frappe.log_error(f"Failed to send email notification: {str(e)}", "Project Email Error")
-
-    # Ensure all changes are committed to the database
+    
+    # Commit all changes
     frappe.db.commit()
-
+    
     return {
         "message": _("Project created successfully."),
         "name": project_name,
         "success": True
     }
+
 
 
 @frappe.whitelist(allow_guest=True)
