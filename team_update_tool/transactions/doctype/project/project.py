@@ -113,7 +113,7 @@ Created by: {doc.owner}</p>
 					"type": "Alert",
 					"document_type": "Project",
 					"document_name": doc.name,
-				}).insert(ignore_permissions=True)
+				                            }).insert(ignore_permissions=True, ignore_links=True)
 		except Exception as notification_error:
 			frappe.log_error(f"Failed to create system notification", "Project Notification Error")
 		

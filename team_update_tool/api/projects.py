@@ -1413,7 +1413,7 @@ def create_project(project_title, team, project_category=None, description=None,
     # Create and insert project (let Frappe auto-generate the name via naming series)
     project_doc = frappe.get_doc(project_data)
     project_doc.flags.ignore_permissions = True
-    project_doc.insert()
+    project_doc.insert(ignore_permissions=True, ignore_links=True)
     
     # Capture the generated project name from the naming series
     project_name = project_doc.name
