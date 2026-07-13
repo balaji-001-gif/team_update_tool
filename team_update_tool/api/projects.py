@@ -1411,7 +1411,6 @@ def create_project(project_title, team, status=None, priority="Medium",
 	if completion_date:
 		project_data["completion_date"] = completion_date
 	# Handle GitHub Repository
-	github_repo_name = None
 	if github_repository:
 		# Extract repo name from URL
 		import re
@@ -1431,16 +1430,13 @@ def create_project(project_title, team, status=None, priority="Medium",
 						"repository_url": github_repository,
 					})
 					github_repo.insert(ignore_permissions=True)
-					github_repo_name = repo_full_name
 				except Exception as e:
 					frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Creation Error")
-					github_repo_name = github_repository  # Fallback to URL
-			else:
-				github_repo_name = repo_full_name
+			
+			# Store the full URL in the project for easier display
+			project_data["github_repository"] = github_repository
 		else:
-			github_repo_name = github_repository  # Use as-is if not a valid URL
-		
-		project_data["github_repository"] = github_repo_name
+			project_data["github_repository"] = github_repository  # Use as-is if not a valid URL
 	# Use db_insert to bypass all autoname and validation logic
 	project_doc = frappe.get_doc(project_data)
 	project_doc.flags.ignore_validate = True
