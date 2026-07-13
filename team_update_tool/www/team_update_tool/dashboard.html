@@ -247,6 +247,7 @@ frappe.ready(function() { loadDashboard(); });
 async function loadDashboard() {
     try {
         var resp = await fetch('/api/method/team_update_tool.api.projects.get_dashboard_stats');
+        if (!resp.ok) { tutToast('Failed to load dashboard data. Please try again.', 'error'); return; }
         var data = await resp.json();
         if (!data.message) { tutToast('Failed to load dashboard data.', 'error'); return; }
         var d = data.message;
