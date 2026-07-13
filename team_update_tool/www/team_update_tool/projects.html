@@ -604,10 +604,6 @@ Showing <strong id="showingCount">0</strong> of <strong id="totalResults">0</str
 
 {% block script %}
 <script>
-    }
-    return frappe.csrf_token || '';
-}
-
 function escHtml(s) {
   if (!s) return '';
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
