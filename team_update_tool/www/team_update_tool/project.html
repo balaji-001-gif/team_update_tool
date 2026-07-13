@@ -947,11 +947,17 @@ frappe.ready(function() {
 });
 
 function loadProject(name) {
+    console.log('Loading project:', name);
     frappe.call({
         method: 'team_update_tool.api.projects.get_project_detail',
         args: { name: name },
         callback: function(data) {
+            console.log('API Response:', data);
             if (data.message) {
+                console.log('Project data:', data.message);
+                console.log('Screenshots:', data.message.screenshots);
+                console.log('Files:', data.message.files);
+                console.log('GitHub:', data.message.github_repository);
                 renderProject(data.message);
             } else if (data.exc) {
                 document.getElementById('projectLoading').style.display = 'none';
@@ -971,9 +977,10 @@ function loadProject(name) {
             }
         },
         error: function(err) {
+            console.error('API Error:', err);
             document.getElementById('projectLoading').style.display = 'none';
             document.getElementById('projectError').style.display = 'flex';
-            document.getElementById('errorMsg').textContent = 'Network error.';
+            document.getElementById('errorMsg').textContent = 'Failed to load project. Please check console for details.';
         }
     });
 }
