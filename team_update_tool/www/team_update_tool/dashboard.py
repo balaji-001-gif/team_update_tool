@@ -75,3 +75,74 @@ def get_context(context):
 				s = frappe.get_cached_doc("Project Status", p.status)
 				p.status_name = s.status_name
 				p.status_color = s.color
+
+	# Get notifications for the dashboard
+	context.notifications = get_user_notifications(user, is_admin)
+	context.unread_count = len([n for n in context.notifications if not n.get("read")])
+
+
+def get_user_notifications(user, is_admin=False):
+	"""Get notifications for the dashboard display."""
+	notifications = []
+	
+	try:
+		# Get recent project submissions (for admin)
+		if is_admin:
+			recent_projects = frappe.get_all("Project",
+				fields=["name", "project_title", "owner", "creation", "status"],
+				limit=10,
+				order_by="creation desc"
+			)
+			for p in recent_projects:
+				status_name = ""
+				if p.status:
+					try:
+						s = frappe.get_cached_doc("Project Status", p.status)
+						status_name = s.status_name if hasattr(s, 'status_name') else p.status
+					except:
+						status_name = p.status
+				
+				notifications.append({
+					"type": "new_project",
+					"title": f"New Project: {p.project_title}",
+					"message": f"Submitted by {p.owner}",
+					"status": status_name,
+					"date": str(p.creation) if p.creation else "",
+					"project": p.name,
+					"read": False,
+					"icon": "fa-plus-circle",
+					"color": "#22c55e"
+				})
+		
+		# Get notification logs
+		try:
+			notification_logs = frappe.get_all("Notification Log",
+				filters={"for_user": user},
+				fields=["name", "subject", "message", "creation", "reference_doctype", "reference_name", "read"],
+				limit=10,
+				order_by="creation desc"
+			)
+			for log in notification_logs:
+				notifications.append({
+					"type": "notification_log",
+					"title": log.subject or "Notification",
+					"message": log.message or "",
+					"date": str(log.creation) if log.creation else "",
+					"project": log.reference_name,
+					"read": log.read,
+					"icon": "fa-bell",
+					"color": "#3b82f6"
+				})
+		except Exception as e:
+			frappe.log_error(f"Error fetching notification logs: {str(e)}", "Dashboard Notifications")
+		
+		# Sort by date (newest first)
+		notifications.sort(key=lambda n: n.get("date", ""), reverse=True)
+		
+		# Limit to 10 most recent
+		notifications = notifications[:10]
+		
+	except Exception as e:
+		frappe.log_error(f"Error fetching dashboard notifications: {str(e)}", "Dashboard Notifications")
+	
+	return notifications
