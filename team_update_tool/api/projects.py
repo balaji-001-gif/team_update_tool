@@ -143,20 +143,21 @@ def get_project_detail(name):
 			"screenshot_type": s.screenshot_type,
 		})
 	
-	# Also check for screenshots in Project Screenshot doctype
+	# Also check for screenshots in Project Screenshots doctype (standalone)
 	if not screenshots:
 		try:
-			ss_records = frappe.get_all("Project Screenshot",
-				filters={"parent": name},
-				fields=["screenshot", "caption", "screenshot_type"],
-				ignore_permissions=True
-			)
-			for s in ss_records:
-				screenshots.append({
-					"screenshot": s.screenshot,
-					"caption": s.caption,
-					"screenshot_type": s.screenshot_type,
-				})
+			if frappe.db.exists("DocType", "Project Screenshots"):
+				ss_records = frappe.get_all("Project Screenshots",
+					filters={"project": name},
+					fields=["screenshot", "caption", "screenshot_type"],
+					ignore_permissions=True
+				)
+				for s in ss_records:
+					screenshots.append({
+						"screenshot": s.screenshot,
+						"caption": s.caption,
+						"screenshot_type": s.screenshot_type,
+					})
 		except:
 			pass
 
@@ -178,22 +179,23 @@ def get_project_detail(name):
 	# Also check for files in standalone Project Files doctype
 	if not files:
 		try:
-			file_records = frappe.get_all("Project Files",
-				filters={"project": name},
-				fields=["file", "file_name", "file_type", "file_description"],
-				ignore_permissions=True
-			)
-			for f in file_records:
-				file_url = f.file or ""
-				if file_url and not file_url.startswith('http://') and not file_url.startswith('https://'):
-					file_url = frappe.request.host_url.rstrip('/') + '/' + file_url.lstrip('/') if hasattr(frappe, 'request') and frappe.request else file_url
-				
-				files.append({
-					"file": file_url,
-					"file_name": f.file_name,
-					"file_type": f.file_type,
-					"description": f.file_description,
-				})
+			if frappe.db.exists("DocType", "Project Files"):
+				file_records = frappe.get_all("Project Files",
+					filters={"project": name},
+					fields=["file", "file_name", "file_type", "file_description"],
+					ignore_permissions=True
+				)
+				for f in file_records:
+					file_url = f.file or ""
+					if file_url and not file_url.startswith('http://') and not file_url.startswith('https://'):
+						file_url = frappe.request.host_url.rstrip('/') + '/' + file_url.lstrip('/') if hasattr(frappe, 'request') and frappe.request else file_url
+					
+					files.append({
+						"file": file_url,
+						"file_name": f.file_name,
+						"file_type": f.file_type,
+						"description": f.file_description,
+					})
 		except:
 			pass
 
@@ -974,7 +976,6 @@ def get_gallery(limit=30, offset=0):
 
 
 @frappe.whitelist()
-@frappe.whitelist()
 def add_project_screenshot(project_name, file_url, caption=None):
     """Attach a screenshot to a project's child table after file upload."""
     __roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
@@ -996,10 +997,10 @@ def add_project_screenshot(project_name, file_url, caption=None):
     screenshot_id = str(uuid.uuid4())
     
     frappe.db.sql("""
-        INSERT INTO `tabProject Screenshot` 
+        INSERT INTO `tabProject Screenshots` 
         (name, parent, parentfield, parenttype, screenshot, caption, screenshot_type, idx, modified, creation)
         VALUES (%s, %s, 'screenshots', 'Project', %s, %s, 'UI Screen', 
-                (SELECT COALESCE(MAX(idx), 0) + 1 FROM `tabProject Screenshot` WHERE parent = %s),
+                (SELECT COALESCE(MAX(idx), 0) + 1 FROM `tabProject Screenshots` WHERE parent = %s),
                 NOW(), NOW())
     """, (screenshot_id, project_name, file_url, caption or "", project_name))
     
@@ -1676,10 +1677,10 @@ def add_project_file(project_name, file_url, file_name=None, file_type=None):
     ftype = file_type or "Other"
     
     frappe.db.sql("""
-        INSERT INTO `tabProject File` 
+        INSERT INTO `tabProject Files` 
         (name, parent, parentfield, parenttype, file, file_name, file_type, idx, modified, creation)
         VALUES (%s, %s, 'project_files', 'Project', %s, %s, %s,
-                (SELECT COALESCE(MAX(idx), 0) + 1 FROM `tabProject File` WHERE parent = %s),
+                (SELECT COALESCE(MAX(idx), 0) + 1 FROM `tabProject Files` WHERE parent = %s),
                 NOW(), NOW())
     """, (file_id, project_name, file_url, fname, ftype, project_name))
     
