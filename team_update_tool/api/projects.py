@@ -1198,8 +1198,8 @@ def create_project(project_title, team, status=None, priority="Medium",
                     import uuid
                     gr_name = f"GR-{frappe.utils.nowdate().replace('-', '.')}.{str(uuid.uuid4().int)[:5]}"
                     frappe.db.sql("""
-                        INSERT INTO `tabGitHub Repository` (name, doctype, repository_name, repository_url, creation, modified, owner)
-                        VALUES (%s, 'GitHub Repository', %s, %s, NOW(), NOW(), %s)
+                        INSERT INTO `tabGitHub Repository` (name, repository_name, repository_url, creation, modified, owner)
+                        VALUES (%s, %s, %s, NOW(), NOW(), %s)
                     """, (gr_name, repo_full_name, github_repository, frappe.session.user))
                     frappe.db.commit()
                     github_repo_name = gr_name
@@ -1213,9 +1213,9 @@ def create_project(project_title, team, status=None, priority="Medium",
     
     # Insert project using direct SQL to bypass all validation
     frappe.db.sql("""
-        INSERT INTO `tabProject` (name, doctype, project_title, team, status, priority, owner, naming_series,
+        INSERT INTO `tabProject` (name, project_title, team, status, priority, owner, naming_series,
         creation, modified, github_repository)
-        VALUES (%s, 'Project', %s, %s, %s, %s, %s, 'PRJ-.#####', NOW(), NOW(), %s)
+        VALUES (%s, %s, %s, %s, %s, %s, 'PRJ-.#####', NOW(), NOW(), %s)
     """, (project_name, project_title, team, status, priority or "Medium", 
           frappe.session.user, github_repo_name))
     frappe.db.commit()
@@ -1257,8 +1257,8 @@ def create_project(project_title, team, status=None, priority="Medium",
                         # Create technology using direct SQL
                         try:
                             frappe.db.sql("""
-                                INSERT INTO `tabTechnology` (name, doctype, technology_name, creation, modified, owner)
-                                VALUES (%s, 'Technology', %s, NOW(), NOW(), %s)
+                                INSERT INTO `tabTechnology` (name, technology_name, creation, modified, owner)
+                                VALUES (%s, %s, NOW(), NOW(), %s)
                             """, (tech, tech, frappe.session.user))
                             frappe.db.commit()
                         except Exception as e:
@@ -1269,9 +1269,9 @@ def create_project(project_title, team, status=None, priority="Medium",
                         import uuid
                         pt_name = f"PROJTECH-{str(uuid.uuid4().int)[:5]}"
                         frappe.db.sql("""
-                            INSERT INTO `tabProject Technology` (name, doctype, parent, parentfield, parenttype, 
+                            INSERT INTO `tabProject Technology` (name, parent, parentfield, parenttype, 
                             project, technology, idx, creation, modified, owner)
-                            VALUES (%s, 'Project Technology', %s, 'technologies', 'Project', %s, %s, 1, NOW(), NOW(), %s)
+                            VALUES (%s, %s, 'technologies', 'Project', %s, %s, 1, NOW(), NOW(), %s)
                         """, (pt_name, project_name, project_name, tech_name, frappe.session.user))
                         frappe.db.commit()
                     except Exception as e:
@@ -1283,9 +1283,9 @@ def create_project(project_title, team, status=None, priority="Medium",
             import uuid
             rm_name = f"RM-{str(uuid.uuid4().int)[:8]}"
             frappe.db.sql("""
-                INSERT INTO `tabProject Readme` (name, doctype, project, readme_content, readme_file, 
+                INSERT INTO `tabProject Readme` (name, project, readme_content, readme_file, 
                 creation, modified, owner)
-                VALUES (%s, 'Project Readme', %s, %s, %s, NOW(), NOW(), %s)
+                VALUES (%s, %s, %s, %s, NOW(), NOW(), %s)
             """, (rm_name, project_name, readme_content or "", readme_file or "", frappe.session.user))
             frappe.db.commit()
         except Exception as e:
