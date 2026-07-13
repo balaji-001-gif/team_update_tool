@@ -1265,7 +1265,7 @@ def create_project(project_title, team, status=None, priority="Medium",
         project_doc.flags.ignore_permissions = True
         project_doc.flags.ignore_validate = True
         project_doc.flags.ignore_mandatory = True
-        project_doc.insert(ignore_permissions=True, ignore_validate=True, ignore_mandatory=True)
+        project_doc.insert(ignore_permissions=True)
         
     except Exception as e:
         frappe.log_error(f"Error creating project: {str(e)}", "Create Project Error")
@@ -1283,7 +1283,7 @@ def create_project(project_title, team, status=None, priority="Medium",
             readme_doc.flags.ignore_permissions = True
             readme_doc.flags.ignore_validate = True
             readme_doc.flags.ignore_mandatory = True
-            readme_doc.insert(ignore_permissions=True, ignore_validate=True, ignore_mandatory=True)
+            readme_doc.insert(ignore_permissions=True)
         except Exception as e:
             frappe.log_error(f"Error saving README: {str(e)}", "README Save Error")
     
