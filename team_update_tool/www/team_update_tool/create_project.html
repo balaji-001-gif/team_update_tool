@@ -580,9 +580,15 @@
 }
 
 .erp-message.success {
-    background: #e8f5e9;
-    border: 1px solid #81c784;
-    color: #2e7d32;
+    background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+    border: 2px solid #22c55e;
+    color: #166534;
+    box-shadow: 0 10px 40px rgba(34, 197, 94, 0.15);
+    border-radius: 16px;
+    padding: 2rem;
+    text-align: center;
+    max-width: 500px;
+    margin: 2rem auto;
 }
 
 .erp-message.error {
@@ -596,6 +602,13 @@
     margin-top: 2px;
 }
 
+.erp-message.success .erp-message-icon {
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 1rem;
+    display: block;
+}
+
 .erp-message-content {
     flex: 1;
 }
@@ -605,14 +618,67 @@
     margin-bottom: 0.25rem;
 }
 
+.erp-message.success .erp-message-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.erp-message.success .erp-message-subtitle {
+    font-size: 0.95rem;
+    color: #4b5563;
+    margin-bottom: 1.5rem;
+}
+
 .erp-message-link {
     color: #1a73e8;
     font-weight: 600;
     text-decoration: none;
 }
 
-.erp-message-link:hover {
-    text-decoration: underline;
+.erp-message.success .erp-message-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+}
+
+.erp-message.success .erp-message-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+    text-decoration: none;
+    color: white;
+}
+
+.erp-message.success .erp-message-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.erp-message.success .erp-message-secondary-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #f3f4f6;
+    color: #374151;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.erp-message.success .erp-message-secondary-link:hover {
+    background: #e5e7eb;
+    text-decoration: none;
+    color: #1f2937;
 }
 
 /* GitHub Status */
@@ -1748,16 +1814,35 @@ document.getElementById('projectForm').addEventListener('submit', async function
             }
         }
 
-        var successMsg = 'Project created successfully!';
-        if (hasErrors) successMsg += ' Some files could not be uploaded.';
+        var successMsg = 'Project Created Successfully!';
+        var subtitleMsg = 'Your project has been submitted and is now live.';
+        if (hasErrors) subtitleMsg = 'Project created with some files not uploaded.';
 
         msgEl.className = 'erp-message success';
-        msgEl.innerHTML = '<svg class="erp-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>' +
-            '<div class="erp-message-content"><div class="erp-message-title">' + successMsg + '</div>' +
-            '<a href="/team_update_tool/project/' + projectName + '" class="erp-message-link">View Project →</a></div>';
-        msgEl.style.display = 'flex';
+        msgEl.innerHTML = 
+            '<svg class="erp-message-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10" stroke="#22c55e" stroke-width="2"/><path d="M9 12l2 2 4-4" stroke="#22c55e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>' +
+            '<div class="erp-message-content" style="flex:none;text-align:center;">' +
+                '<div class="erp-message-title">' + successMsg + '</div>' +
+                '<div class="erp-message-subtitle">' + subtitleMsg + '</div>' +
+                '<div class="erp-message-actions">' +
+                    '<a href="/team_update_tool/project/' + projectName + '" class="erp-message-link">' +
+                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' +
+                        'View Project' +
+                    '</a>' +
+                    '<a href="/team_update_tool/create-project" class="erp-message-secondary-link">' +
+                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                        'Create Another' +
+                    '</a>' +
+                '</div>' +
+            '</div>';
+        msgEl.style.display = 'block';
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<svg class="erp-btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg> Submitted';
+        
+        // Hide the form and show only the success message
+        document.getElementById('projectForm').style.display = 'none';
+        document.querySelector('.erp-step-progress').style.display = 'none';
+        document.getElementById('stepIndicator').style.display = 'none';
 
         // Scroll to message
         msgEl.scrollIntoView({ behavior: 'smooth' });
