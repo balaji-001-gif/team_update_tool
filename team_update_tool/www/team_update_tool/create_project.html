@@ -1112,7 +1112,7 @@
 									<div class="erp-form-group">
 										<label class="erp-form-label">Reference Document <span class="required">*</span></label>
 										<div class="erp-upload-area" id="referDocDropZone">
-											<input type="file" id="referDocInput" accept=".pdf,.docx,.txt,.md" class="d-none">
+											<input type="file" id="referDocInput" accept=".pdf,.docx,.txt,.md" style="position:absolute;width:1px;height:1px;opacity:0;left:0;top:0;">
 											<div class="erp-upload-icon">
 												<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="M9 15l3 3 3-3"/></svg>
 											</div>
@@ -1451,35 +1451,48 @@ function removeFile(index) {
 // ============================
 // Refer Document Handler
 // ============================
-document.getElementById('referDocInput').addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    console.log('referDocInput changed, file:', file);
-    if (file) {
-        referDocFile = file;
-        console.log('referDocFile set to:', file.name);
-        var container = document.getElementById('referDocPreview');
-        var ext = file.name.split('.').pop().toLowerCase();
-        var icon = ext === 'pdf' ? '📄' : ext === 'docx' || ext === 'doc' ? '📝' : ext === 'md' ? '📑' : '📎';
-        var iconClass = 'doc';
-        if (ext === 'pdf') iconClass = 'pdf';
-        else if (ext === 'md') iconClass = 'pdf';
-        
-        container.innerHTML = '<div class="erp-preview-item mt-3">' +
-            '<div class="erp-file-icon ' + iconClass + '">' + icon + '</div>' +
-            '<div class="erp-file-info">' +
-                '<div class="erp-file-name">' + escHtml(file.name) + '</div>' +
-            '</div>' +
-            '<button type="button" class="erp-preview-remove" onclick="removeReferDoc()">' +
-                '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
-            '</button>' +
-        '</div>';
-        this.classList.remove('is-invalid');
-    } else {
-        referDocFile = null;
-        console.log('referDocFile set to null (no file)');
-        document.getElementById('referDocPreview').innerHTML = '';
-    }
-});
+// Add click debug
+var referDocInputEl = document.getElementById('referDocInput');
+if (referDocInputEl) {
+    referDocInputEl.addEventListener('click', function(e) {
+        console.log('referDocInput CLICKED');
+    });
+    
+    referDocInputEl.addEventListener('change', function(e) {
+        console.log('referDocInput CHANGE event fired');
+        var file = e.target.files[0];
+        console.log('referDocInput changed, file:', file);
+        if (file) {
+            referDocFile = file;
+            console.log('referDocFile set to:', file.name);
+            var container = document.getElementById('referDocPreview');
+            var ext = file.name.split('.').pop().toLowerCase();
+            var icon = ext === 'pdf' ? '📄' : ext === 'docx' || ext === 'doc' ? '📝' : ext === 'md' ? '📑' : '📎';
+            var iconClass = 'doc';
+            if (ext === 'pdf') iconClass = 'pdf';
+            else if (ext === 'md') iconClass = 'pdf';
+            
+            container.innerHTML = '<div class="erp-preview-item mt-3">' +
+                '<div class="erp-file-icon ' + iconClass + '">' + icon + '</div>' +
+                '<div class="erp-file-info">' +
+                    '<div class="erp-file-name">' + escHtml(file.name) + '</div>' +
+                '</div>' +
+                '<button type="button" class="erp-preview-remove" onclick="removeReferDoc()">' +
+                    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+                '</button>' +
+            '</div>';
+            this.classList.remove('is-invalid');
+        } else {
+            referDocFile = null;
+            console.log('referDocFile set to null (no file)');
+            document.getElementById('referDocPreview').innerHTML = '';
+        }
+    });
+    
+    console.log('referDocInput event listeners attached');
+} else {
+    console.log('referDocInput element NOT FOUND');
+}
 
 function removeReferDoc() {
     referDocFile = null;
