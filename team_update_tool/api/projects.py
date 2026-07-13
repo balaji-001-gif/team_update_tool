@@ -134,7 +134,7 @@ def get_project_detail(name):
 		if not can_view:
 			frappe.throw(_("You do not have permission to view this project."), frappe.PermissionError)
 
-	# Screenshots
+	# Screenshots - from child table
 	screenshots = []
 	for s in project.screenshots or []:
 		screenshots.append({
@@ -142,6 +142,23 @@ def get_project_detail(name):
 			"caption": s.caption,
 			"screenshot_type": s.screenshot_type,
 		})
+	
+	# Also check for screenshots in Project Screenshot doctype
+	if not screenshots:
+		try:
+			ss_records = frappe.get_all("Project Screenshot",
+				filters={"parent": name},
+				fields=["screenshot", "caption", "screenshot_type"],
+				ignore_permissions=True
+			)
+			for s in ss_records:
+				screenshots.append({
+					"screenshot": s.screenshot,
+					"caption": s.caption,
+					"screenshot_type": s.screenshot_type,
+				})
+		except:
+			pass
 
 	# Files/Documents - Get from project_files child table
 	files = []
@@ -157,6 +174,28 @@ def get_project_detail(name):
 			"file_type": f.file_type,
 			"description": f.file_description,
 		})
+	
+	# Also check for files in standalone Project Files doctype
+	if not files:
+		try:
+			file_records = frappe.get_all("Project Files",
+				filters={"project": name},
+				fields=["file", "file_name", "file_type", "file_description"],
+				ignore_permissions=True
+			)
+			for f in file_records:
+				file_url = f.file or ""
+				if file_url and not file_url.startswith('http://') and not file_url.startswith('https://'):
+					file_url = frappe.request.host_url.rstrip('/') + '/' + file_url.lstrip('/') if hasattr(frappe, 'request') and frappe.request else file_url
+				
+				files.append({
+					"file": file_url,
+					"file_name": f.file_name,
+					"file_type": f.file_type,
+					"description": f.file_description,
+				})
+		except:
+			pass
 
 	# Updates
 	updates = []
