@@ -762,6 +762,7 @@ def get_documents(limit=20, offset=0):
 
 
 
+@frappe.whitelist()
 def create_project_readme(project_name, readme_file=None, readme_content=None):
     """Create or update Project Readme for a project."""
     try:
