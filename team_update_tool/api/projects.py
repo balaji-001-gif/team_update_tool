@@ -1317,24 +1317,15 @@ def create_project(project_title, team, status=None, priority="Medium",
 	if not frappe.db.exists("Team", team):
 		frappe.throw(_("Team does not exist."))
 	
-	# Sanitize project_title for name (remove special characters)
-	import re
-	safe_name = re.sub(r'[^a-zA-Z0-9_\-\s]', '', str(project_title))
-	safe_name = safe_name.strip().replace(' ', '-')[:100]
-	
-	# Check if project with same title already exists
-	if frappe.db.exists("Project", safe_name):
-		frappe.throw(_("A project with this title already exists. Please use a different title."))
-	
 	# Get default status if not provided
 	if not status:
 		status = frappe.db.get_value("Project Status", {"status_name": "Draft"}, "name")
 		if not status:
 			status = frappe.db.get_value("Project Status", 1, "name")
 	
-	# Create project with name set explicitly
+	# Create project with naming_series
 	project = frappe.new_doc("Project")
-	project.name = safe_name
+	project.naming_series = "PRJ-.#####"
 	project.project_title = project_title
 	project.team = team
 	project.status = status

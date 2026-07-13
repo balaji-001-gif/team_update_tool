@@ -58,11 +58,11 @@ def force_sync_doctypes():
 	if frappe.db.exists("DocType", "Project"):
 		frappe.db.sql("""
 			UPDATE `tabDocType` 
-			SET autoname = 'field:project_title' 
+			SET autoname = 'naming_series:PRJ-.#####' 
 			WHERE name = 'Project'
 		""")
 		frappe.db.commit()
-		frappe.log_error("Updated Project doctype autoname to 'field:project_title'", "force_sync_doctypes")
+		frappe.log_error("Updated Project doctype autoname to 'naming_series:PRJ-.#####'", "force_sync_doctypes")
 	
 	# Sync Reports
 	report_list = [

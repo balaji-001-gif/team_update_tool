@@ -1,7 +1,7 @@
 {
  "actions": [],
  "allow_rename": 0,
- "autoname": "field:project_title",
+ "autoname": "naming_series:PRJ-.#####",
  "creation": "2026-07-08 10:00:00",
  "doctype": "DocType",
  "module": "Transactions",
@@ -38,6 +38,14 @@
   "review_remarks"
  ],
  "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "PRJ-.#####",
+   "default": "PRJ-.#####",
+   "hidden": 1
+  },
   {
    "fieldname": "project_title",
    "fieldtype": "Data",
