@@ -144,11 +144,13 @@ def get_project_detail(name):
 		})
 	
 	# Also check for screenshots in Project Screenshots doctype (standalone)
+	# Check both 'parent' and 'project' fields
 	if not screenshots:
 		try:
 			if frappe.db.exists("DocType", "Project Screenshots"):
+				# First try with 'parent' field (child table format)
 				ss_records = frappe.get_all("Project Screenshots",
-					filters={"project": name},
+					filters={"parent": name},
 					fields=["screenshot", "caption", "screenshot_type"],
 					ignore_permissions=True
 				)
@@ -158,8 +160,22 @@ def get_project_detail(name):
 						"caption": s.caption,
 						"screenshot_type": s.screenshot_type,
 					})
-		except:
-			pass
+				
+				# If still empty, try with 'project' field (standalone format)
+				if not screenshots:
+					ss_records = frappe.get_all("Project Screenshots",
+						filters={"project": name},
+						fields=["screenshot", "caption", "screenshot_type"],
+						ignore_permissions=True
+					)
+					for s in ss_records:
+						screenshots.append({
+							"screenshot": s.screenshot,
+							"caption": s.caption,
+							"screenshot_type": s.screenshot_type,
+						})
+		except Exception as e:
+			frappe.log_error(f"Error fetching screenshots: {str(e)}", "get_project_detail Error")
 
 	# Files/Documents - Get from project_files child table
 	files = []
@@ -177,11 +193,13 @@ def get_project_detail(name):
 		})
 	
 	# Also check for files in standalone Project Files doctype
+	# Check both 'parent' and 'project' fields
 	if not files:
 		try:
 			if frappe.db.exists("DocType", "Project Files"):
+				# First try with 'parent' field (child table format)
 				file_records = frappe.get_all("Project Files",
-					filters={"project": name},
+					filters={"parent": name},
 					fields=["file", "file_name", "file_type", "file_description"],
 					ignore_permissions=True
 				)
@@ -196,8 +214,27 @@ def get_project_detail(name):
 						"file_type": f.file_type,
 						"description": f.file_description,
 					})
-		except:
-			pass
+				
+				# If still empty, try with 'project' field (standalone format)
+				if not files:
+					file_records = frappe.get_all("Project Files",
+						filters={"project": name},
+						fields=["file", "file_name", "file_type", "file_description"],
+						ignore_permissions=True
+					)
+					for f in file_records:
+						file_url = f.file or ""
+						if file_url and not file_url.startswith('http://') and not file_url.startswith('https://'):
+							file_url = frappe.request.host_url.rstrip('/') + '/' + file_url.lstrip('/') if hasattr(frappe, 'request') and frappe.request else file_url
+						
+						files.append({
+							"file": file_url,
+							"file_name": f.file_name,
+							"file_type": f.file_type,
+							"description": f.file_description,
+						})
+		except Exception as e:
+			frappe.log_error(f"Error fetching files: {str(e)}", "get_project_detail Error")
 
 	# Updates
 	updates = []

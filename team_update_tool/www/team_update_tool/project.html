@@ -1082,8 +1082,9 @@ function renderProject(p) {
         html += '</div></div></div>';
     }
 
-    // Screenshots
-    if (p.screenshots && p.screenshots.length > 0) {
+    // Screenshots Section
+    var hasScreenshots = p.screenshots && p.screenshots.length > 0;
+    if (hasScreenshots) {
         html += '<div class="erp-card">' +
             '<div class="erp-card-header">' +
                 '<div class="erp-card-icon cyan">' +
@@ -1098,82 +1099,76 @@ function renderProject(p) {
                 '<div class="erp-screenshot-gallery">';
         p.screenshots.forEach(function(s) {
             // Ensure screenshot URL is complete
-            var screenshotUrl = s.screenshot;
+            var screenshotUrl = s.screenshot || '';
             if (screenshotUrl && !screenshotUrl.startsWith('http://') && !screenshotUrl.startsWith('https://')) {
                 screenshotUrl = window.location.origin + (screenshotUrl.startsWith('/') ? '' : '/') + screenshotUrl;
             }
-
-            html += '<div class="erp-screenshot-item">' +
-                '<img src="' + screenshotUrl + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy" />' +
-                (s.caption ? '<div class="erp-screenshot-caption">' + escHtml(s.caption) + '</div>' : '') +
-            '</div>';
+            
+            // Only show if screenshot URL exists
+            if (screenshotUrl) {
+                html += '<div class="erp-screenshot-item">' +
+                    '<img src="' + escHtml(screenshotUrl) + '" alt="' + escHtml(s.caption || 'Screenshot') + '" loading="lazy" />' +
+                    (s.caption ? '<div class="erp-screenshot-caption">' + escHtml(s.caption) + '</div>' : '') +
+                '</div>';
+            }
         });
         html += '</div></div></div>';
+    } else {
+        // Show empty state for Screenshots
+        html += '<div class="erp-card">' +
+            '<div class="erp-card-header">' +
+                '<div class="erp-card-icon cyan">' +
+                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+                '</div>' +
+                '<div>' +
+                    '<h3 class="erp-card-title">Screenshots</h3>' +
+                    '<p class="erp-card-subtitle">No screenshots attached</p>' +
+                '</div>' +
+            '</div>' +
+            '<div class="erp-card-body">' +
+                '<div class="erp-empty-section">' +
+                    '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' +
+                    '<p>No screenshots have been uploaded for this project yet.</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>';
     }
 
-    // Files/Documents Section - Show as Reference Document
-    var hasFiles = p.files && p.files.length > 0;
+    // Reference Document Section - Show ONLY the README/Reference file
     var hasReadmeFile = p.readme && p.readme.readme_file;
     
-    // Show Reference Document section if there are files or readme file
-    if (hasFiles || hasReadmeFile) {
+    if (hasReadmeFile) {
+        var readmeFileUrl = p.readme.readme_file || '';
+        if (readmeFileUrl && !readmeFileUrl.startsWith('http://') && !readmeFileUrl.startsWith('https://')) {
+            readmeFileUrl = window.location.origin + (readmeFileUrl.startsWith('/') ? '' : '/') + readmeFileUrl;
+        }
+        var readmeFileName = readmeFileUrl.split('/').pop() || 'Reference Document';
+        
         html += '<div class="erp-card">' +
             '<div class="erp-card-header">' +
                 '<div class="erp-card-icon orange">' +
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
                 '</div>' +
                 '<div>' +
-                    '<h3 class="erp-card-title">Reference Documents</h3>' +
-                    '<p class="erp-card-subtitle">' + (hasFiles ? p.files.length + ' document' + (p.files.length > 1 ? 's' : '') : (hasReadmeFile ? '1 document' : '')) + ' attached</p>' +
+                    '<h3 class="erp-card-title">Reference Document</h3>' +
+                    '<p class="erp-card-subtitle">1 document attached</p>' +
                 '</div>' +
             '</div>' +
             '<div class="erp-card-body">' +
-                '<div class="erp-file-list">';
-        
-        // Show README/Reference file first if exists
-        if (hasReadmeFile) {
-            var readmeFileUrl = p.readme.readme_file || '';
-            if (readmeFileUrl && !readmeFileUrl.startsWith('http://') && !readmeFileUrl.startsWith('https://')) {
-                readmeFileUrl = window.location.origin + (readmeFileUrl.startsWith('/') ? '' : '/') + readmeFileUrl;
-            }
-            var readmeFileName = readmeFileUrl.split('/').pop() || 'Reference Document';
-            
-            html += '<a href="' + escHtml(readmeFileUrl) + '" class="erp-file-card" target="_blank" download>' +
-                '<div class="erp-file-icon">' + getFileIcon(readmeFileName) + '</div>' +
-                '<div class="erp-file-info">' +
-                    '<div class="erp-file-name">' + escHtml(readmeFileName) + '</div>' +
-                    '<div class="erp-file-desc">Reference Document</div>' +
+                '<div class="erp-file-list">' +
+                    '<a href="' + escHtml(readmeFileUrl) + '" class="erp-file-card" target="_blank" download>' +
+                        '<div class="erp-file-icon">' + getFileIcon(readmeFileName) + '</div>' +
+                        '<div class="erp-file-info">' +
+                            '<div class="erp-file-name">' + escHtml(readmeFileName) + '</div>' +
+                            '<div class="erp-file-desc">Reference Document</div>' +
+                        '</div>' +
+                        '<div class="erp-file-action">' +
+                            '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
+                        '</div>' +
+                    '</a>' +
                 '</div>' +
-                '<div class="erp-file-action">' +
-                    '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
-                '</div>' +
-            '</a>';
-        }
-        
-        // Show other files
-        if (hasFiles) {
-            p.files.forEach(function(f) {
-                // Ensure file URL is complete
-                var fileUrl = f.file || '';
-                if (fileUrl && !fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
-                    fileUrl = window.location.origin + (fileUrl.startsWith('/') ? '' : '/') + fileUrl;
-                }
-                
-                html += '<a href="' + escHtml(fileUrl) + '" class="erp-file-card" target="_blank" download>' +
-                    '<div class="erp-file-icon">' + getFileIcon(f.file_name || f.file) + '</div>' +
-                    '<div class="erp-file-info">' +
-                        '<div class="erp-file-name">' + escHtml(f.file_name || 'Document') + '</div>' +
-                        (f.file_type ? '<div class="erp-file-desc">' + escHtml(f.file_type) + '</div>' : '') +
-                        (f.description ? '<div class="erp-file-desc" style="color:#64748b;font-size:0.8em;">' + escHtml(f.description) + '</div>' : '') +
-                    '</div>' +
-                    '<div class="erp-file-action">' +
-                        '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
-                    '</div>' +
-                '</a>';
-            });
-        }
-        
-        html += '</div></div></div>';
+            '</div>' +
+        '</div>';
     } else {
         // Show empty state for Reference Documents
         html += '<div class="erp-card">' +
@@ -1182,14 +1177,14 @@ function renderProject(p) {
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
                 '</div>' +
                 '<div>' +
-                    '<h3 class="erp-card-title">Reference Documents</h3>' +
-                    '<p class="erp-card-subtitle">No documents attached</p>' +
+                    '<h3 class="erp-card-title">Reference Document</h3>' +
+                    '<p class="erp-card-subtitle">No reference document attached</p>' +
                 '</div>' +
             '</div>' +
             '<div class="erp-card-body">' +
                 '<div class="erp-empty-section">' +
                     '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-                    '<p>No reference documents have been attached to this project yet.</p>' +
+                    '<p>No reference document has been attached to this project yet.</p>' +
                 '</div>' +
             '</div>' +
         '</div>';
@@ -1302,7 +1297,9 @@ function renderProject(p) {
     // GitHub Repository Card
     if (p.github_repository) {
         var g = p.github_info || {};
-        var repoUrl = (g && g.repository_url) ? g.repository_url : '#';
+        // Use github_repository as URL if repository_url is not available
+        var repoUrl = (g && g.repository_url) ? g.repository_url : p.github_repository;
+        
         html += '<div class="erp-sidebar-card erp-github-card">' +
             '<div class="erp-sidebar-card-header">' +
                 '<div class="erp-github-icon">' +
@@ -1311,7 +1308,7 @@ function renderProject(p) {
                 '<h4 class="erp-sidebar-card-title">Repository</h4>' +
             '</div>' +
             '<div class="erp-sidebar-card-body">' +
-                '<a href="' + repoUrl + '" target="_blank" class="erp-github-btn">' +
+                '<a href="' + escHtml(repoUrl) + '" target="_blank" class="erp-github-btn">' +
                     '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>' +
                     'Open Repository' +
                 '</a>';
