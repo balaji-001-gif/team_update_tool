@@ -516,6 +516,28 @@
     transform: translateX(4px);
 }
 
+/* Empty Section Style */
+.erp-empty-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    text-align: center;
+    color: var(--tut-text-muted);
+}
+
+.erp-empty-section svg {
+    opacity: 0.4;
+    margin-bottom: 1rem;
+    color: var(--tut-primary);
+}
+
+.erp-empty-section p {
+    font-size: 0.9rem;
+    margin: 0;
+}
+
 /* README Content - Royal */
 .erp-readme-content {
     background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(139, 92, 246, 0.02));
@@ -1089,34 +1111,49 @@ function renderProject(p) {
         html += '</div></div></div>';
     }
 
-    // Files
-    if (p.files && p.files.length > 0) {
-        html += '<div class="erp-card">' +
-            '<div class="erp-card-header">' +
-                '<div class="erp-card-icon orange">' +
-                    '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
-                '</div>' +
-                '<div>' +
-                    '<h3 class="erp-card-title">Files</h3>' +
-                    '<p class="erp-card-subtitle">' + p.files.length + ' attached file' + (p.files.length > 1 ? 's' : '') + '</p>' +
-                '</div>' +
+    // Files/Documents Section
+    var hasFiles = p.files && p.files.length > 0;
+    html += '<div class="erp-card">' +
+        '<div class="erp-card-header">' +
+            '<div class="erp-card-icon orange">' +
+                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
             '</div>' +
-            '<div class="erp-card-body">' +
-                '<div class="erp-file-list">';
+            '<div>' +
+                '<h3 class="erp-card-title">Documents</h3>' +
+                '<p class="erp-card-subtitle">' + (hasFiles ? p.files.length + ' attached document' + (p.files.length > 1 ? 's' : '') : 'No documents attached') + '</p>' +
+            '</div>' +
+        '</div>' +
+        '<div class="erp-card-body">' +
+            '<div class="erp-file-list">';
+    
+    if (hasFiles) {
         p.files.forEach(function(f) {
-            html += '<a href="' + escHtml(f.file) + '" class="erp-file-card" download>' +
+            // Ensure file URL is complete
+            var fileUrl = f.file || '';
+            if (fileUrl && !fileUrl.startsWith('http://') && !fileUrl.startsWith('https://')) {
+                fileUrl = window.location.origin + (fileUrl.startsWith('/') ? '' : '/') + fileUrl;
+            }
+            
+            html += '<a href="' + escHtml(fileUrl) + '" class="erp-file-card" target="_blank" download>' +
                 '<div class="erp-file-icon">' + getFileIcon(f.file_name || f.file) + '</div>' +
                 '<div class="erp-file-info">' +
-                    '<div class="erp-file-name">' + escHtml(f.file_name || 'File') + '</div>' +
+                    '<div class="erp-file-name">' + escHtml(f.file_name || 'Document') + '</div>' +
                     (f.file_type ? '<div class="erp-file-desc">' + escHtml(f.file_type) + '</div>' : '') +
+                    (f.description ? '<div class="erp-file-desc" style="color:#64748b;font-size:0.8em;">' + escHtml(f.description) + '</div>' : '') +
                 '</div>' +
                 '<div class="erp-file-action">' +
                     '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>' +
                 '</div>' +
             '</a>';
         });
-        html += '</div></div></div>';
+    } else {
+        html += '<div class="erp-empty-section">' +
+            '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' +
+            '<p>No documents have been attached to this project yet.</p>' +
+        '</div>';
     }
+    
+    html += '</div></div></div>';
 
     // README
     if (p.readme && p.readme.readme_content) {

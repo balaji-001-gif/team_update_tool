@@ -120,7 +120,8 @@ def get_project_detail(name):
 		frappe.throw(_("Project name is required."))
 
 	try:
-		project = frappe.get_doc("Project", name)
+		# Use get_cached_doc with ignore_permissions to load all child table data
+		project = frappe.get_cached_doc("Project", name, ignore_permissions=True)
 	except Exception as e:
 		frappe.log_error(f"Error loading project {name}: {str(e)}", "get_project_detail Error")
 		frappe.throw(_(f"Error loading project: {str(e)}"))
@@ -142,11 +143,16 @@ def get_project_detail(name):
 			"screenshot_type": s.screenshot_type,
 		})
 
-	# Files
+	# Files/Documents - Get from project_files child table
 	files = []
 	for f in project.project_files or []:
+		# Build full URL for the file if it's a relative path
+		file_url = f.file or ""
+		if file_url and not file_url.startswith('http://') and not file_url.startswith('https://'):
+			file_url = frappe.request.host_url.rstrip('/') + '/' + file_url.lstrip('/') if hasattr(frappe, 'request') and frappe.request else file_url
+		
 		files.append({
-			"file": f.file,
+			"file": file_url,
 			"file_name": f.file_name,
 			"file_type": f.file_type,
 			"description": f.file_description,
