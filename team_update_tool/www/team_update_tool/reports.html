@@ -797,6 +797,18 @@
 
 {% block script %}
 <script>
+
+function getCsrfToken() {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith('csrf_token=')) {
+            return cookie.substring('csrf_token='.length);
+        }
+    }
+    return frappe.csrf_token || '';
+}
+
 frappe.ready(function() { loadReports(); });
 
 function escHtml(str) {
@@ -805,7 +817,14 @@ function escHtml(str) {
 }
 
 function loadReports() {
-	fetch('/api/method/team_update_tool.api.projects.get_reports')
+	fetch('/api/method/team_update_tool.api.projects.get_reports', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Frappe-CSRF-Token': getCsrfToken()
+            },
+            credentials: 'include'
+        })
 		.then(function(r) { 
 			if (!r.ok) throw new Error('API request failed');
 			return r.json(); 

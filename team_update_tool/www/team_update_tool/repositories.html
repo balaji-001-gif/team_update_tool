@@ -84,6 +84,18 @@
 
 {% block script %}
 <script>
+
+function getCsrfToken() {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+        const cookie = cookies[i].trim();
+        if (cookie.startsWith('csrf_token=')) {
+            return cookie.substring('csrf_token='.length);
+        }
+    }
+    return frappe.csrf_token || '';
+}
+
 function escHtml(s) {
 	if (!s) return '';
 	return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
