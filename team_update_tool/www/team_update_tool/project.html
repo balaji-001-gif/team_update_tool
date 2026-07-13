@@ -976,7 +976,6 @@ function loadProject(name) {
             console.log('API Response:', data);
             if (data.message) {
                 console.log('Project data:', data.message);
-                console.log(':', data.message.);
                 console.log('Files:', data.message.files);
                 console.log('GitHub:', data.message.github_repository);
                 renderProject(data.message);
