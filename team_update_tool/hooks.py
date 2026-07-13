@@ -12,7 +12,7 @@ website_include_js = "/assets/team_update_tool/js/team_update_tool.js"
 
 after_install = "team_update_tool.install.after_install"
 app_setup = "team_update_tool.install.force_sync_doctypes"
-after_migrate = "team_update_tool.install.sync_workspace"
+after_migrate = "team_update_tool.install.sync_workspace_and_notifications"
 
 website_route_rules = [
 	# Dynamic route for project detail page (path-based URL)
