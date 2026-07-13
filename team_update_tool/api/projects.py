@@ -178,29 +178,46 @@ def get_project_detail(name):
 
 	# GitHub repo info
 	github_info = None
-	if project.github_repository:
-		try:
-			repo = frappe.get_cached_doc("GitHub Repository", project.github_repository)
+	github_url = project.github_repository or ""
+	
+	# Check if it is a URL or a doc link
+	if "github.com" in github_url.lower():
+		# It is a URL, extract info
+		import re
+		match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_url, re.IGNORECASE)
+		if match:
+			repo_owner = match.group(1)
+			repo_name = match.group(2).replace('.git', '')
 			github_info = {
-				"name": repo.name,
-				"repository_url": repo.repository_url,
-				"repository_name": repo.repository_name,
-				"commit_hash": repo.commit_hash,
-				"default_branch": repo.default_branch,
-				"languages": repo.languages,
-			}
-		except Exception as e:
-			frappe.log_error(f"Error loading GitHub repo {project.github_repository}: {str(e)}", "get_project_detail GitHub Error")
-			# Return basic info from the field if doc not found
-			github_info = {
-				"name": project.github_repository,
-				"repository_url": "",
-				"repository_name": "GitHub Repository",
+				"name": f"{repo_owner}/{repo_name}",
+				"repository_url": github_url,
+				"repository_name": repo_name,
 				"commit_hash": "",
 				"default_branch": "main",
 				"languages": "",
 			}
-
+	elif github_url:
+		# Try to fetch as doc link
+		try:
+			repo = frappe.get_cached_doc("GitHub Repository", github_url)
+			github_info = {
+				"name": repo.name,
+				"repository_url": repo.repository_url,
+				"repository_name": repo.repository_name,
+				"commit_hash": repo.commit_hash or "",
+				"default_branch": repo.default_branch or "main",
+				"languages": repo.languages or "",
+			}
+		except Exception as e:
+			# Return basic info
+			github_info = {
+				"name": github_url,
+				"repository_url": github_url,
+				"repository_name": github_url.split('/')[-1] if '/' in github_url else github_url,
+				"commit_hash": "",
+				"default_branch": "main",
+				"languages": "",
+			}
 	# Team name
 	team_name = project.team
 	try:
@@ -1347,9 +1364,37 @@ def create_project(project_title, team, status=None, priority="Medium",
 		project_data["due_date"] = due_date
 	if completion_date:
 		project_data["completion_date"] = completion_date
+	# Handle GitHub Repository
+	github_repo_name = None
 	if github_repository:
-		project_data["github_repository"] = github_repository
-	
+		# Extract repo name from URL
+		import re
+		match = re.search(r'github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)', github_repository)
+		if match:
+			repo_owner = match.group(1)
+			repo_name = match.group(2).replace('.git', '')
+			repo_full_name = f"{repo_owner}/{repo_name}"
+			
+			# Check if GitHub Repository doc exists
+			if not frappe.db.exists("GitHub Repository", repo_full_name):
+				# Create GitHub Repository document
+				try:
+					github_repo = frappe.get_doc({
+						"doctype": "GitHub Repository",
+						"repository_name": repo_full_name,
+						"repository_url": github_repository,
+					})
+					github_repo.insert(ignore_permissions=True)
+					github_repo_name = repo_full_name
+				except Exception as e:
+					frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Creation Error")
+					github_repo_name = github_repository  # Fallback to URL
+			else:
+				github_repo_name = repo_full_name
+		else:
+			github_repo_name = github_repository  # Use as-is if not a valid URL
+		
+		project_data["github_repository"] = github_repo_name
 	# Use db_insert to bypass all autoname and validation logic
 	project_doc = frappe.get_doc(project_data)
 	project_doc.flags.ignore_validate = True
