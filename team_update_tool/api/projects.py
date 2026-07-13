@@ -1204,8 +1204,8 @@ def create_project(project_title, team, status=None, priority="Medium",
     if completion_date:
         project_data["completion_date"] = completion_date
     
-    # Handle GitHub Repository
-    github_repo_value = None
+    # Handle GitHub Repository - find existing or create new
+    github_repo_name = None
     if github_repository:
         import re
         match = re.search(r"github\.com/([A-Za-z0-9_.-]+)/([A-Za-z0-9_.-]+)", github_repository)
@@ -1214,7 +1214,14 @@ def create_project(project_title, team, status=None, priority="Medium",
             repo_name = match.group(2).replace('.git', '')
             repo_full_name = f"{repo_owner}/{repo_name}"
 
-            if not frappe.db.exists("GitHub Repository", repo_full_name):
+            # Check if GitHub Repository already exists by repository_url
+            existing_repo = frappe.db.get_value("GitHub Repository", 
+                {"repository_url": github_repository}, "name")
+            
+            if existing_repo:
+                github_repo_name = existing_repo
+            else:
+                # Create new GitHub Repository document
                 try:
                     github_repo = frappe.get_doc({
                         "doctype": "GitHub Repository",
@@ -1222,15 +1229,17 @@ def create_project(project_title, team, status=None, priority="Medium",
                         "repository_url": github_repository,
                     })
                     github_repo.insert(ignore_permissions=True)
+                    github_repo_name = github_repo.name
                 except Exception as e:
                     frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Creation Error")
-
-            github_repo_value = github_repository
         else:
-            github_repo_value = github_repository
+            # Not a GitHub URL - check if it's already a GitHub Repository doc name
+            if frappe.db.exists("GitHub Repository", github_repository):
+                github_repo_name = github_repository
     
-    if github_repo_value:
-        project_data["github_repository"] = github_repo_value
+    # Set github_repository in project_data (Link field expects the doc name)
+    if github_repo_name:
+        project_data["github_repository"] = github_repo_name
     
     # Use db_insert to bypass all autoname and validation logic
     project_doc = frappe.get_doc(project_data)
@@ -1239,12 +1248,12 @@ def create_project(project_title, team, status=None, priority="Medium",
     project_doc.db_insert()
     
     # Now update github_repository using direct SQL to ensure it is saved
-    if github_repo_value:
+    if github_repo_name:
         frappe.db.sql("""
             UPDATE `tabProject` 
             SET github_repository = %s 
             WHERE name = %s
-        """, (github_repo_value, project_name))
+        """, (github_repo_name, project_name))
         frappe.db.commit()
 
     # Add technologies if provided
