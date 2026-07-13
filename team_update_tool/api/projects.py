@@ -925,12 +925,15 @@ def add_project_screenshot(project_name, file_url, caption=None):
 	if not is_admin and project.owner != frappe.session.user:
 		frappe.throw(_("You can only modify your own projects."), frappe.PermissionError)
 
-	project.append("screenshots", {
-		"screenshot": file_url,
-		"caption": caption or "",
-		"screenshot_type": "UI Screen",
-	})
-	project.save(ignore_permissions=is_admin)
+	# Check if screenshot already exists
+	existing_screenshots = [s.screenshot for s in project.get("screenshots", [])]
+	if file_url not in existing_screenshots:
+		project.append("screenshots", {
+			"screenshot": file_url,
+			"caption": caption or "",
+			"screenshot_type": "UI Screen",
+		})
+		project.save(ignore_permissions=is_admin)
 
 	return {"message": _("Screenshot added."), "success": True}
 
@@ -949,12 +952,15 @@ def add_project_file(project_name, file_url, file_name=None, file_type=None):
 	if not is_admin and project.owner != frappe.session.user:
 		frappe.throw(_("You can only modify your own projects."), frappe.PermissionError)
 
-	project.append("project_files", {
-		"file": file_url,
-		"file_name": file_name or file_url.split("/")[-1],
-		"file_type": file_type or "Other",
-	})
-	project.save(ignore_permissions=is_admin)
+	# Check if file already exists in project_files
+	existing_files = [f.file for f in project.get("project_files", [])]
+	if file_url not in existing_files:
+		project.append("project_files", {
+			"file": file_url,
+			"file_name": file_name or file_url.split("/")[-1],
+			"file_type": file_type or "Other",
+		})
+		project.save(ignore_permissions=is_admin)
 
 	return {"message": _("File added."), "success": True}
 
