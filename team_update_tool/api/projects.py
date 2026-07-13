@@ -1317,25 +1317,20 @@ def create_project(project_title, team, status=None, priority="Medium",
 	if not frappe.db.exists("Team", team):
 		frappe.throw(_("Team '{0}' does not exist.").format(team))
 	
-	# Check DocType autoname setting
-	dt_autoname = frappe.db.get_value("DocType", "Project", "autoname")
-	if dt_autoname and dt_autoname.startswith("field:"):
-		field_name = dt_autoname.replace("field:", "")
-		if field_name not in ["project_title", "name"]:
-			# Fix the autoname if it's incorrectly set
-			frappe.db.set_value("DocType", "Project", "autoname", "naming_series:PRJ-.#####")
-			frappe.db.commit()
-			frappe.log_error(f"Fixed Project doctype autoname from '{dt_autoname}' to 'naming_series:PRJ-.#####'", "create_project")
-	
 	# Get default status if not provided
 	if not status:
 		status = frappe.db.get_value("Project Status", {"status_name": "Draft"}, "name")
 		if not status:
 			status = frappe.db.get_value("Project Status", 1, "name")
 	
-	# Create project with naming_series
+	# Create project with explicit name to bypass autoname issues
 	project = frappe.new_doc("Project")
-	project.naming_series = "PRJ-.#####"
+	
+	# Set name explicitly using hash to ensure uniqueness
+	import hashlib
+	name_hash = hashlib.md5((project_title + str(frappe.utils.now())).encode()).hexdigest()[:10]
+	project.name = f"PRJ-{name_hash.upper()}"
+	
 	project.project_title = project_title
 	project.team = team
 	project.status = status
@@ -1367,7 +1362,8 @@ def create_project(project_title, team, status=None, priority="Medium",
 			for tech in technologies:
 				project.append("technologies", {"technology": tech})
 	
-	project.insert(ignore_permissions=is_admin)
+	# Insert with set_name=False to bypass autoname
+	project.insert(set_name=False, ignore_permissions=is_admin)
 	
 	return {
 		"message": _("Project created successfully."),
