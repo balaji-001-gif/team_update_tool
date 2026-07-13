@@ -1464,23 +1464,21 @@ def create_project(project_title, team, status=None, priority="Medium",
         if github_repo_value:
                 project_data["github_repository"] = github_repo_value
         
-        # Use db_insert to bypass all autoname and validation logic
-        project_doc = frappe.get_doc(project_data)
-        project_doc.flags.ignore_validate = True
-        project_doc.flags.ignore_mandatory = True
-        project_doc.db_insert()
+        # Insert project using direct SQL
+        frappe.db.sql("""
+            INSERT INTO \`tabProject\` (name, project_title, team, status, priority, owner, naming_series, 
+                project_category, description, tags, start_date, due_date, completion_date, github_repository, creation, modified)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, NOW(), NOW())
+        """, (
+            project_name, project_title, team, status, priority or "Medium", frappe.session.user, "PRJ-.#####",
+            project_data.get("project_category"), project_data.get("description"),
+            project_data.get("tags"), project_data.get("start_date"), project_data.get("due_date"),
+            project_data.get("completion_date"), github_repo_value
+        ))
         
-        # Now update github_repository using direct SQL to ensure it is saved
-        if github_repo_value:
-                frappe.db.sql("""
-                        UPDATE \`tabProject\` 
-                        SET github_repository = %s 
-                        WHERE name = %s
-                """, (github_repo_value, project_name))
-                frappe.db.commit()
-
-        # Now save to ensure child tables are properly saved
-        project_doc.save(ignore_permissions=is_admin)
+        # Now get the doc to reload it with all data
+        project_doc = frappe.get_doc("Project", project_name)
+        frappe.db.commit()
 
     
     # Add technologies if provided
