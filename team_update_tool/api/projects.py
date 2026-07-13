@@ -67,20 +67,6 @@ def get_project_gallery_data(project_name):
         
         project = frappe.get_doc("Project", project_name)
         
-        # Screenshots
-        screenshots = []
-        for s in project.screenshots or []:
-            full_url = s.screenshot
-            if full_url and not full_url.startswith('http'):
-                full_url = frappe.request.host_url.rstrip('/') + '/' + full_url.lstrip('/')
-            
-            screenshots.append({
-                "name": s.name,
-                "screenshot": full_url,
-                "caption": s.caption or "",
-                "screenshot_type": s.screenshot_type or ""
-            })
-        
         # Files
         files = []
         for f in project.project_files or []:
