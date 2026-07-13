@@ -1805,10 +1805,42 @@ document.getElementById('projectForm').addEventListener('submit', async function
         if (uploadedScreenshots.length > 0) {
             for (var si = 0; si < uploadedScreenshots.length; si++) {
                 try {
-                    var ok = await uploadAndLink(uploadedScreenshots[si].file, 'team_update_tool.api.projects.add_project_screenshot', 'screenshots', {
-                        screenshot: uploadedScreenshots[si].file.name
+                    // Upload file first
+                    var screenshotFile = uploadedScreenshots[si].file;
+                    var screenshotData = new FormData();
+                    screenshotData.append('file', screenshotFile);
+                    screenshotData.append('doctype', 'Project');
+                    screenshotData.append('docname', projectName);
+                    screenshotData.append('fieldname', 'screenshots');
+                    
+                    var screenshotResp = await fetch('/api/method/upload_file', {
+                        method: 'POST',
+                        headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token },
+                        body: screenshotData
                     });
-                    if (!ok) hasErrors = true;
+                    var screenshotResult = await screenshotResp.json();
+                    
+                    if (screenshotResult.message && screenshotResult.message.file_url) {
+                        // Call API to save screenshot
+                        var screenshotLinkResp = await fetch('/api/method/team_update_tool.api.projects.add_project_screenshot', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+                            body: JSON.stringify({
+                                project_name: projectName,
+                                file_url: screenshotResult.message.file_url,
+                                file_name: screenshotFile.name
+                            })
+                        });
+                        var screenshotLinkResult = await screenshotLinkResp.json();
+                        
+                        if (screenshotLinkResult.error) {
+                            console.error('Screenshot save error:', screenshotLinkResult.error);
+                            hasErrors = true;
+                        }
+                    } else {
+                        console.error('Screenshot upload failed');
+                        hasErrors = true;
+                    }
                 } catch(e) {
                     console.error('Screenshot upload error:', e);
                     hasErrors = true;

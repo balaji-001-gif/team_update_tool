@@ -1546,27 +1546,24 @@ def create_project(project_title, team, status=None, priority="Medium",
 
 
 @frappe.whitelist(allow_guest=True)
-def add_project_screenshot(project_name, screenshot=None, caption=None, screenshot_type=None, file_url=None):
+def add_project_screenshot(project_name, file_url=None, file_name=None, caption=None, screenshot_type=None):
     """Add a screenshot to an existing project."""
     try:
         if not project_name:
             return {"error": "Project name is required"}
         
+        if not file_url:
+            return {"error": "File URL is required"}
+        
         if not frappe.db.exists("Project", project_name):
             return {"error": "Project not found"}
-        
-        # Use file_url (uploaded URL) first, then fallback to screenshot parameter
-        screenshot_url = file_url or screenshot or ""
-        
-        if not screenshot_url:
-            return {"error": "Screenshot URL is required"}
         
         # Add screenshot - use Project Screenshots doctype with 'project' field
         screenshot_doc = frappe.get_doc({
             "doctype": "Project Screenshots",
             "project": project_name,
-            "screenshot": screenshot_url,
-            "caption": caption or "",
+            "screenshot": file_url,
+            "caption": caption or file_name or "",
             "screenshot_type": screenshot_type or "UI Screen"
         })
         screenshot_doc.insert(ignore_permissions=True)
