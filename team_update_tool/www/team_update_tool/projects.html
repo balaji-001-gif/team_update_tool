@@ -609,18 +609,6 @@ function escHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function getCsrfToken() {
-  const name = 'csrf_token';
-  let cookieValue = null;
-  document.cookie.split(';').forEach(function(val) {
-    const parts = val.trim().split('=');
-    if (parts[0] === name) {
-      cookieValue = parts.slice(1).join('=');
-    }
-  });
-  return cookieValue;
-}
-
 function formatDate(d) {
   if (!d) return '';
   var date = new Date(d);
@@ -665,10 +653,7 @@ frappe.ready(function() {
     loadProjects(0);
   });
 
-  fetch('/api/method/team_update_tool.api.auth.get_current_user', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': getCsrfToken() }
-  })
+  fetch('/api/method/team_update_tool.api.auth.get_current_user')
   .then(function(r) { return r.json(); })
   .then(function(d) {
     if (d.message && !d.message.guest && !d.message.is_viewer) {

@@ -805,7 +805,7 @@ function escHtml(str) {
 }
 
 function loadReports() {
-	fetch('/api/method/team_update_tool.api.projects.get_reports', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': getCsrfToken() } })
+	fetch('/api/method/team_update_tool.api.projects.get_reports')
 		.then(function(r) { 
 			if (!r.ok) throw new Error('API request failed');
 			return r.json(); 
