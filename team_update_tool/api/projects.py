@@ -137,16 +137,11 @@ def get_project_detail(name):
     # Screenshots - query Project Screenshots doctype with 'project' field
     screenshots = []
     try:
-        frappe.log_error(f"Fetching screenshots for project: {name}", "Screenshot Query Debug")
-        
-        # Query the Project Screenshots doctype
         ss_records = frappe.get_all("Project Screenshots",
             fields=["name", "screenshot", "caption", "screenshot_type", "project"],
             filters={"project": name},
             ignore_permissions=True
         )
-        frappe.log_error(f"Screenshot records found: {len(ss_records)}", "Screenshot Query Result")
-        
         for s in ss_records:
             screenshots.append({
                 "screenshot": s.screenshot,
@@ -1026,6 +1021,42 @@ def add_project_screenshot(project_name, file_url, caption=None):
 
 
 @frappe.whitelist()
+def add_project_file(project_name, file_url, file_name=None, file_type=None):
+    """Attach a file to a project's child table after upload."""
+    __roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
+    if is_viewer and not is_admin and not is_team_member:
+        frappe.throw(_("Permission denied."), frappe.PermissionError)
+
+    if not project_name or not file_url:
+        frappe.throw(_("Project name and file URL are required."))
+
+    if not frappe.db.exists("Project", project_name):
+        frappe.throw(_("Project not found."))
+
+    project = frappe.get_doc("Project", project_name)
+    if not is_admin and project.owner != frappe.session.user and not is_team_member:
+        frappe.throw(_("You can only modify your own projects."), frappe.PermissionError)
+
+    # Direct insert to child table
+    import uuid
+    file_id = str(uuid.uuid4())
+    fname = file_name or file_url.split("/")[-1] if file_url else "Document"
+    ftype = file_type or "Other"
+    
+    frappe.db.sql("""
+        INSERT INTO `tabProject Files` 
+        (name, parent, parentfield, parenttype, file, file_name, file_type, idx, modified, creation)
+        VALUES (%s, %s, 'project_files', 'Project', %s, %s, %s,
+                (SELECT COALESCE(MAX(idx), 0) + 1 FROM `tabProject Files` WHERE parent = %s),
+                NOW(), NOW())
+    """, (file_id, project_name, file_url, fname, ftype, project_name))
+    
+    frappe.db.commit()
+    
+    return {"message": _("File added."), "success": True}
+
+
+@frappe.whitelist()
 def create_project_readme(project_name, readme_file=None, readme_content=None):
     """Create or update Project Readme for a project."""
     try:
@@ -1408,7 +1439,6 @@ def create_project(project_title, team, project_category=None, description=None,
         "status": status,
         "priority": priority or "Medium",
         "owner": frappe.session.user,
-        "naming_series": "PRJ-.#####"
     }
     
     if project_category:
@@ -1445,16 +1475,21 @@ def create_project(project_title, team, project_category=None, description=None,
                 except Exception as e:
                     frappe.log_error(f"Error creating GitHub Repository: {str(e)}", "GitHub Repo Error")
             
-            github_repo_value = github_repository
+            github_repo_value = repo_full_name
         else:
             github_repo_value = github_repository
     
     if github_repo_value:
         project_data["github_repository"] = github_repo_value
     
-    # Create and insert project
+    # Create and insert project with explicit name
+    # Using ignore_naming_series to preserve the explicitly set project name
     project_doc = frappe.get_doc(project_data)
-    project_doc.insert(ignore_permissions=True)
+    project_doc.flags.ignore_validate = True
+    project_doc.flags.ignore_mandatory = True
+    project_doc.flags.ignore_permissions = True
+    project_doc.flags.ignore_naming_series = True
+    project_doc.insert()
     
     # Log success
     frappe.log_error(f"Project created: {project_name}", "Project Creation")
@@ -1623,40 +1658,3 @@ def get_project_gallery_data(project_name):
     except Exception as e:
         frappe.log_error(f"Error getting gallery data: {str(e)}", "get_project_gallery_data Error")
         return {"error": str(e)}
-
-@frappe.whitelist()
-def add_project_file(project_name, file_url, file_name=None, file_type=None):
-    """Attach a file to a project's child table after upload."""
-    __roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
-    if is_viewer and not is_admin and not is_team_member:
-        frappe.throw(_("Permission denied."), frappe.PermissionError)
-
-    if not project_name or not file_url:
-        frappe.throw(_("Project name and file URL are required."))
-
-    if not frappe.db.exists("Project", project_name):
-        frappe.throw(_("Project not found."))
-
-    project = frappe.get_doc("Project", project_name)
-    if not is_admin and project.owner != frappe.session.user and not is_team_member:
-        frappe.throw(_("You can only modify your own projects."), frappe.PermissionError)
-
-    # Direct insert to child table
-    import uuid
-    file_id = str(uuid.uuid4())
-    fname = file_name or file_url.split("/")[-1] if file_url else "Document"
-    ftype = file_type or "Other"
-    
-    frappe.db.sql("""
-        INSERT INTO `tabProject Files` 
-        (name, parent, parentfield, parenttype, file, file_name, file_type, idx, modified, creation)
-        VALUES (%s, %s, 'project_files', 'Project', %s, %s, %s,
-                (SELECT COALESCE(MAX(idx), 0) + 1 FROM `tabProject Files` WHERE parent = %s),
-                NOW(), NOW())
-    """, (file_id, project_name, file_url, fname, ftype, project_name))
-    
-    frappe.db.commit()
-    
-    return {"message": _("File added."), "success": True}
-
-
