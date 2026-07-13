@@ -1293,3 +1293,69 @@ def get_user_notifications():
 
 	notifications.sort(key=lambda n: n.get("date", ""), reverse=True)
 	return {"notifications": notifications[:20]}
+
+
+@frappe.whitelist()
+def create_project(project_title, team, status=None, priority="Medium",
+				   project_category=None, description=None, tags=None,
+				   start_date=None, due_date=None, completion_date=None,
+				   github_repository=None, technologies=None):
+	"""Create a new project from the website."""
+	roles, is_admin, is_team_member, is_viewer = _get_user_role_info()
+	
+	# Check permission - only Admin and Team Member can create projects
+	if is_viewer and not is_admin and not is_team_member:
+		frappe.throw(_("You do not have permission to create projects."), frappe.PermissionError)
+	
+	# Validate required fields
+	if not project_title:
+		frappe.throw(_("Project title is required."))
+	if not team:
+		frappe.throw(_("Team is required."))
+	
+	# Verify team exists
+	if not frappe.db.exists("Team", team):
+		frappe.throw(_("Team does not exist."))
+	
+	# Get default status if not provided
+	if not status:
+		status = frappe.db.get_value("Project Status", {"status_name": "Draft"}, "name")
+		if not status:
+			status = frappe.db.get_value("Project Status", 1, "name")
+	
+	# Create project
+	project = frappe.new_doc("Project")
+	project.project_title = project_title
+	project.team = team
+	project.status = status
+	project.priority = priority
+	
+	if project_category:
+		project.project_category = project_category
+	if description:
+		project.description = description
+	if tags:
+		project.tags = tags
+	if start_date:
+		project.start_date = start_date
+	if due_date:
+		project.due_date = due_date
+	if completion_date:
+		project.completion_date = completion_date
+	if github_repository:
+		project.github_repository = github_repository
+	
+	# Add technologies if provided
+	if technologies:
+		if isinstance(technologies, str):
+			technologies = frappe.parse_json(technologies)
+		for tech in technologies:
+			project.append("technologies", {"technology": tech})
+	
+	project.insert(ignore_permissions=is_admin)
+	
+	return {
+		"message": _("Project created successfully."),
+		"name": project.name,
+		"success": True
+	}
