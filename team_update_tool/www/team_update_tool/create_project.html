@@ -1790,23 +1790,40 @@ document.getElementById('projectForm').addEventListener('submit', async function
         // Upload refer document and create Project Readme
         if (referDocFile) {
             try {
-                // Construct the file URL directly - Frappe stores files in /files/
-                var fileUrl = '/files/' + referDocFile.name;
-                console.log('Using file URL:', fileUrl);
+                // First upload the file to Frappe's file system
+                var fileData = new FormData();
+                fileData.append('file', referDocFile);
+                fileData.append('doctype', 'Project Readme');
+                fileData.append('docname', projectName);
+                fileData.append('fieldname', 'readme_file');
                 
-                var readmeResp = await fetch('/api/method/team_update_tool.api.projects.create_project_readme', {
+                var uploadResp = await fetch('/api/method/upload_file', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
-                    body: JSON.stringify({
-                        project_name: projectName,
-                        readme_file: fileUrl,
-                        readme_content: ''
-                    })
+                    headers: { 'X-Frappe-CSRF-Token': frappe.csrf_token },
+                    body: fileData
                 });
-                var readmeResult = await readmeResp.json();
-                console.log('README create result:', readmeResult);
-                if (readmeResult.error) {
-                    console.error('README upload error:', readmeResult.error);
+                var uploadResult = await uploadResp.json();
+                console.log('File upload result:', uploadResult);
+                
+                if (uploadResult.message && uploadResult.message.file_url) {
+                    // File uploaded successfully, now create Project Readme with the real URL
+                    var readmeResp = await fetch('/api/method/team_update_tool.api.projects.create_project_readme', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'X-Frappe-CSRF-Token': frappe.csrf_token },
+                        body: JSON.stringify({
+                            project_name: projectName,
+                            readme_file: uploadResult.message.file_url,
+                            readme_content: ''
+                        })
+                    });
+                    var readmeResult = await readmeResp.json();
+                    console.log('README create result:', readmeResult);
+                    if (readmeResult.error) {
+                        console.error('README create error:', readmeResult.error);
+                    }
+                } else {
+                    console.error('File upload failed:', uploadResult);
+                    hasErrors = true;
                 }
             } catch(e) {
                 console.error('Refer document upload error:', e);
