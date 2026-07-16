@@ -61,7 +61,7 @@ This SOP covers:
 | Component | Version |
 |-----------|---------|
 | Frappe Framework | v15.0.0 or higher |
-| ERPNext (optional) | v15.0.0 or higher |
+| ERPNext | v15.0.0 or higher **(required)** |
 | Python | 3.10 or higher |
 | Node.js | 18.x or higher |
 | MariaDB | 10.6 or higher |
@@ -78,6 +78,13 @@ This SOP covers:
 
 ## 3. Installation Procedure
 
+> **Prerequisite:** ERPNext v15+ must be installed on your site before installing Team Update Tool. If you haven't already:
+> ```bash
+> bench --site your-site-name install-app erpnext
+> ```
+> 
+> The `required_apps` declaration in `hooks.py` ensures this is handled automatically when running `install-app team_update_tool`.
+
 ### 3.1 Get the App
 ```bash
 cd ~/frappe-bench
@@ -88,6 +95,8 @@ bench get-app https://github.com/balaji-001-gif/team_update_tool.git
 ```bash
 bench --site your-site-name install-app team_update_tool
 ```
+
+> This will automatically install ERPNext if it's not already present, then run the app's `after_install()` hook.
 
 **What this does:**
 - Executes the `install.py` module's `after_install()` hook, which:

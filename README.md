@@ -1,6 +1,8 @@
 # Team Update Tool 🚀
 
-A custom **Frappe Framework v15** application for tracking completed team projects with GitHub integration, screenshot uploads, and role-based access control.
+A custom **ERPNext v15+ / Frappe Framework v15+** application for tracking completed team projects with GitHub integration, screenshot uploads, and role-based access control.
+
+> **Note:** ERPNext v15+ is **required** to run this app. Install it on a bench with ERPNext before installing Team Update Tool.
 
 ## ✨ Features
 
@@ -28,16 +30,24 @@ The application supports two types of users:
 - Cannot modify or delete any content
 - Server-enforced permissions
 
+## 🛠️ Prerequisites
+
+- **Frappe Framework v15+** (comes with ERPNext)
+- **ERPNext v15+** — required dependency
+
 ## 🛠️ Installation
 
 ```bash
 cd ~/frappe-bench
 bench get-app https://github.com/balaji-001-gif/team_update_tool.git
+bench --site your-site.local install-app erpnext
 bench --site your-site.local install-app team_update_tool
 bench --site your-site.local migrate
 bench build --app team_update_tool
 bench restart
 ```
+
+> The `required_apps` declaration ensures ERPNext is installed automatically when you run `bench install-app team_update_tool`.
 
 ## 👥 Roles & Permissions
 
