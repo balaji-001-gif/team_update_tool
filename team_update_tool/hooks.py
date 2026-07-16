@@ -24,7 +24,7 @@ website_route_rules = [
 fixtures = [
 	{"dt": "Role", "filters": [["role_name", "in", ["Team Update Admin", "Team Update Team Leader", "Team Update Team Member", "Team Update Viewer"]]]},
 	{"dt": "DocType", "filters": [["module", "in", ["Masters", "Transactions", "Reports"]]]},
-	{"dt": "Workspace", "filters": [["name", "in", ["Team Update Tool"]]]},
+	{"dt": "Workspace", "filters": [["name", "in", ["team_update_tool"]]]},
 	{"dt": "Notification", "filters": [["name", "in", ["New Project Uploaded", "Project Approved", "Project Status Updated"]]]},
 ]
 

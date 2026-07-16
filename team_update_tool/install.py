@@ -31,10 +31,12 @@ ROLES = [
 def after_install():
     """Run after the app is installed on a site.
 
-    Creates the four required roles needed by the app.
+    Creates the four required roles needed by the app,
+    the Team Update Tool domain, and syncs the workspace.
     """
     create_roles()
     create_team_update_domain()
+    _sync_workspace_from_module()
     print("✓ Team Update Tool installed successfully.")
 
 
@@ -91,28 +93,65 @@ def force_sync_doctypes():
     frappe.clear_cache()
 
 
+def _sync_workspace_from_module():
+    """Sync the Team Update Tool workspace from its module JSON file.
+
+    Reads the workspace JSON from masters/workspace/team_update_tool.json
+    and creates or updates the Workspace record in the database.
+    This is necessary because sync_customizations() does not handle
+    workspace fixtures.
+    """
+    import json
+    import os
+
+    workspace_file = frappe.get_app_path(
+        "team_update_tool", "masters", "workspace", "team_update_tool.json"
+    )
+
+    if not os.path.exists(workspace_file):
+        print("  Warning: Workspace JSON file not found at", workspace_file)
+        return
+
+    try:
+        with open(workspace_file) as f:
+            workspace_data = json.load(f)
+
+        workspace_name = workspace_data.get("workspace_name") or workspace_data.get("name")
+        if not workspace_name:
+            print("  Warning: Workspace JSON has no name field")
+            return
+
+        if frappe.db.exists("Workspace", workspace_name):
+            # Update existing workspace from JSON
+            doc = frappe.get_doc("Workspace", workspace_name)
+            # Remove doctype key to avoid conflicts on existing doc
+            workspace_data.pop("doctype", None)
+            doc.update(workspace_data)
+            doc.save(ignore_permissions=True)
+            print(f"  Updated Workspace: {workspace_name}")
+        else:
+            # Create workspace from JSON
+            workspace_data["doctype"] = "Workspace"
+            doc = frappe.get_doc(workspace_data)
+            doc.insert(ignore_permissions=True, ignore_if_duplicate=True)
+            print(f"  Created Workspace: {workspace_name}")
+
+    except Exception as e:
+        frappe.log_error(
+            f"Error syncing workspace from module: {str(e)}",
+            "_sync_workspace_from_module",
+        )
+        print(f"  Warning: Could not sync workspace from module: {e}")
+
+
 def sync_workspace_and_notifications():
     """Sync workspace and notifications after migration.
 
     Ensures that custom workspaces and notification records
     are properly synced after a migrate operation.
     """
-    # Reload workspace fixture
-    workspace_name = "Team Update Tool"
-    if frappe.db.exists("Workspace", workspace_name):
-        try:
-            workspace = frappe.get_doc("Workspace", workspace_name)
-            # Reload the content from the JSON fixture
-            from frappe.modules.utils import sync_customizations
-
-            sync_customizations("team_update_tool")
-            print(f"  Synced Workspace: {workspace_name}")
-        except Exception as e:
-            frappe.log_error(
-                f"Error syncing workspace '{workspace_name}': {str(e)}",
-                "sync_workspace_and_notifications",
-            )
-            print(f"  Warning: Could not sync workspace: {e}")
+    # Sync workspace from module file if it exists on disk
+    _sync_workspace_from_module()
 
     # Sync notification fixtures by reloading from disk
     notifications = [
