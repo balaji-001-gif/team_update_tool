@@ -40,14 +40,13 @@ The application supports two types of users:
 ```bash
 cd ~/frappe-bench
 bench get-app https://github.com/balaji-001-gif/team_update_tool.git
-bench --site your-site.local install-app erpnext
 bench --site your-site.local install-app team_update_tool
 bench --site your-site.local migrate
 bench build --app team_update_tool
 bench restart
 ```
 
-> The `required_apps` declaration ensures ERPNext is installed automatically when you run `bench install-app team_update_tool`.
+> ERPNext is installed automatically as a dependency — the `required_apps` declaration in `hooks.py` ensures Frappe handles it for you.
 
 ## 👥 Roles & Permissions
 
