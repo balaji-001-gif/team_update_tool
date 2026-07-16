@@ -96,7 +96,7 @@ def force_sync_doctypes():
 def _sync_workspace_from_module():
     """Sync the Team Update Tool workspace from its module JSON file.
 
-    Reads the workspace JSON from masters/workspace/team_update_tool.json
+    Reads the workspace JSON from masters/workspace/team_update_tool/team_update_tool.json
     and creates or updates the Workspace record in the database.
     This is necessary because sync_customizations() does not handle
     workspace fixtures.
@@ -105,7 +105,8 @@ def _sync_workspace_from_module():
     import os
 
     workspace_file = frappe.get_app_path(
-        "team_update_tool", "masters", "workspace", "team_update_tool.json"
+        "team_update_tool", "masters", "workspace",
+        "team_update_tool", "team_update_tool.json"
     )
 
     if not os.path.exists(workspace_file):
