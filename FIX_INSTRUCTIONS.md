@@ -11,7 +11,7 @@ cd ../..
 
 ## Step 2: Delete all old doctype records using SQL (run as single command)
 ```bash
-bench --site team.update.bizaxl.local console
+bench --site [your-site-name] console
 ```
 
 Then paste this and press Enter:
@@ -32,7 +32,7 @@ exit()
 
 ## Step 3: Migrate to re-sync all doctypes
 ```bash
-bench --site team.update.bizaxl.local migrate
+bench --site [your-site-name] migrate
 ```
 
 ## Step 4: Restart

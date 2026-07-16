@@ -4,3 +4,15 @@ __pycache__/
 *.egg-info/
 node_modules/
 .vscode/
+
+# Frappe specific
+sites/
+public/dist/
+public/assets/
+.bench/
+.env
+.venv/
+venv/
+*.log
+.env.local
+.env.production

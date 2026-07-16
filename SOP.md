@@ -4,8 +4,8 @@
 **Version:** 1.0.0  
 **Compatibility:** Frappe Framework v15+ / ERPNext v15+  
 **Repository:** https://github.com/balaji-001-gif/team_update_tool.git  
-**Document Version:** 2.0  
-**Last Updated:** July 7, 2026
+**Document Version:** 2.1  
+**Last Updated:** July 16, 2026
 
 ---
 
@@ -90,16 +90,30 @@ bench --site your-site-name install-app team_update_tool
 ```
 
 **What this does:**
-- Runs `after_install` which automatically creates four roles:
-  - `Team Update Admin` — Full access
-  - `Team Update Team Leader` — Can assign tasks, monitor, and review
-  - `Team Update Team Member` — Can work on assigned tasks
-  - `Team Update Viewer` — Read-only access
+- Executes the `install.py` module's `after_install()` hook, which:
+  - Creates the **Team Update Tool** domain
+  - Automatically creates four roles:
+    - `Team Update Admin` — Full access
+    - `Team Update Team Leader` — Can assign tasks, monitor, and review
+    - `Team Update Team Member` — Can work on assigned tasks
+    - `Team Update Viewer` — Read-only access
+  - Syncs all doctype fixtures into the database
+  - Reloads workspace content and notification definitions
+
+> **Note:** The `install.py` file (`team_update_tool/install.py`) is the app's installation entry point. It runs automatically during `install-app` and handles all first-time setup. Do not remove or modify it unless you understand the full setup process.
 
 ### 3.3 Run Migration
 ```bash
 bench --site your-site-name migrate
 ```
+
+**What migration does:**
+- Applies all registered patches in `patches.txt` in sequence
+- The `rename_roles` patch (`team_update_tool.patches.rename_roles`) handles upgrading from older versions by:
+  - Creating any missing new roles (`Team Update Admin`, `Team Update Team Leader`, `Team Update Team Member`, `Team Update Viewer`)
+  - Copying DocType permissions from old roles to new roles
+  - Transferring user assignments from old roles to new roles
+  - Removing the legacy role names once migration is complete
 
 ### 3.4 Build Assets
 ```bash
@@ -780,6 +794,7 @@ bench --site your-site restore /path/to/backup/file
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 2.1 | July 16, 2026 | System | Added install.py details, rename_roles migration patch notes, and updated role names throughout |
 | 2.0 | July 7, 2026 | System | Complete rewrite for role-based task management workflow with 4 roles |
 | 1.0 | July 7, 2026 | System | Initial SOP document created |
 
