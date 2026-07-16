@@ -30,7 +30,10 @@ def get_context(context):
 	# Permission check
 	user = frappe.session.user
 	roles = frappe.get_roles(user)
-	is_viewer = "View-Only User" in roles and "Admin" not in roles and "System Manager" not in roles
+	is_viewer = "Team Update Viewer" in roles or "View-Only User" in roles
+	# Only considered viewer if not also admin
+	if is_viewer:
+		is_viewer = "Team Update Admin" not in roles and "Admin" not in roles and "System Manager" not in roles
 	if is_viewer:
 		approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
 		if not approved or project.status != approved:

@@ -19,7 +19,7 @@ def get_context(context):
 
 	context.full_name = frappe.utils.get_fullname(user)
 	roles = frappe.get_roles(user)
-	context.is_admin = "Admin" in roles or "System Manager" in roles
+	context.is_admin = "Team Update Admin" in roles or "Admin" in roles or "System Manager" in roles
 
 	context.notifications = []
 

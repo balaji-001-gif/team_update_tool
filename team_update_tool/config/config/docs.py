@@ -2,7 +2,7 @@
 Configuration for docs
 """
 
-source_link = "https://github.com/Sudhakar1110/team_update_tool"
+source_link = "https://github.com/balaji-001-gif/team_update_tool"
 headline = "Team Update Tool"
 sub_heading = "Track and showcase completed team projects across departments"
 

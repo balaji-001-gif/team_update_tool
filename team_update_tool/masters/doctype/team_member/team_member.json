@@ -57,7 +57,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Admin",
+   "role": "Team Update Admin",
    "share": 1,
    "write": 1
   },
@@ -68,7 +68,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "Team Member",
+   "role": "Team Update Team Member",
    "write": 1
   },
   {
@@ -77,7 +77,7 @@
    "print": 1,
    "read": 1,
    "report": 1,
-   "role": "View-Only User"
+   "role": "Team Update Viewer"
   },
   {
    "create": 1,

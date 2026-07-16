@@ -51,6 +51,6 @@ def get_context(context):
 	context.is_logged_in = user != "Guest"
 	if context.is_logged_in:
 		roles = frappe.get_roles(user)
-		context.is_admin = "Admin" in roles or "System Manager" in roles
-		context.is_viewer = "View-Only User" in roles and not context.is_admin
+		context.is_admin = "Team Update Admin" in roles or "Admin" in roles or "System Manager" in roles
+		context.is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) and not ("Team Update Admin" in roles or "Admin" in roles or "System Manager" in roles)
 		context.full_name = frappe.utils.get_fullname(user)

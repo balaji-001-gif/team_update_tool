@@ -3,7 +3,7 @@
 **App Name:** Team Update Tool  
 **Version:** 1.0.0  
 **Compatibility:** Frappe Framework v15+ / ERPNext v15+  
-**Repository:** https://github.com/Sudhakar1110/team_update_tool.git  
+**Repository:** https://github.com/balaji-001-gif/team_update_tool.git  
 **Document Version:** 2.0  
 **Last Updated:** July 7, 2026
 
@@ -81,7 +81,7 @@ This SOP covers:
 ### 3.1 Get the App
 ```bash
 cd ~/frappe-bench
-bench get-app https://github.com/Sudhakar1110/team_update_tool.git
+bench get-app https://github.com/balaji-001-gif/team_update_tool.git
 ```
 
 ### 3.2 Install on a Site
@@ -644,7 +644,7 @@ The **Project Status Summary** report shows all tasks with their current status,
 **Error:** `setup.py` not found  
 **Solution:** Use the latest version:
 ```bash
-bench get-app https://github.com/Sudhakar1110/team_update_tool.git --overwrite
+bench get-app https://github.com/balaji-001-gif/team_update_tool.git --overwrite
 ```
 
 **Error:** Module not found  

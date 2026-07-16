@@ -2,358 +2,133 @@
 # For license information, please see license.txt
 
 import frappe
+from frappe import _
+
+ROLES = [
+    {
+        "role_name": "Team Update Admin",
+        "desk_access": 1,
+        "home_page": "/team_update_tool/dashboard",
+    },
+    {
+        "role_name": "Team Update Team Leader",
+        "desk_access": 1,
+        "home_page": "/team_update_tool/dashboard",
+    },
+    {
+        "role_name": "Team Update Team Member",
+        "desk_access": 1,
+        "home_page": "/team_update_tool/dashboard",
+    },
+    {
+        "role_name": "Team Update Viewer",
+        "desk_access": 1,
+        "home_page": "/team_update_tool/dashboard",
+    },
+]
 
 
 def after_install():
-	"""Creates roles, domain, and seed data on app install."""
-	force_sync_doctypes()
-	create_domain()
-	create_roles()
-	create_seed_data()
-	create_notifications()
-	frappe.db.commit()
+    """Run after the app is installed on a site.
 
-
-def create_domain():
-	"""Create Team Update Tool domain for restrict_to_domain usage."""
-	if not frappe.db.exists("Domain", "Team Update Tool"):
-		doc = frappe.get_doc({
-			"doctype": "Domain",
-			"domain": "Team Update Tool",
-		})
-		doc.insert(ignore_permissions=True)
-
-
-def force_sync_doctypes():
-	"""Delete old doctype records and let them re-sync from JSON files."""
-	from frappe.modules.import_file import import_file_by_path
-	import os
-	
-	app_path = frappe.get_app_path("team_update_tool")
-	
-	# Sync Doctypes
-	doctype_list = [
-		("masters/doctype/team/team.json", "Team"),
-		("masters/doctype/team_member/team_member.json", "Team Member"),
-		("masters/doctype/technology/technology.json", "Technology"),
-		("masters/doctype/project_category/project_category.json", "Project Category"),
-		("masters/doctype/project_status/project_status.json", "Project Status"),
-		("transactions/doctype/project/project.json", "Project"),
-		("transactions/doctype/project_readme/project_readme.json", "Project Readme"),
-		("transactions/doctype/project_update/project_update.json", "Project Update"),
-		("transactions/doctype/project_files/project_files.json", "Project Files"),
-		("transactions/doctype/project_screenshots/project_screenshots.json", "Project Screenshots"),
-		("transactions/doctype/project_technology/project_technology.json", "Project Technology"),
-		("transactions/doctype/github_repository/github_repository.json", "GitHub Repository"),
-	]
-	
-	for json_path, dt_name in doctype_list:
-		full_path = os.path.join(app_path, json_path)
-		if frappe.db.exists("DocType", dt_name):
-			frappe.delete_doc("DocType", dt_name, force=True)
-		import_file_by_path(full_path)
-		frappe.db.commit()
-	
-	# Force update Project doctype autoname directly in database
-	if frappe.db.exists("DocType", "Project"):
-		frappe.db.sql("""
-			UPDATE `tabDocType` 
-			SET autoname = 'naming_series:PRJ-.#####' 
-			WHERE name = 'Project'
-		""")
-		frappe.db.commit()
-		
-		# Clear the DocType cache to ensure changes take effect
-		frappe.db.sql("DELETE FROM `tabSingles` WHERE doctype = 'DocType' AND field = 'autoname'")
-		frappe.clear_cache()
-		frappe.publish_realtime("clear_cache")
-		frappe.log_error("Updated Project doctype autoname to 'naming_series:PRJ-.#####'", "force_sync_doctypes")
-	
-	# Sync Reports
-	report_list = [
-		"reports/project_summary_report/project_summary_report.json",
-		"reports/team_activity_report/team_activity_report.json",
-		"reports/completed_projects_report/completed_projects_report.json",
-		"reports/github_repository_report/github_repository_report.json",
-	]
-	
-	for json_path in report_list:
-		full_path = os.path.join(app_path, json_path)
-		import_file_by_path(full_path)
-		frappe.db.commit()
-	
-	# Sync Workspace - Force delete and recreate
-	workspace_path = os.path.join(app_path, "masters/workspace/team_update_tool.json")
-	
-	# Delete existing workspace completely
-	if frappe.db.exists("Workspace", "Team Update Tool"):
-		frappe.delete_doc("Workspace", "Team Update Tool", force=True)
-	frappe.db.commit()
-	
-	# Delete all related workspace child records
-	frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = 'Team Update Tool'")
-	frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = 'Team Update Tool'")
-	frappe.db.sql("DELETE FROM `tabWorkspace Chart` WHERE parent = 'Team Update Tool'")
-	frappe.db.sql("DELETE FROM `tabWorkspace Number Card` WHERE parent = 'Team Update Tool'")
-	frappe.db.commit()
-	
-	# Import fresh workspace from JSON
-	import_file_by_path(workspace_path, force=True)
-	frappe.db.commit()
-	
-	# import_file_by_path handles all workspace fields including content and child tables.
-	# No explicit re-save needed - the fixture JSON now has all mandatory fields set correctly.
-	frappe.clear_cache()
-	frappe.publish_realtime("clear_cache")
-
-
-def sync_workspace():
-	"""
-	Lightweight hook that syncs the Workspace fixture on "bench migrate".
-	Runs as the after_migrate hook to ensure the Team Update Tool workspace
-	is always up-to-date after app updates.
-	"""
-	from frappe.modules.import_file import import_file_by_path
-	import os, json
-	
-	app_path = frappe.get_app_path("team_update_tool")
-	workspace_path = os.path.join(app_path, "masters/workspace/team_update_tool.json")
-	
-	if not os.path.exists(workspace_path):
-		frappe.log_error(f"Workspace JSON not found at {workspace_path}", "sync_workspace")
-		return
-	
-	# Delete existing workspace completely so we can re-import fresh
-	if frappe.db.exists("Workspace", "Team Update Tool"):
-		frappe.delete_doc("Workspace", "Team Update Tool", force=True)
-	frappe.db.commit()
-	
-	# Delete all related workspace child records
-	frappe.db.sql("DELETE FROM `tabWorkspace Link` WHERE parent = 'Team Update Tool'")
-	frappe.db.sql("DELETE FROM `tabWorkspace Shortcut` WHERE parent = 'Team Update Tool'")
-	frappe.db.sql("DELETE FROM `tabWorkspace Chart` WHERE parent = 'Team Update Tool'")
-	frappe.db.sql("DELETE FROM `tabWorkspace Number Card` WHERE parent = 'Team Update Tool'")
-	frappe.db.commit()
-	
-	# Import fresh workspace from JSON
-	import_file_by_path(workspace_path, force=True)
-	frappe.db.commit()
-	
-	# import_file_by_path handles all workspace fields including content and child tables.
-	# No explicit re-save needed - the fixture JSON now has all mandatory fields set correctly.
-	frappe.clear_cache()
-	frappe.publish_realtime("clear_cache")
-
-
-def sync_workspace_and_notifications():
-	"""
-	Hook that syncs Workspace and Notifications on "bench migrate".
-	Ensures notifications are always up-to-date after app updates.
-	"""
-	sync_workspace()
-	create_notifications()
-	frappe.clear_cache()
-	frappe.publish_realtime("clear_cache")
+    Creates the four required roles needed by the app.
+    """
+    create_roles()
+    create_team_update_domain()
+    print("✓ Team Update Tool installed successfully.")
 
 
 def create_roles():
-	roles = [
-		{
-			"role_name": "Admin",
-			"desk_access": 1,
-			"description": "Full CRUD access. Can create, read, update, delete, approve, reject projects, manage teams, configure settings.",
-		},
-		{
-			"role_name": "Team Member",
-			"desk_access": 1,
-			"description": "Can create projects, upload GitHub repositories, upload screenshots and documents, edit own projects, and track project status. Cannot approve, reject, or delete approved projects.",
-		},
-		{
-			"role_name": "View-Only User",
-			"desk_access": 1,
-			"description": "Read-only access. Can view approved projects, GitHub links, screenshots, documents, and reports. Cannot create, edit, delete, or upload.",
-		},
-	]
-	for role in roles:
-		if not frappe.db.exists("Role", role["role_name"]):
-			doc = frappe.get_doc({
-				"doctype": "Role",
-				"role_name": role["role_name"],
-				"desk_access": role["desk_access"],
-				"description": role["description"],
-			})
-			doc.insert(ignore_permissions=True)
+    """Create roles if they don't already exist."""
+    for role_data in ROLES:
+        role_name = role_data["role_name"]
+        if not frappe.db.exists("Role", role_name):
+            role = frappe.get_doc(
+                {
+                    "doctype": "Role",
+                    "role_name": role_name,
+                    "desk_access": role_data["desk_access"],
+                    "home_page": role_data.get("home_page", ""),
+                }
+            )
+            role.insert(ignore_permissions=True, ignore_if_duplicate=True)
+            print(f"  Created Role: {role_name}")
+        else:
+            print(f"  Role already exists: {role_name}")
+
+    frappe.db.commit()
 
 
-def create_seed_data():
-	"""Create default master data so the app works out of the box."""
-	# Project Statuses
-	statuses = [
-		{"status_name": "Draft", "color": "#64748b"},
-		{"status_name": "Pending Review", "color": "#f59e0b"},
-		{"status_name": "Under Review", "color": "#3b82f6"},
-		{"status_name": "In Progress", "color": "#8b5cf6"},
-		{"status_name": "Approved", "color": "#16a34a"},
-		{"status_name": "Rejected", "color": "#dc2626"},
-		{"status_name": "Completed", "color": "#16a34a"},
-		{"status_name": "On Hold", "color": "#f97316"},
-	]
-	for s in statuses:
-		if not frappe.db.exists("Project Status", {"status_name": s["status_name"]}):
-			doc = frappe.get_doc({
-				"doctype": "Project Status",
-				"status_name": s["status_name"],
-				"color": s["color"],
-			})
-			doc.insert(ignore_permissions=True)
-
-	# Project Categories
-	categories = [
-		"Web Application",
-		"Mobile App",
-		"API Integration",
-		"ERPNext Customization",
-		"Frappe App",
-		"Data Analysis",
-		"Infrastructure",
-		"Research",
-	]
-	for cat_name in categories:
-		if not frappe.db.exists("Project Category", {"category_name": cat_name}):
-			doc = frappe.get_doc({
-				"doctype": "Project Category",
-				"category_name": cat_name,
-			})
-			doc.insert(ignore_permissions=True)
-
-	# Technologies
-	technologies = [
-		"Python",
-		"JavaScript",
-		"TypeScript",
-		"React",
-		"Vue.js",
-		"Node.js",
-		"Frappe Framework",
-		"ERPNext",
-		"Django",
-		"PostgreSQL",
-		"MySQL",
-		"Redis",
-		"Docker",
-		"Linux",
-		"HTML/CSS",
-		"Bootstrap",
-		"Tailwind CSS",
-		"Next.js",
-		"REST API",
-		"GraphQL",
-	]
-	for tech_name in technologies:
-		if not frappe.db.exists("Technology", {"technology_name": tech_name}):
-			doc = frappe.get_doc({
-				"doctype": "Technology",
-				"technology_name": tech_name,
-			})
-			doc.insert(ignore_permissions=True)
+def create_team_update_domain():
+    """Create the Team Update Tool domain for restrict_to_domain usage."""
+    if not frappe.db.exists("Domain", "Team Update Tool"):
+        doc = frappe.get_doc({
+            "doctype": "Domain",
+            "domain": "Team Update Tool",
+        })
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+        print("  Created Domain: Team Update Tool")
 
 
-def create_notifications():
-	"""Create email notifications for project events."""
-	
-	# Get all admin user emails
-	admin_emails = frappe.db.sql("""
-		SELECT DISTINCT u.email 
-		FROM tabUser u 
-		INNER JOIN `tabHas Role` hr ON hr.parent = u.name 
-		WHERE hr.role = 'Admin' AND u.enabled = 1 AND u.email IS NOT NULL
-	""", as_dict=1)
-	
-	admin_email_list = [u.email for u in admin_emails]
-	send_email_to = ", ".join(admin_email_list) if admin_email_list else ""
-	
-	notifications = [
-		{
-			"name": "New Project Uploaded",
-			"doctype": "Notification",
-			"enabled": 1,
-			"document_type": "Project",
-			"event": "New",
-			"channel": "Email",
-			"subject": "New Project Uploaded: {{ doc.project_title }}",
-			"message": "<p>A new project has been uploaded:</p><p><b>{{ doc.project_title }}</b><br>Team: {{ doc.team }}<br>Status: {{ doc.status }}</p>",
-			"send_system_notification": 1,
-			"send_email_to": send_email_to,
-			"recipients": [{"receiver_by_role": "Admin"}],
-		},
-		{
-			"name": "Project Approved",
-			"doctype": "Notification",
-			"enabled": 1,
-			"document_type": "Project",
-			"event": "Value Change",
-			"channel": "Email",
-			"subject": "Project Approved: {{ doc.project_title }}",
-			"message": "<p>Project has been approved:</p><p><b>{{ doc.project_title }}</b><br>Team: {{ doc.team }}<br>Approved by: {{ doc.approved_by }}</p>",
-			"value_changed": "status",
-			"condition": "frappe.db.get_value('Project Status', doc.status, 'status_name') == 'Approved'",
-			"send_system_notification": 1,
-			"send_email_to": send_email_to,
-			"recipients": [
-				{"receiver_by_role": "Admin"},
-				{"receiver_by_role": "View-Only User"},
-			],
-		},
-		{
-			"name": "Project Status Updated",
-			"doctype": "Notification",
-			"enabled": 1,
-			"document_type": "Project",
-			"event": "Value Change",
-			"channel": "Email",
-			"subject": "Project Status Updated: {{ doc.project_title }}",
-			"message": "<p>Project status has been updated:</p><p><b>{{ doc.project_title }}</b><br>New Status: {{ doc.status }}<br>Team: {{ doc.team }}</p>",
-			"value_changed": "status",
-			"send_system_notification": 1,
-			"send_email_to": send_email_to,
-			"recipients": [{"receiver_by_role": "Admin"}],
-		},
-	]
-	
-	for notif in notifications:
-		try:
-			if not frappe.db.exists("Notification", notif["name"]):
-				# Extract recipients before creating doc
-				recipients = notif.pop("recipients", [])
-				
-				# Create doc with all fields including module
-				notif["module"] = "Team Update Tool"
-				
-				doc = frappe.get_doc(notif)
-				doc.insert(ignore_permissions=True)
-				
-				# Add recipients one by one with proper fields
-				for recipient in recipients:
-					doc.append("recipients", {
-						"receiver_by_role": recipient.get("receiver_by_role"),
-						"condition": recipient.get("condition", ""),
-						"receiver_by_document_field": recipient.get("receiver_by_document_field", ""),
-					})
-				
-				doc.save(ignore_permissions=True)
-				frappe.db.commit()
-				frappe.log_error(f"Created notification: {notif['name']} for {send_email_to}", "Notification Setup")
-			else:
-				# Update existing notification
-				doc = frappe.get_doc("Notification", notif["name"])
-				doc.enabled = 1
-				doc.channel = "Email"
-				doc.event = notif.get("event", "New")
-				doc.send_system_notification = 1
-				doc.send_email_to = send_email_to
-				doc.save(ignore_permissions=True)
-				frappe.db.commit()
-				frappe.log_error(f"Updated notification: {notif['name']} for {send_email_to}", "Notification Setup")
-		except Exception as e:
-			frappe.log_error(f"Error creating notification {notif.get('name')}: {str(e)}", "Notification Setup Error")
-			frappe.db.rollback()
+def force_sync_doctypes():
+    """Force sync all Team Update Tool doctypes.
+
+    Called from hooks.py as app_setup to ensure all
+    doctype JSON files are synced into the database.
+
+    Refreshes fixture DocTypes so the DB matches the JSON
+    definitions after an app update.
+    """
+    from frappe.modules.utils import sync_customizations
+
+    try:
+        sync_customizations("team_update_tool")
+        print("  Synced Team Update Tool customizations.")
+    except Exception as e:
+        print(f"  Warning: Could not sync customizations: {e}")
+
+    frappe.clear_cache()
+
+
+def sync_workspace_and_notifications():
+    """Sync workspace and notifications after migration.
+
+    Ensures that custom workspaces and notification records
+    are properly synced after a migrate operation.
+    """
+    # Reload workspace fixture
+    workspace_name = "Team Update Tool"
+    if frappe.db.exists("Workspace", workspace_name):
+        try:
+            workspace = frappe.get_doc("Workspace", workspace_name)
+            # Reload the content from the JSON fixture
+            from frappe.modules.utils import sync_customizations
+
+            sync_customizations("team_update_tool")
+            print(f"  Synced Workspace: {workspace_name}")
+        except Exception as e:
+            frappe.log_error(
+                f"Error syncing workspace '{workspace_name}': {str(e)}",
+                "sync_workspace_and_notifications",
+            )
+            print(f"  Warning: Could not sync workspace: {e}")
+
+    # Sync notification fixtures by reloading from disk
+    notifications = [
+        "New Project Uploaded",
+        "Project Approved",
+        "Project Status Updated",
+    ]
+    for notif_name in notifications:
+        if frappe.db.exists("Notification", notif_name):
+            try:
+                # Reload the notification from its JSON fixture
+                frappe.reload_doc("team_update_tool", "notification", notif_name.lower().replace(" ", "_"))
+                print(f"  Synced Notification: {notif_name}")
+            except Exception as e:
+                print(f"  Warning: Could not sync notification '{notif_name}': {e}")
+
+    frappe.db.commit()
+    frappe.clear_cache()
+    print("✓ Workspace and notifications synced successfully.")

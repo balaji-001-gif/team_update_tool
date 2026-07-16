@@ -13,7 +13,7 @@ class Project(Document):
 
 	def validate_role_permissions(self):
 		roles = frappe.get_roles(frappe.session.user)
-		if "View-Only User" in roles and "Admin" not in roles and "System Manager" not in roles:
+		if "Team Update Viewer" in roles or "View-Only User" in roles and "Admin" not in roles and "System Manager" not in roles:
 			if not self.is_new():
 				frappe.throw(_("View-Only Users cannot edit projects."), frappe.PermissionError)
 
@@ -47,7 +47,7 @@ def send_new_project_notification(doc, method=None):
 	try:
 		# Get all admin users
 		admin_users = frappe.get_all("Has Role",
-			filters={"role": "Admin"},
+			filters={"role": ["in", ["Team Update Admin", "Admin"]]},
 			pluck="parent"
 		)
 		
@@ -126,7 +126,7 @@ def get_permission_query_conditions(user):
 	if not user:
 		return ""
 	roles = frappe.get_roles(user)
-	if "View-Only User" in roles and "Admin" not in roles:
+	if "Team Update Viewer" in roles or "View-Only User" in roles and "Admin" not in roles:
 		approved_status = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
 		if approved_status:
 			return "`tabProject`.`status` = " + frappe.db.escape(approved_status)
@@ -137,7 +137,7 @@ def has_permission(doc, ptype, user):
 	"""Doc-level permission check."""
 	if ptype == "read":
 		roles = frappe.get_roles(user)
-		if "View-Only User" in roles and "Admin" not in roles:
+		if "Team Update Viewer" in roles or "View-Only User" in roles and "Admin" not in roles:
 			approved_status = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
 			if approved_status and doc.status != approved_status:
 				return False

@@ -4,3 +4,4 @@ team_update_tool.patches.create_domain
 [post_model_sync]
 team_update_tool.patches.fix_project_update_child_table
 team_update_tool.patches.fix_workspace_content
+team_update_tool.patches.rename_roles

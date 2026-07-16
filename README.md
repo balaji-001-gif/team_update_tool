@@ -32,7 +32,7 @@ The application supports two types of users:
 
 ```bash
 cd ~/frappe-bench
-bench get-app https://github.com/Sudhakar1110/team_update_tool.git
+bench get-app https://github.com/balaji-001-gif/team_update_tool.git
 bench --site your-site.local install-app team_update_tool
 bench --site your-site.local migrate
 bench build --app team_update_tool

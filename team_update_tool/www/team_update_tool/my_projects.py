@@ -18,8 +18,8 @@ def get_context(context):
 		raise frappe.Redirect
 
 	roles = frappe.get_roles(user)
-	is_admin = "Admin" in roles or "System Manager" in roles
-	is_viewer = "View-Only User" in roles and not is_admin
+	is_admin = "Team Update Admin" in roles or "Admin" in roles or "System Manager" in roles
+	is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) and not is_admin
 
 	# For admin/team members: show owned projects
 	# For view-only users: show all projects (since we removed status filtering)

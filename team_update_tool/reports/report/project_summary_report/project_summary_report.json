@@ -17,10 +17,10 @@
  "report_type": "Script Report",
  "roles": [
   {
-   "role": "Admin"
+   "role": "Team Update Admin"
   },
   {
-   "role": "View-Only User"
+   "role": "Team Update Viewer"
   },
   {
    "role": "System Manager"

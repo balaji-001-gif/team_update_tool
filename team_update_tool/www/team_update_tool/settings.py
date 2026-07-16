@@ -20,4 +20,4 @@ def get_context(context):
 	user_doc = frappe.get_doc("User", user)
 	context.user_doc = user_doc
 	context.full_name = frappe.utils.get_fullname(user)
-	context.is_admin = "Admin" in frappe.get_roles(user) or "System Manager" in frappe.get_roles(user)
+	context.is_admin = "Team Update Admin" in frappe.get_roles or "Admin" in frappe.get_roles(user) or "System Manager" in frappe.get_roles(user)

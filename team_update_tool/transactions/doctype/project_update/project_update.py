@@ -17,7 +17,7 @@ def get_permission_query_conditions(user):
 		return ""
 	import frappe
 	roles = frappe.get_roles(user)
-	if "View-Only User" in roles and "Admin" not in roles:
+	if "Team Update Viewer" in roles or "View-Only User" in roles and "Team Update Admin" not in roles and "Admin" not in roles:
 		approved_status = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
 		if approved_status:
 			return "`tabProject Update`.`status` = " + frappe.db.escape(approved_status)

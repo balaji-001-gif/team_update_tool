@@ -18,7 +18,7 @@
   {
    "condition": "",
    "receiver_by_document_field": "",
-   "receiver_by_role": "Admin"
+   "receiver_by_role": "Team Update Admin"
   }
  ],
  "send_system_notification": 1,

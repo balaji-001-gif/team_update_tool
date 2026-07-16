@@ -18,13 +18,14 @@ def get_context(context):
 		raise frappe.Redirect
 
 	roles = frappe.get_roles(user)
-	is_viewer = "View-Only User" in roles and "Admin" not in roles and "Team Member" not in roles and "System Manager" not in roles
+	is_viewer = "Team Update Viewer" in roles or "View-Only User" in roles
+	is_viewer = is_viewer and ("Team Update Admin" not in roles and "Admin" not in roles and "Team Update Team Member" not in roles and "Team Member" not in roles and "System Manager" not in roles)
 	if is_viewer:
 		frappe.local.flags.redirect_location = "/team_update_tool/dashboard"
 		raise frappe.Redirect
 
-	context.is_admin = "Admin" in roles or "System Manager" in roles
-	context.is_team_member = "Team Member" in roles
+	context.is_admin = "Team Update Admin" in roles or "Admin" in roles or "System Manager" in roles
+	context.is_team_member = "Team Update Team Member" in roles or "Team Member" in roles
 	context.full_name = frappe.utils.get_fullname(user)
 
 	# Get lookup data for forms
