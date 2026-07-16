@@ -126,14 +126,16 @@ def _sync_workspace_from_module():
             doc = frappe.get_doc("Workspace", workspace_name)
             # Remove doctype key to avoid conflicts on existing doc
             workspace_data.pop("doctype", None)
-            doc.update(workspace_data)
+            doc.flags.ignore_links = True
             doc.save(ignore_permissions=True)
             print(f"  Updated Workspace: {workspace_name}")
         else:
             # Create workspace from JSON
+            # ignore_links=True bypasses Dynamic Link validation for link_to values
+            # in the links child table (link_type + link_to pairs)
             workspace_data["doctype"] = "Workspace"
             doc = frappe.get_doc(workspace_data)
-            doc.insert(ignore_permissions=True, ignore_if_duplicate=True)
+            doc.insert(ignore_permissions=True, ignore_if_duplicate=True, ignore_links=True)
             print(f"  Created Workspace: {workspace_name}")
 
     except Exception as e:
