@@ -214,6 +214,74 @@ def create_project_readme():
 
 
 @frappe.whitelist()
+def create_project_update():
+    """Add an update to a Project.
+
+    Expects POST data with:
+      - project_name (required)
+      - update_title (required)
+      - update_date (required, format: YYYY-MM-DD)
+      - update_description
+      - status (optional, Link to Project Status)
+    """
+    data = frappe.local.form_dict
+
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in to add a project update."), frappe.PermissionError)
+
+    project_name = data.get("project_name")
+    update_title = data.get("update_title")
+    update_date = data.get("update_date")
+    update_description = data.get("update_description", "")
+    update_status = data.get("status")
+
+    # Validate required fields
+    if not project_name:
+        frappe.throw(_("Project name is required."))
+    if not update_title:
+        frappe.throw(_("Update title is required."))
+    if not update_date:
+        frappe.throw(_("Update date is required."))
+
+    # Check project exists
+    if not frappe.db.exists("Project", project_name):
+        frappe.throw(_("Project not found: {0}").format(project_name))
+
+    # Permission check for Viewer role
+    roles = frappe.get_roles(user)
+    if "Team Update Viewer" in roles or "View-Only User" in roles:
+        is_viewer = "Team Update Admin" not in roles and "Admin" not in roles and "System Manager" not in roles
+        if is_viewer:
+            frappe.throw(_("You do not have permission to add updates."), frappe.PermissionError)
+
+    # Append update to Project's child table
+    project = frappe.get_doc("Project", project_name)
+    row = project.append("project_updates", {
+        "update_title": update_title,
+        "update_date": update_date,
+        "update_description": update_description,
+        "updated_by": user,
+    })
+    if update_status:
+        row.status = update_status
+
+    # Also update the project's main status if a status is provided
+    if update_status and frappe.db.exists("Project Status", update_status):
+        project.status = update_status
+
+    project.save(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {
+        "name": row.name,
+        "update_title": update_title,
+        "update_date": update_date,
+        "message": _("Update added successfully!"),
+    }
+
+
+@frappe.whitelist()
 def get_dashboard_stats():
     """Return dashboard statistics for the current user.
 
