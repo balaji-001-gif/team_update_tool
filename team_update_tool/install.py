@@ -36,6 +36,7 @@ def after_install():
     """
     create_roles()
     create_team_update_domain()
+    _fix_module_def_case()
     _sync_workspace_from_module()
     print("✓ Team Update Tool installed successfully.")
 
@@ -71,6 +72,43 @@ def create_team_update_domain():
         doc.insert(ignore_permissions=True)
         frappe.db.commit()
         print("  Created Domain: Team Update Tool")
+
+
+def _fix_module_def_case():
+    """Rename lowercase Module Defs from prior installs to capitalized names.
+
+    The app's modules.txt previously used lowercase names (masters, transactions,
+    reports) but the DocType JSONs use capitalized names (Masters, Transactions,
+    Reports). This mismatch caused Module Defs to be created with lowercase names,
+    preventing DocTypes from being properly mapped.
+
+    This function renames any remaining lowercase Module Defs to their correct
+    capitalized form so DocTypes get linked correctly.
+    """
+    rename_map = {
+        "masters": "Masters",
+        "transactions": "Transactions",
+        "reports": "Reports",
+        "team_update_tool": "Team Update Tool",
+    }
+    for old_name, new_name in rename_map.items():
+        if frappe.db.exists("Module Def", old_name):
+            # Only rename if the target doesn't already exist
+            if not frappe.db.exists("Module Def", new_name):
+                try:
+                    frappe.rename_doc("Module Def", old_name, new_name, force=True)
+                    print(f"  Renamed Module Def: {old_name} → {new_name}")
+                except Exception as e:
+                    print(f"  Warning: Could not rename Module Def '{old_name}': {e}")
+            else:
+                # Target already exists, delete the stale lowercase one
+                try:
+                    frappe.delete_doc("Module Def", old_name, ignore_permissions=True)
+                    print(f"  Deleted stale Module Def: {old_name}")
+                except Exception as e:
+                    print(f"  Warning: Could not delete stale Module Def '{old_name}': {e}")
+
+    frappe.db.commit()
 
 
 def force_sync_doctypes():
@@ -153,6 +191,10 @@ def sync_workspace_and_notifications():
     Ensures that custom workspaces and notification records
     are properly synced after a migrate operation.
     """
+    # Fix Module Def case if needed (for sites installed before the casing fix)
+    _fix_module_def_case()
+
+
     # Sync workspace from module file if it exists on disk
     _sync_workspace_from_module()
 
