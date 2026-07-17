@@ -588,7 +588,8 @@ def get_projects():
         query_filters.append(["project_title", "like", f"%{search}%"])
 
     # Get total count with same filters
-    total = frappe.db.count("Project", filters=query_filters if query_filters else None)
+    # (use get_all instead of count because list filters aren't supported by frappe.db.count)
+    total = len(frappe.get_all("Project", filters=query_filters if query_filters else None, limit_page_length=0))
 
     projects = frappe.get_all(
         "Project",
