@@ -92,21 +92,38 @@ def _fix_module_def_case():
         "team_update_tool": "Team Update Tool",
     }
     for old_name, new_name in rename_map.items():
-        if frappe.db.exists("Module Def", old_name):
-            # Only rename if the target doesn't already exist
-            if not frappe.db.exists("Module Def", new_name):
-                try:
-                    frappe.rename_doc("Module Def", old_name, new_name, force=True)
-                    print(f"  Renamed Module Def: {old_name} → {new_name}")
-                except Exception as e:
-                    print(f"  Warning: Could not rename Module Def '{old_name}': {e}")
-            else:
-                # Target already exists, delete the stale lowercase one
-                try:
-                    frappe.delete_doc("Module Def", old_name, ignore_permissions=True)
-                    print(f"  Deleted stale Module Def: {old_name}")
-                except Exception as e:
-                    print(f"  Warning: Could not delete stale Module Def '{old_name}': {e}")
+        if not frappe.db.exists("Module Def", old_name):
+            continue
+
+        if not frappe.db.exists("Module Def", new_name):
+            # Only lowercase exists — rename to capitalized
+            try:
+                frappe.rename_doc("Module Def", old_name, new_name, force=True)
+                print(f"  Renamed Module Def: {old_name} → {new_name}")
+            except Exception as e:
+                print(f"  Warning: Could not rename Module Def '{old_name}': {e}")
+        else:
+            # Both exist — update DocType/Report references, then delete old
+            try:
+                # Update DocTypes that reference the lowercase Module Def
+                frappe.db.set_value(
+                    "DocType",
+                    {"module": old_name},
+                    "module",
+                    new_name
+                )
+                # Update Reports that reference the lowercase Module Def
+                frappe.db.set_value(
+                    "Report",
+                    {"module": old_name},
+                    "module",
+                    new_name
+                )
+                # Now delete the stale lowercase Module Def
+                frappe.delete_doc("Module Def", old_name, ignore_permissions=True, force=True)
+                print(f"  Deleted stale Module Def: {old_name} (re-located references to {new_name})")
+            except Exception as e:
+                print(f"  Warning: Could not clean up Module Def '{old_name}': {e}")
 
     frappe.db.commit()
 
