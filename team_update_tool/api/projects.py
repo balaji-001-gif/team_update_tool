@@ -513,3 +513,155 @@ def get_project_detail():
         "github_info": github_info,
         "readme": readme,
     }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_all_public_stats():
+    """Return public stats and filter options for the projects listing page.
+
+    Called by projects.html JS (team_update_tool.api.projects.get_all_public_stats).
+    Returns:
+      - total_projects
+      - teams: [{name, team_name}]
+      - statuses: [{name, status_name}]
+      - categories: [{name, category_name}]
+    """
+    total_projects = frappe.db.count("Project")
+
+    teams = frappe.get_all("Team", fields=["name", "team_name"], filters={"is_active": 1}, order_by="team_name asc")
+    statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
+    categories = frappe.get_all("Project Category", fields=["name", "category_name"], order_by="category_name asc")
+
+    return {
+        "total_projects": total_projects,
+        "teams": teams,
+        "statuses": statuses,
+        "categories": categories,
+    }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_projects():
+    """Return paginated, filtered list of projects for the projects listing page.
+
+    Called by projects.html JS (team_update_tool.api.projects.get_projects).
+    Query params:
+      - limit (default 12)
+      - offset (default 0)
+      - search (text search)
+      - status (Project Status name)
+      - team (Team name)
+      - category (Project Category name)
+
+    Returns:
+      - projects: [{name, project_title, team, category_name, status, status_name,
+                    status_color, priority, screenshot_preview, modified, creation}]
+      - total
+      - offset
+      - has_more
+    """
+    data = frappe.local.form_dict
+
+    try:
+        limit = int(data.get("limit", 12))
+    except (ValueError, TypeError):
+        limit = 12
+    try:
+        offset = int(data.get("offset", 0))
+    except (ValueError, TypeError):
+        offset = 0
+
+    search = data.get("search", "")
+    status_filter = data.get("status", "")
+    team_filter = data.get("team", "")
+    category_filter = data.get("category", "")
+
+    # Build query filters
+    query_filters = []
+    if status_filter:
+        query_filters.append(["status", "=", status_filter])
+    if team_filter:
+        query_filters.append(["team", "=", team_filter])
+    if category_filter:
+        query_filters.append(["project_category", "=", category_filter])
+    if search:
+        query_filters.append(["project_title", "like", f"%{search}%"])
+
+    # Get total count with same filters
+    total = frappe.db.count("Project", filters=query_filters if query_filters else None)
+
+    projects = frappe.get_all(
+        "Project",
+        fields=["name", "project_title", "team", "project_category", "status", "priority", "modified", "creation"],
+        filters=query_filters if query_filters else None,
+        limit=limit,
+        offset=offset,
+        order_by="modified desc",
+    )
+
+    # Enrich with status info, team name, category name, and screenshot preview
+    project_list = []
+    for p in projects:
+        # Status info
+        status_name = ""
+        status_color = "#6b7280"
+        if p.status:
+            try:
+                s = frappe.get_cached_doc("Project Status", p.status)
+                status_name = s.status_name
+                status_color = s.color
+            except Exception:
+                status_name = p.status
+
+        # Team name
+        team_name = p.team or ""
+        if p.team:
+            try:
+                t = frappe.get_cached_doc("Team", p.team)
+                team_name = t.team_name
+            except Exception:
+                pass
+
+        # Category name
+        category_name = ""
+        if p.project_category:
+            try:
+                cat = frappe.get_cached_doc("Project Category", p.project_category)
+                category_name = cat.category_name
+            except Exception:
+                category_name = p.project_category
+
+        # Screenshot preview (first screenshot of the project)
+        screenshot_preview = None
+        try:
+            first_ss = frappe.db.get_value("Project Screenshots",
+                {"parent": p.name, "parenttype": "Project", "parentfield": "screenshots"},
+                "screenshot",
+                order_by="idx asc")
+            if first_ss:
+                screenshot_preview = first_ss
+        except Exception:
+            pass
+
+        project_list.append({
+            "name": p.name,
+            "project_title": p.project_title,
+            "team": team_name,
+            "category_name": category_name,
+            "status": p.status,
+            "status_name": status_name,
+            "status_color": status_color,
+            "priority": p.priority,
+            "screenshot_preview": screenshot_preview,
+            "modified": str(p.modified) if p.modified else None,
+            "creation": str(p.creation) if p.creation else None,
+        })
+
+    has_more = (offset + limit) < total
+
+    return {
+        "projects": project_list,
+        "total": total,
+        "offset": offset,
+        "has_more": has_more,
+    }
