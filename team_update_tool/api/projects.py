@@ -305,3 +305,143 @@ def get_dashboard_stats():
         "recent_projects": recent_projects,
         "recent_repos": recent_repos,
     }
+
+
+@frappe.whitelist()
+def get_project_detail():
+    """Return full project detail for the project detail page.
+
+    Called by the project.html JS (team_update_tool.api.projects.get_project_detail).
+    Returns a dict with all project fields needed for rendering.
+    """
+    data = frappe.local.form_dict
+    name = data.get("name")
+
+    if not name:
+        frappe.throw(_("Project name is required."))
+
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in to view project details."), frappe.PermissionError)
+
+    try:
+        project = frappe.get_doc("Project", name)
+    except frappe.DoesNotExistError:
+        frappe.throw(_("Project not found."))
+
+    # Permission check for Viewer role
+    roles = frappe.get_roles(user)
+    is_viewer = "Team Update Viewer" in roles or "View-Only User" in roles
+    if is_viewer:
+        is_viewer = "Team Update Admin" not in roles and "Admin" not in roles and "System Manager" not in roles
+    if is_viewer:
+        approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+        if not approved or project.status != approved:
+            frappe.throw(_("You do not have permission to view this project."), frappe.PermissionError)
+
+    # Get team name
+    team_name = ""
+    if project.team:
+        try:
+            team_doc = frappe.get_cached_doc("Team", project.team)
+            team_name = team_doc.team_name
+        except Exception:
+            team_name = project.team
+
+    # Get status info
+    status_info = {"color": "#6b7280", "status_name": ""}
+    if project.status:
+        try:
+            s = frappe.get_cached_doc("Project Status", project.status)
+            status_info = {"color": s.color, "status_name": s.status_name}
+        except Exception:
+            status_info = {"color": "#6b7280", "status_name": project.status}
+
+    # Build technologies list (just names)
+    technologies = []
+    for t in project.technologies or []:
+        try:
+            tech_doc = frappe.get_cached_doc("Technology", t.technology)
+            technologies.append(tech_doc.technology_name)
+        except Exception:
+            technologies.append(t.technology)
+
+    # Build files list
+    files_list = []
+    for f in project.project_files or []:
+        files_list.append({
+            "file": f.file,
+            "file_name": f.file_name,
+            "file_type": f.file_type,
+            "file_description": getattr(f, "file_description", ""),
+        })
+
+    # Build updates list
+    updates = []
+    for u in project.project_updates or []:
+        updates.append({
+            "update_title": u.update_title,
+            "update_description": u.update_description,
+            "update_date": str(u.update_date) if u.update_date else None,
+            "updated_by": u.updated_by,
+        })
+
+    # Get GitHub info
+    github_info = None
+    if project.github_repository:
+        try:
+            repo = frappe.get_cached_doc("GitHub Repository", project.github_repository)
+            github_info = {
+                "repository_url": repo.repository_url,
+                "default_branch": repo.default_branch,
+                "commit_hash": getattr(repo, "commit_hash", ""),
+                "languages": getattr(repo, "languages", ""),
+            }
+        except Exception:
+            pass
+
+    # Get README
+    readme = None
+    try:
+        readme_doc = frappe.db.get_value("Project Readme", {"project": name}, ["readme_file", "readme_content"], as_dict=1)
+        if readme_doc:
+            readme = {
+                "readme_file": readme_doc.get("readme_file"),
+                "readme_content": readme_doc.get("readme_content"),
+            }
+    except Exception:
+        pass
+
+    # Screenshots
+    screenshots = []
+    for s in project.screenshots or []:
+        screenshots.append({
+            "screenshot": s.screenshot,
+            "caption": getattr(s, "caption", ""),
+            "screenshot_type": getattr(s, "screenshot_type", ""),
+        })
+
+    return {
+        "name": project.name,
+        "project_title": project.project_title,
+        "team": project.team,
+        "team_name": team_name,
+        "project_category": project.project_category,
+        "priority": project.priority,
+        "description": project.description,
+        "status": status_info,
+        "start_date": str(project.start_date) if project.start_date else None,
+        "due_date": str(project.due_date) if project.due_date else None,
+        "completion_date": str(project.completion_date) if hasattr(project, "completion_date") and project.completion_date else None,
+        "creation": str(project.creation) if project.creation else None,
+        "approved_by": getattr(project, "approved_by", ""),
+        "tags": getattr(project, "tags", ""),
+        "owner": project.owner,
+        "technologies": technologies,
+        "files": files_list,
+        "updates": updates,
+        "screenshots": screenshots,
+        "github_repository": getattr(project, "github_repository", None),
+        "github_info": github_info,
+        "readme": readme,
+    }
