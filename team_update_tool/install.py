@@ -178,13 +178,16 @@ def _sync_workspace_from_module():
             return
 
         if frappe.db.exists("Workspace", workspace_name):
-            # Update existing workspace from JSON
-            doc = frappe.get_doc("Workspace", workspace_name)
-            # Remove doctype key to avoid conflicts on existing doc
-            workspace_data.pop("doctype", None)
-            doc.flags.ignore_links = True
-            doc.save(ignore_permissions=True)
-            print(f"  Updated Workspace: {workspace_name}")
+            # Delete existing workspace first, then recreate from JSON
+            # This ensures child table data (links) is correct even if the
+            # existing workspace has stale/invalid data from a prior install
+            frappe.delete_doc("Workspace", workspace_name, ignore_permissions=True, force=True)
+            frappe.db.commit()
+            # Now create fresh from JSON
+            workspace_data["doctype"] = "Workspace"
+            doc = frappe.get_doc(workspace_data)
+            doc.insert(ignore_permissions=True, ignore_if_duplicate=True, ignore_links=True)
+            print(f"  Recreated Workspace: {workspace_name}")
         else:
             # Create workspace from JSON
             # ignore_links=True bypasses Dynamic Link validation for link_to values
