@@ -1,9 +1,16 @@
 # Copyright (c) 2026, Your Company and contributors
 # For license information, please see license.txt
 
+import json
+
 import frappe
 from frappe import _
+from frappe.utils import today, now_datetime
 
+
+# ---------------------------------------------------------------------------
+# Remote-added: helpers and project CRUD
+# ---------------------------------------------------------------------------
 
 def _get_default_status():
     """Return the name of a default Project Status (first available, or creates 'Pending')."""
@@ -281,6 +288,48 @@ def create_project_update():
     }
 
 
+# ---------------------------------------------------------------------------
+# Helpers (added by our Kanban / Activity / Time features)
+# ---------------------------------------------------------------------------
+
+def _get_base_filters(user=None):
+    """Return permission-aware base filters for the current user."""
+    if user is None:
+        user = frappe.session.user
+    roles = frappe.get_roles(user)
+    is_admin = "System Manager" in roles or "Team Update Admin" in roles
+    is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) and not is_admin
+    filters = {}
+    if is_viewer:
+        approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+        if approved:
+            filters["status"] = approved
+    return filters, is_admin
+
+
+def _get_status_info(status):
+    """Return dict with status_name and color for a status link value."""
+    if not status:
+        return {"status_name": "", "color": "#6b7280"}
+    try:
+        s = frappe.get_cached_doc("Project Status", status)
+        return {"status_name": s.status_name, "color": s.color}
+    except Exception:
+        return {"status_name": status, "color": "#6b7280"}
+
+
+def _enrich_project(p):
+    """Attach status_name / status_color to a project dict."""
+    info = _get_status_info(p.get("status") or "")
+    p["status_name"] = info["status_name"]
+    p["status_color"] = info["color"]
+    return p
+
+
+# ---------------------------------------------------------------------------
+# Dashboard
+# ---------------------------------------------------------------------------
+
 @frappe.whitelist()
 def get_dashboard_stats():
     """Return dashboard statistics for the current user.
@@ -336,17 +385,7 @@ def get_dashboard_stats():
         order_by="modified desc",
     )
     for p in recent_projects:
-        if p.status:
-            try:
-                s = frappe.get_cached_doc("Project Status", p.status)
-                p.status_name = s.status_name
-                p.status_color = s.color
-            except Exception:
-                p.status_name = p.status
-                p.status_color = "#6b7280"
-        else:
-            p.status_name = ""
-            p.status_color = "#6b7280"
+        _enrich_project(p)
 
     # Recent GitHub repos
     recent_repos = []
@@ -375,19 +414,173 @@ def get_dashboard_stats():
     }
 
 
+# ---------------------------------------------------------------------------
+# Public stats and listing (added remotely)
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist(allow_guest=True)
+def get_all_public_stats():
+    """Return public stats and filter options for the projects listing page.
+
+    Called by projects.html JS (team_update_tool.api.projects.get_all_public_stats).
+    Returns:
+      - total_projects
+      - teams: [{name, team_name}]
+      - statuses: [{name, status_name}]
+      - categories: [{name, category_name}]
+    """
+    total_projects = frappe.db.count("Project")
+
+    teams = frappe.get_all("Team", fields=["name", "team_name"], filters={"is_active": 1}, order_by="team_name asc")
+    statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
+    categories = frappe.get_all("Project Category", fields=["name", "category_name"], order_by="category_name asc")
+
+    return {
+        "total_projects": total_projects,
+        "teams": teams,
+        "statuses": statuses,
+        "categories": categories,
+    }
+
+
+@frappe.whitelist(allow_guest=True)
+def get_projects():
+    """Return paginated, filtered list of projects for the projects listing page.
+
+    Called by projects.html JS (team_update_tool.api.projects.get_projects).
+    Query params:
+      - limit (default 12)
+      - offset (default 0)
+      - search (text search)
+      - status (Project Status name)
+      - team (Team name)
+      - category (Project Category name)
+
+    Returns:
+      - projects: [{name, project_title, team, category_name, status, status_name,
+                    status_color, priority, screenshot_preview, modified, creation}]
+      - total
+      - offset
+      - has_more
+    """
+    data = frappe.local.form_dict
+
+    try:
+        limit = int(data.get("limit", 12))
+    except (ValueError, TypeError):
+        limit = 12
+    try:
+        offset = int(data.get("offset", 0))
+    except (ValueError, TypeError):
+        offset = 0
+
+    search = data.get("search", "")
+    status_filter = data.get("status", "")
+    team_filter = data.get("team", "")
+    category_filter = data.get("category", "")
+
+    # Build query filters
+    query_filters = []
+    if status_filter:
+        query_filters.append(["status", "=", status_filter])
+    if team_filter:
+        query_filters.append(["team", "=", team_filter])
+    if category_filter:
+        query_filters.append(["project_category", "=", category_filter])
+    if search:
+        query_filters.append(["project_title", "like", f"%{search}%"])
+
+    # Get total count with same filters
+    total = len(frappe.get_all("Project", filters=query_filters if query_filters else None, limit_page_length=0))
+
+    projects = frappe.get_all(
+        "Project",
+        fields=["name", "project_title", "team", "project_category", "status", "priority", "modified", "creation"],
+        filters=query_filters if query_filters else None,
+        limit=limit,
+        offset=offset,
+        order_by="modified desc",
+    )
+
+    # Enrich with status info, team name, category name, and screenshot preview
+    project_list = []
+    for p in projects:
+        # Status info
+        status_name = ""
+        status_color = "#6b7280"
+        if p.status:
+            try:
+                s = frappe.get_cached_doc("Project Status", p.status)
+                status_name = s.status_name
+                status_color = s.color
+            except Exception:
+                status_name = p.status
+
+        # Team name
+        team_name = p.team or ""
+        if p.team:
+            try:
+                t = frappe.get_cached_doc("Team", p.team)
+                team_name = t.team_name
+            except Exception:
+                pass
+
+        # Category name
+        category_name = ""
+        if p.project_category:
+            try:
+                cat = frappe.get_cached_doc("Project Category", p.project_category)
+                category_name = cat.category_name
+            except Exception:
+                category_name = p.project_category
+
+        # Screenshot preview (first screenshot of the project)
+        screenshot_preview = None
+        try:
+            first_ss = frappe.db.get_value("Project Screenshots",
+                {"parent": p.name, "parenttype": "Project", "parentfield": "screenshots"},
+                "screenshot",
+                order_by="idx asc")
+            if first_ss:
+                screenshot_preview = first_ss
+        except Exception:
+            pass
+
+        project_list.append({
+            "name": p.name,
+            "project_title": p.project_title,
+            "team": team_name,
+            "category_name": category_name,
+            "status": p.status,
+            "status_name": status_name,
+            "status_color": status_color,
+            "priority": p.priority,
+            "screenshot_preview": screenshot_preview,
+            "modified": str(p.modified) if p.modified else None,
+            "creation": str(p.creation) if p.creation else None,
+        })
+
+    has_more = (offset + limit) < total
+
+    return {
+        "projects": project_list,
+        "total": total,
+        "offset": offset,
+        "has_more": has_more,
+    }
+
+
+# ---------------------------------------------------------------------------
+# Project Detail (merged: remote version + our total_hours_logged addition)
+# ---------------------------------------------------------------------------
+
 @frappe.whitelist()
-def get_project_detail():
+def get_project_detail(name):
     """Return full project detail for the project detail page.
 
     Called by the project.html JS (team_update_tool.api.projects.get_project_detail).
     Returns a dict with all project fields needed for rendering.
     """
-    data = frappe.local.form_dict
-    name = data.get("name")
-
-    if not name:
-        frappe.throw(_("Project name is required."))
-
     user = frappe.session.user
     if user == "Guest":
         frappe.throw(_("Please log in to view project details."), frappe.PermissionError)
@@ -489,6 +682,13 @@ def get_project_detail():
             "screenshot_type": getattr(s, "screenshot_type", ""),
         })
 
+    # Total time logged (for Time Tracking feature)
+    total_hours = frappe.db.sql(
+        """SELECT COALESCE(SUM(hours), 0) FROM `tabProject Time Log`
+         WHERE project=%s AND docstatus < 2""",
+        project.name
+    )[0][0] or 0
+
     return {
         "name": project.name,
         "project_title": project.project_title,
@@ -512,157 +712,409 @@ def get_project_detail():
         "github_repository": getattr(project, "github_repository", None),
         "github_info": github_info,
         "readme": readme,
+        "total_hours_logged": total_hours,
+        "is_owner": project.owner == user,
     }
 
 
-@frappe.whitelist(allow_guest=True)
-def get_all_public_stats():
-    """Return public stats and filter options for the projects listing page.
+# ---------------------------------------------------------------------------
+# Kanban Board
+# ---------------------------------------------------------------------------
 
-    Called by projects.html JS (team_update_tool.api.projects.get_all_public_stats).
-    Returns:
-      - total_projects
-      - teams: [{name, team_name}]
-      - statuses: [{name, status_name}]
-      - categories: [{name, category_name}]
+@frappe.whitelist()
+def get_kanban_projects():
+    """Return projects grouped by status for the Kanban board.
+
+    Returns a list of columns with status info and projects[].
     """
-    total_projects = frappe.db.count("Project")
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
 
-    teams = frappe.get_all("Team", fields=["name", "team_name"], filters={"is_active": 1}, order_by="team_name asc")
-    statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
-    categories = frappe.get_all("Project Category", fields=["name", "category_name"], order_by="category_name asc")
+    base_filters, _is_admin = _get_base_filters(user)
 
-    return {
-        "total_projects": total_projects,
-        "teams": teams,
-        "statuses": statuses,
-        "categories": categories,
-    }
+    # Fetch all statuses
+    statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="modified asc")
 
+    # Fetch projects
+    project_fields = ["name", "project_title", "status", "priority", "owner", "team", "start_date", "due_date", "creation"]
+    projects = frappe.get_all("Project", fields=project_fields, filters=base_filters, order_by="modified desc")
 
-@frappe.whitelist(allow_guest=True)
-def get_projects():
-    """Return paginated, filtered list of projects for the projects listing page.
-
-    Called by projects.html JS (team_update_tool.api.projects.get_projects).
-    Query params:
-      - limit (default 12)
-      - offset (default 0)
-      - search (text search)
-      - status (Project Status name)
-      - team (Team name)
-      - category (Project Category name)
-
-    Returns:
-      - projects: [{name, project_title, team, category_name, status, status_name,
-                    status_color, priority, screenshot_preview, modified, creation}]
-      - total
-      - offset
-      - has_more
-    """
-    data = frappe.local.form_dict
-
-    try:
-        limit = int(data.get("limit", 12))
-    except (ValueError, TypeError):
-        limit = 12
-    try:
-        offset = int(data.get("offset", 0))
-    except (ValueError, TypeError):
-        offset = 0
-
-    search = data.get("search", "")
-    status_filter = data.get("status", "")
-    team_filter = data.get("team", "")
-    category_filter = data.get("category", "")
-
-    # Build query filters
-    query_filters = []
-    if status_filter:
-        query_filters.append(["status", "=", status_filter])
-    if team_filter:
-        query_filters.append(["team", "=", team_filter])
-    if category_filter:
-        query_filters.append(["project_category", "=", category_filter])
-    if search:
-        query_filters.append(["project_title", "like", f"%{search}%"])
-
-    # Get total count with same filters
-    # (use get_all instead of count because list filters aren't supported by frappe.db.count)
-    total = len(frappe.get_all("Project", filters=query_filters if query_filters else None, limit_page_length=0))
-
-    projects = frappe.get_all(
-        "Project",
-        fields=["name", "project_title", "team", "project_category", "status", "priority", "modified", "creation"],
-        filters=query_filters if query_filters else None,
-        limit=limit,
-        offset=offset,
-        order_by="modified desc",
-    )
-
-    # Enrich with status info, team name, category name, and screenshot preview
-    project_list = []
     for p in projects:
-        # Status info
-        status_name = ""
-        status_color = "#6b7280"
-        if p.status:
-            try:
-                s = frappe.get_cached_doc("Project Status", p.status)
-                status_name = s.status_name
-                status_color = s.color
-            except Exception:
-                status_name = p.status
-
-        # Team name
-        team_name = p.team or ""
+        _enrich_project(p)
+        # Resolve team name
         if p.team:
             try:
                 t = frappe.get_cached_doc("Team", p.team)
-                team_name = t.team_name
+                p.team_name = t.team_name if hasattr(t, "team_name") else p.team
             except Exception:
-                pass
+                p.team_name = p.team
+        else:
+            p.team_name = ""
 
-        # Category name
-        category_name = ""
-        if p.project_category:
-            try:
-                cat = frappe.get_cached_doc("Project Category", p.project_category)
-                category_name = cat.category_name
-            except Exception:
-                category_name = p.project_category
+    # Group projects by status
+    columns = {}
+    for s in statuses:
+        col_key = s.status_name
+        columns[col_key] = {
+            "name": s.name,
+            "status_name": s.status_name,
+            "color": s.color or "#6b7280",
+            "projects": [],
+        }
+    for p in projects:
+        sname = p.get("status_name") or "Unknown"
+        if sname in columns:
+            columns[sname]["projects"].append(p)
+        else:
+            # Create a fallback column
+            columns[sname] = {
+                "name": p.get("status"),
+                "status_name": sname,
+                "color": "#6b7280",
+                "projects": [p],
+            }
 
-        # Screenshot preview (first screenshot of the project)
-        screenshot_preview = None
-        try:
-            first_ss = frappe.db.get_value("Project Screenshots",
-                {"parent": p.name, "parenttype": "Project", "parentfield": "screenshots"},
-                "screenshot",
-                order_by="idx asc")
-            if first_ss:
-                screenshot_preview = first_ss
-        except Exception:
-            pass
+    # Preserve status order
+    ordered = []
+    for s in statuses:
+        if s.status_name in columns:
+            ordered.append(columns.pop(s.status_name))
+    # Add any remaining (unknown) columns
+    for v in columns.values():
+        ordered.append(v)
 
-        project_list.append({
-            "name": p.name,
-            "project_title": p.project_title,
-            "team": team_name,
-            "category_name": category_name,
-            "status": p.status,
-            "status_name": status_name,
-            "status_color": status_color,
-            "priority": p.priority,
-            "screenshot_preview": screenshot_preview,
-            "modified": str(p.modified) if p.modified else None,
-            "creation": str(p.creation) if p.creation else None,
-        })
+    return ordered
 
-    has_more = (offset + limit) < total
+
+@frappe.whitelist()
+def update_project_status(project, status):
+    """Update a project's status (for Kanban drag-and-drop)."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    roles = frappe.get_roles(user)
+    is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) \
+        and "Team Update Admin" not in roles and "Admin" not in roles and "System Manager" not in roles
+    if is_viewer:
+        frappe.throw(_("Viewers cannot update project status."), frappe.PermissionError)
+
+    # Validate status exists
+    if not frappe.db.exists("Project Status", status):
+        frappe.throw(_("Invalid status."))
+
+    doc = frappe.get_doc("Project", project)
+    doc.status = status
+    doc.save(ignore_permissions=True)
+
+    frappe.db.commit()
+
+    status_info = _get_status_info(status)
+    return {"success": True, "status_name": status_info["status_name"], "color": status_info["color"]}
+
+
+# ---------------------------------------------------------------------------
+# Activity Feed
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_project_activity(project):
+    """Return unified activity feed for a project.
+
+    Combines:
+    - Frappe Comments (from the Comment doctype)
+    - Project Updates (from child table)
+    - Version change logs
+    Returns a chronological list sorted by date (newest first).
+    """
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    activities = []
+
+    # 1. Fetch comments from Frappe's Comment doctype
+    try:
+        comments = frappe.get_all("Comment",
+            filters={
+                "reference_doctype": "Project",
+                "reference_name": project,
+                "comment_type": ["in", ["Comment", "Info", "Assigned", "Unassigned"]],
+            },
+            fields=["name", "content", "comment_by", "comment_type", "creation"],
+            order_by="creation desc",
+            limit=50,
+        )
+        for c in comments:
+            activities.append({
+                "type": "comment",
+                "subtype": c.comment_type or "Comment",
+                "content": c.content,
+                "author": c.comment_by,
+                "date": str(c.creation),
+                "timestamp": c.creation.timestamp() if hasattr(c.creation, "timestamp") else 0,
+            })
+    except Exception:
+        pass
+
+    # 2. Fetch project updates (child table)
+    try:
+        updates = frappe.get_all("Project Update",
+            filters={"project": project},
+            fields=["name", "update_title", "update_description", "updated_by", "update_date", "creation"],
+            order_by="creation desc",
+            limit=50,
+        )
+        for u in updates:
+            activities.append({
+                "type": "update",
+                "subtype": "Update",
+                "title": u.update_title,
+                "content": u.update_description or "",
+                "author": u.updated_by or "System",
+                "date": str(u.update_date or u.creation),
+                "timestamp": u.creation.timestamp() if hasattr(u.creation, "timestamp") else 0,
+            })
+    except Exception:
+        pass
+
+    # 3. Fetch version logs (tracked changes)
+    try:
+        versions = frappe.get_all("Version",
+            filters={
+                "ref_doctype": "Project",
+                "docname": project,
+            },
+            fields=["name", "data", "modified_by", "creation"],
+            order_by="creation desc",
+            limit=50,
+        )
+        for v in versions:
+            change_summary = _summarize_version(v.data)
+            if change_summary:
+                activities.append({
+                    "type": "change",
+                    "subtype": "Status Change" if "status" in str(v.data).lower() else "Change",
+                    "content": change_summary,
+                    "author": v.modified_by,
+                    "date": str(v.creation),
+                    "timestamp": v.creation.timestamp() if hasattr(v.creation, "timestamp") else 0,
+                })
+    except Exception:
+        pass
+
+    # Sort by timestamp descending (newest first)
+    activities.sort(key=lambda a: a.get("timestamp", 0), reverse=True)
+
+    return activities[:100]
+
+
+def _summarize_version(data_json):
+    """Extract a human-readable summary from a Version data JSON."""
+    if not data_json:
+        return ""
+    try:
+        data = json.loads(data_json) if isinstance(data_json, str) else data_json
+        changed = data.get("changed", [])
+        summaries = []
+        for change in changed:
+            if len(change) >= 3:
+                field, old, new = change[0], change[1], change[2]
+                if old != new:
+                    summaries.append(f"{field}: {old or '(empty)'} \u2192 {new or '(empty)'}")
+        if summaries:
+            return "; ".join(summaries[:3])
+        return ""
+    except Exception:
+        return ""
+
+
+@frappe.whitelist()
+def add_activity_comment(project, comment):
+    """Add a comment to a project's activity feed using Frappe's built-in Comment doctype."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    if not comment or not comment.strip():
+        frappe.throw(_("Comment cannot be empty."))
+
+    doc = frappe.get_doc({
+        "doctype": "Comment",
+        "comment_type": "Comment",
+        "reference_doctype": "Project",
+        "reference_name": project,
+        "content": comment.strip(),
+        "comment_by": frappe.utils.get_fullname(user) or user,
+    })
+    doc.insert(ignore_permissions=True)
+
+    _notify_project_members(project, "New comment on project", comment.strip()[:100])
+
+    frappe.db.commit()
 
     return {
-        "projects": project_list,
-        "total": total,
-        "offset": offset,
-        "has_more": has_more,
+        "success": True,
+        "comment": {
+            "name": doc.name,
+            "content": doc.content,
+            "author": doc.comment_by,
+            "date": str(doc.creation),
+        }
     }
+
+
+@frappe.whitelist()
+def add_activity_update(project, title, description=None):
+    """Add a structured progress update to a project."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    if not title or not title.strip():
+        frappe.throw(_("Update title cannot be empty."))
+
+    doc = frappe.get_doc("Project", project)
+    row = doc.append("project_updates", {
+        "update_title": title.strip(),
+        "update_description": description.strip() if description else "",
+        "update_date": today(),
+        "updated_by": frappe.utils.get_fullname(user) or user,
+    })
+    doc.save(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {
+        "success": True,
+        "update": {
+            "name": row.name,
+            "update_title": row.update_title,
+            "update_description": row.update_description,
+            "update_date": str(row.update_date),
+            "updated_by": row.updated_by,
+        }
+    }
+
+
+def _notify_project_members(project, subject, message):
+    """Create notification log entries for project stakeholders."""
+    try:
+        owner = frappe.db.get_value("Project", project, "owner")
+        recipients = set()
+        if owner:
+            recipients.add(owner)
+
+        admins = frappe.get_all("Has Role",
+            filters={"role": ["in", ["Team Update Admin", "System Manager"]]},
+            pluck="parent"
+        )
+        for a in admins:
+            recipients.add(a)
+
+        for user in recipients:
+            if user == frappe.session.user:
+                continue
+            try:
+                nl = frappe.get_doc({
+                    "doctype": "Notification Log",
+                    "subject": subject[:140],
+                    "email_content": message,
+                    "for_user": user,
+                    "type": "Alert",
+                    "document_type": "Project",
+                    "document_name": project,
+                })
+                nl.insert(ignore_permissions=True, ignore_links=True)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+
+# ---------------------------------------------------------------------------
+# Time Tracking
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_time_logs(project):
+    """Return time log entries for a project."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    logs = frappe.get_all("Project Time Log",
+        filters={"project": project, "docstatus": ["<", 2]},
+        fields=["name", "log_date", "hours", "description", "owner", "creation"],
+        order_by="log_date desc, creation desc",
+        limit=200,
+    )
+
+    total = sum(float(l.hours or 0) for l in logs)
+
+    return {
+        "logs": logs,
+        "total_hours": round(total, 2),
+    }
+
+
+@frappe.whitelist()
+def add_time_log(project, hours, description=None, log_date=None):
+    """Add a time log entry for a project."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    try:
+        hours_val = float(hours)
+    except (TypeError, ValueError):
+        frappe.throw(_("Hours must be a valid number."))
+
+    if hours_val <= 0:
+        frappe.throw(_("Hours must be greater than 0."))
+    if hours_val > 24:
+        frappe.throw(_("Hours cannot exceed 24 in a single entry."))
+
+    if not log_date:
+        log_date = today()
+
+    doc = frappe.get_doc({
+        "doctype": "Project Time Log",
+        "project": project,
+        "hours": hours_val,
+        "description": (description or "").strip(),
+        "log_date": log_date,
+    })
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {
+        "success": True,
+        "log": {
+            "name": doc.name,
+            "log_date": str(doc.log_date),
+            "hours": doc.hours,
+            "description": doc.description,
+            "owner": doc.owner,
+        }
+    }
+
+
+@frappe.whitelist()
+def delete_time_log(name):
+    """Delete a time log entry."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    doc = frappe.get_doc("Project Time Log", name)
+
+    roles = frappe.get_roles(user)
+    is_admin = "System Manager" in roles or "Team Update Admin" in roles
+    if doc.owner != user and not is_admin:
+        frappe.throw(_("You can only delete your own time log entries."), frappe.PermissionError)
+
+    doc.delete(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {"success": True}

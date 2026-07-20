@@ -840,6 +840,326 @@
     50% { transform: scale(1.05); opacity: 0.8; }
 }
 
+/* =====================================
+   Activity Feed Styles
+   ===================================== */
+
+.erp-activity-composer {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.03), rgba(139, 92, 246, 0.02));
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1rem;
+    margin-bottom: 1rem;
+}
+
+.erp-activity-input {
+    width: 100%;
+    padding: 0.85rem 1rem;
+    border: none;
+    background: transparent;
+    font-size: 0.9rem;
+    color: var(--tut-text);
+    resize: vertical;
+    outline: none;
+    font-family: inherit;
+    min-height: 60px;
+}
+
+.erp-activity-input::placeholder {
+    color: var(--tut-text-light);
+}
+
+.erp-activity-composer-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1rem 0.75rem;
+    border-top: 1px solid var(--tut-royal-border);
+}
+
+.erp-activity-user {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: var(--tut-text-muted);
+}
+
+.erp-activity-user svg {
+    width: 14px;
+    height: 14px;
+    color: var(--tut-primary);
+}
+
+.erp-activity-submit {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0.45rem 1rem;
+    background: var(--tut-primary-gradient);
+    color: #fff;
+    border: none;
+    border-radius: 50rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.25);
+}
+
+.erp-activity-submit:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+}
+
+/* Activity Feed Items */
+.erp-activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.erp-activity-item {
+    display: flex;
+    gap: 0.75rem;
+    padding: 0.85rem 1rem;
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.02), transparent);
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.erp-activity-item:hover {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.05), rgba(139, 92, 246, 0.02));
+    border-color: rgba(139, 92, 246, 0.25);
+}
+
+.erp-activity-avatar {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.erp-activity-avatar svg {
+    width: 16px;
+    height: 16px;
+}
+
+.erp-activity-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.erp-activity-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.15rem;
+    font-size: 0.82rem;
+    color: var(--tut-text);
+}
+
+.erp-activity-subtype {
+    font-size: 0.7rem;
+    padding: 1px 8px;
+    border-radius: 50rem;
+    background: rgba(124, 58, 237, 0.08);
+    color: var(--tut-primary);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.erp-activity-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #1e1b4b;
+    margin-bottom: 0.15rem;
+}
+
+.erp-activity-content {
+    font-size: 0.85rem;
+    color: #475569;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.erp-activity-time {
+    font-size: 0.72rem;
+    color: var(--tut-text-light);
+    margin-top: 0.25rem;
+}
+
+/* =====================================
+   Time Tracking Styles
+   ===================================== */
+
+.erp-time-summary {
+    text-align: center;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    border-bottom: 1px solid var(--tut-royal-border);
+}
+
+.erp-time-total-hours {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0891b2;
+    line-height: 1.1;
+}
+
+.erp-time-total-label {
+    font-size: 0.75rem;
+    color: var(--tut-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+}
+
+.erp-time-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin-bottom: 1rem;
+}
+
+.erp-time-form-row {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.erp-time-input {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 0.5rem;
+    font-size: 0.82rem;
+    color: var(--tut-text);
+    background: #fff;
+    outline: none;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.erp-time-input:focus {
+    border-color: var(--tut-primary);
+    box-shadow: 0 0 0 2px rgba(124, 58, 237, 0.1);
+}
+
+.erp-time-input[type="number"] {
+    width: 80px;
+}
+
+.erp-time-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0.55rem;
+    background: linear-gradient(135deg, #0891b2, #06b6d4);
+    color: #fff;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(8, 145, 178, 0.25);
+}
+
+.erp-time-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(8, 145, 178, 0.35);
+}
+
+.erp-time-logs {
+    max-height: 240px;
+    overflow-y: auto;
+}
+
+.erp-time-logs::-webkit-scrollbar {
+    width: 3px;
+}
+
+.erp-time-logs::-webkit-scrollbar-thumb {
+    background: rgba(124, 58, 237, 0.2);
+    border-radius: 2px;
+}
+
+.erp-time-log-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.65rem;
+    background: rgba(8, 145, 178, 0.04);
+    border: 1px solid rgba(8, 145, 178, 0.1);
+    border-radius: 0.5rem;
+    margin-bottom: 0.4rem;
+    transition: all 0.15s ease;
+}
+
+.erp-time-log-item:hover {
+    background: rgba(8, 145, 178, 0.08);
+    border-color: rgba(8, 145, 178, 0.2);
+}
+
+.erp-time-log-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.erp-time-log-hours {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #0891b2;
+    white-space: nowrap;
+}
+
+.erp-time-log-desc {
+    font-size: 0.78rem;
+    color: var(--tut-text);
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.erp-time-log-date {
+    font-size: 0.7rem;
+    color: var(--tut-text-light);
+    white-space: nowrap;
+}
+
+.erp-time-log-delete {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    border: none;
+    background: transparent;
+    color: var(--tut-text-light);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.15s ease;
+}
+
+.erp-time-log-delete:hover {
+    background: rgba(220, 38, 38, 0.1);
+    color: #dc2626;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
     .erp-page-header {
@@ -1301,6 +1621,89 @@ function renderProject(p) {
 
     html += '</div></div>';
 
+    // =============================================
+    // Activity Feed Section
+    // =============================================
+    html += '<div class="erp-card" id="activityFeedSection">' +
+        '<div class="erp-card-header">' +
+            '<div class="erp-card-icon cyan">' +
+                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+            '</div>' +
+            '<div>' +
+                '<h3 class="erp-card-title">Activity Feed</h3>' +
+                '<p class="erp-card-subtitle">Comments, updates &amp; changes</p>' +
+            '</div>' +
+            '<div class="erp-card-actions" style="margin-left:auto;">' +
+                '<button class="erp-download-btn" onclick="showAddUpdateModal()" style="background:var(--tut-info-gradient);font-size:0.75rem;padding:0.5rem 1rem;">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                    'Add Update' +
+                '</button>' +
+            '</div>' +
+        '</div>' +
+        '<div class="erp-card-body">' +
+            '<div class="erp-activity-composer">' +
+                '<textarea class="erp-activity-input" id="commentInput" placeholder="Write a comment..." rows="2"></textarea>' +
+                '<div class="erp-activity-composer-footer">' +
+                    '<div class="erp-activity-user">' +
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>' +
+                        '<span>Commenting as you</span>' +
+                    '</div>' +
+                    '<button class="erp-activity-submit" onclick="submitComment()">' +
+                        '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>' +
+                        'Send' +
+                    '</button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="erp-activity-feed" id="activityFeed">' +
+                '<div class="erp-empty-section">' +
+                    '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+                    '<p>Loading activity...</p>' +
+                '</div>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+
+    // =============================================
+    // Time Tracking Section
+    // =============================================
+
+    // Time Tracking Card
+    html += '<div class="erp-card" id="timeTrackingSection">' +
+        '<div class="erp-card-header">' +
+            '<div class="erp-card-icon cyan">' +
+                '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>' +
+            '</div>' +
+            '<div>' +
+                '<h3 class="erp-card-title">Time Tracking</h3>' +
+                '<p class="erp-card-subtitle">Log hours worked on this project</p>' +
+            '</div>' +
+        '</div>' +
+        '<div class="erp-card-body">' +
+            '<div class="erp-time-summary">' +
+                '<div class="erp-time-total">' +
+                    '<span class="erp-time-total-hours" id="totalHoursDisplay">' + (p.total_hours_logged || '0') + '</span>' +
+                    '<span class="erp-time-total-label">Total Hours Logged</span>' +
+                '</div>' +
+            '</div>' +
+            '<div class="erp-time-form">' +
+                '<div class="erp-time-form-row">' +
+                    '<input type="number" class="erp-time-input" id="timeHoursInput" placeholder="Hours" min="0.5" max="24" step="0.5">' +
+                    '<input type="date" class="erp-time-input" id="timeDateInput" style="flex:1;">' +
+                '</div>' +
+                '<input type="text" class="erp-time-input" id="timeDescInput" placeholder="What did you work on?" style="width:100%;">' +
+                '<button class="erp-time-btn" onclick="logTime()">' +
+                    '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+                    'Log Time' +
+                '</button>' +
+            '</div>' +
+            '<div class="erp-time-logs" id="timeLogsList">' +
+                '<p class="text-muted" style="font-size:0.8rem;text-align:center;padding:1rem 0;">Loading time logs...</p>' +
+            '</div>' +
+        '</div>' +
+    '</div>';
+
+    html += '</div>';  // close the full-width container
+
     // Update breadcrumb
     document.getElementById('breadcrumbTitle').textContent = p.project_title;
     document.title = p.project_title + ' - Team Update Tool';
@@ -1309,6 +1712,309 @@ function renderProject(p) {
     if (loading) loading.remove();
     document.getElementById('projectDetail').innerHTML = html;
     document.getElementById('projectDetail').style.display = 'block';
+
+    // Load activity feed
+    loadActivity(p.name);
+    // Load time logs
+    loadTimeLogs(p.name);
+    // Set today's date on time input
+    var dateInput = document.getElementById('timeDateInput');
+    if (dateInput) {
+      dateInput.value = new Date().toISOString().split('T')[0];
+    }
+}
+
+// =============================================
+// Activity Feed Functions
+// =============================================
+
+var currentProjectName = '';
+
+function loadActivity(projectName) {
+  currentProjectName = projectName;
+  frappe.call({
+    method: 'team_update_tool.api.projects.get_project_activity',
+    args: { project: projectName },
+    callback: function(r) {
+      var feed = document.getElementById('activityFeed');
+      if (!feed) return;
+      if (r.message && r.message.length) {
+        feed.innerHTML = '';
+        r.message.forEach(function(a) {
+          feed.appendChild(createActivityItem(a));
+        });
+      } else {
+        feed.innerHTML = '' +
+          '<div class="erp-empty-section">' +
+            '<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>' +
+            '<p>No activity yet. Be the first to comment!</p>' +
+          '</div>';
+      }
+    },
+    error: function() {
+      var feed = document.getElementById('activityFeed');
+      if (feed) {
+        feed.innerHTML = '<div class="erp-empty-section"><p>Failed to load activity.</p></div>';
+      }
+    }
+  });
+}
+
+function createActivityItem(a) {
+  var el = document.createElement('div');
+  el.className = 'erp-activity-item';
+
+  var icon = '';
+  var iconBg = '';
+  if (a.type === 'comment') {
+    icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+    iconBg = 'background:rgba(124,58,237,0.1);color:#7c3aed;';
+  } else if (a.type === 'update') {
+    icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>';
+    iconBg = 'background:rgba(5,150,105,0.1);color:#059669;';
+  } else {
+    icon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
+    iconBg = 'background:rgba(217,119,6,0.1);color:#d97706;';
+  }
+
+  var timeAgo = getTimeAgo(a.date);
+  var author = escHtml(a.author || 'System');
+  var content = '';
+
+  if (a.type === 'update' && a.title) {
+    content = '<div class="erp-activity-title">' + escHtml(a.title) + '</div>';
+  }
+  if (a.content) {
+    content += '<div class="erp-activity-content">' + escHtml(a.content) + '</div>';
+  }
+
+  el.innerHTML = '' +
+    '<div class="erp-activity-avatar" style="' + iconBg + '">' + icon + '</div>' +
+    '<div class="erp-activity-body">' +
+      '<div class="erp-activity-header">' +
+        '<strong>' + author + '</strong>' +
+        '<span class="erp-activity-subtype">' + escHtml(a.subtype || a.type) + '</span>' +
+      '</div>' +
+      content +
+      '<div class="erp-activity-time">' + timeAgo + '</div>' +
+    '</div>';
+
+  return el;
+}
+
+function getTimeAgo(dateStr) {
+  if (!dateStr) return '';
+  var now = new Date();
+  var d = new Date(dateStr);
+  var diff = Math.floor((now - d) / 1000);
+  if (diff < 60) return 'just now';
+  if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+  if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+  if (diff < 604800) return Math.floor(diff / 86400) + 'd ago';
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function submitComment() {
+  var input = document.getElementById('commentInput');
+  if (!input || !input.value.trim()) return;
+  var comment = input.value.trim();
+  input.disabled = true;
+
+  frappe.call({
+    method: 'team_update_tool.api.projects.add_activity_comment',
+    args: {
+      project: currentProjectName,
+      comment: comment
+    },
+    callback: function(r) {
+      input.value = '';
+      input.disabled = false;
+      input.focus();
+      if (r.message && r.message.success) {
+        loadActivity(currentProjectName);
+      }
+    },
+    error: function() {
+      input.disabled = false;
+      tutToast('Failed to post comment', 'error');
+    }
+  });
+}
+
+// Allow Ctrl+Enter to submit comment
+document.addEventListener('keydown', function(e) {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    var active = document.activeElement;
+    if (active && active.id === 'commentInput') {
+      e.preventDefault();
+      submitComment();
+    }
+  }
+});
+
+function showAddUpdateModal() {
+  var overlay = document.createElement('div');
+  overlay.className = 'tut-modal-overlay';
+  overlay.innerHTML = '' +
+    '<div style="background:#fff;border-radius:1rem;padding:1.5rem;max-width:480px;width:90%;box-shadow:0 20px 60px rgba(0,0,0,0.15);animation:tutModalSlide 0.25s ease;">' +
+      '<h5 class="fw-bold mb-1">Add Progress Update</h5>' +
+      '<p class="text-muted" style="font-size:0.85rem;margin-bottom:1rem;">Post a structured update about this project</p>' +
+      '<div class="mb-3">' +
+        '<label class="form-label small fw-semibold">Title *</label>' +
+        '<input type="text" class="form-control" id="updateTitleInput" placeholder="e.g. Completed frontend implementation">' +
+      '</div>' +
+      '<div class="mb-3">' +
+        '<label class="form-label small fw-semibold">Description</label>' +
+        '<textarea class="form-control" id="updateDescInput" rows="3" placeholder="Describe what was done..."></textarea>' +
+      '</div>' +
+      '<div class="d-flex gap-2 justify-content-end">' +
+        '<button class="btn btn-outline-secondary btn-sm" onclick="this.closest(\'.tut-modal-overlay\').remove()">Cancel</button>' +
+        '<button class="btn btn-primary btn-sm" id="submitUpdateBtn" onclick="submitUpdate()">Post Update</button>' +
+      '</div>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', function(e) { if (e.target === overlay) overlay.remove(); });
+  setTimeout(function() {
+    document.getElementById('updateTitleInput').focus();
+  }, 100);
+}
+
+function submitUpdate() {
+  var title = document.getElementById('updateTitleInput').value.trim();
+  var desc = document.getElementById('updateDescInput').value.trim();
+  if (!title) {
+    tutToast('Please enter a title for the update.', 'warning');
+    return;
+  }
+  var btn = document.getElementById('submitUpdateBtn');
+  btn.disabled = true;
+  btn.textContent = 'Posting...';
+
+  frappe.call({
+    method: 'team_update_tool.api.projects.add_activity_update',
+    args: {
+      project: currentProjectName,
+      title: title,
+      description: desc
+    },
+    callback: function(r) {
+      var modal = btn.closest('.tut-modal-overlay');
+      if (modal) modal.remove();
+      if (r.message && r.message.success) {
+        tutToast('Update posted successfully!', 'success');
+        loadActivity(currentProjectName);
+      }
+    },
+    error: function() {
+      btn.disabled = false;
+      btn.textContent = 'Post Update';
+      tutToast('Failed to post update', 'error');
+    }
+  });
+}
+
+// =============================================
+// Time Tracking Functions
+// =============================================
+
+function loadTimeLogs(projectName) {
+  frappe.call({
+    method: 'team_update_tool.api.projects.get_time_logs',
+    args: { project: projectName },
+    callback: function(r) {
+      var list = document.getElementById('timeLogsList');
+      var totalDisplay = document.getElementById('totalHoursDisplay');
+      if (!list) return;
+
+      if (r.message) {
+        if (totalDisplay) {
+          totalDisplay.textContent = r.message.total_hours || '0';
+        }
+        if (r.message.logs && r.message.logs.length) {
+          var html = '';
+          r.message.logs.forEach(function(log) {
+            html += '' +
+              '<div class="erp-time-log-item">' +
+                '<div class="erp-time-log-info">' +
+                  '<span class="erp-time-log-hours">' + log.hours + 'h</span>' +
+                  '<span class="erp-time-log-desc">' + escHtml(log.description || 'No description') + '</span>' +
+                  '<span class="erp-time-log-date">' + formatDate(log.log_date) + '</span>' +
+                '</div>' +
+                '<button class="erp-time-log-delete" onclick="deleteTimeLog(\'' + log.name + '\')" title="Delete">' +
+                  '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>' +
+                '</button>' +
+              '</div>';
+          });
+          list.innerHTML = html;
+        } else {
+          list.innerHTML = '<p class="text-muted" style="font-size:0.8rem;text-align:center;padding:1rem 0;">No time logged yet</p>';
+        }
+      }
+    },
+    error: function() {
+      var list = document.getElementById('timeLogsList');
+      if (list) {
+        list.innerHTML = '<p class="text-muted" style="font-size:0.8rem;text-align:center;padding:1rem 0;">Failed to load time logs</p>';
+      }
+    }
+  });
+}
+
+function logTime() {
+  var hours = document.getElementById('timeHoursInput').value;
+  var desc = document.getElementById('timeDescInput').value.trim();
+  var logDate = document.getElementById('timeDateInput').value;
+
+  if (!hours || parseFloat(hours) <= 0) {
+    tutToast('Please enter valid hours.', 'warning');
+    return;
+  }
+  if (parseFloat(hours) > 24) {
+    tutToast('Hours cannot exceed 24.', 'warning');
+    return;
+  }
+
+  frappe.call({
+    method: 'team_update_tool.api.projects.add_time_log',
+    args: {
+      project: currentProjectName,
+      hours: parseFloat(hours),
+      description: desc,
+      log_date: logDate || undefined
+    },
+    callback: function(r) {
+      if (r.message && r.message.success) {
+        document.getElementById('timeHoursInput').value = '';
+        document.getElementById('timeDescInput').value = '';
+        tutToast('Time logged successfully!', 'success');
+        loadTimeLogs(currentProjectName);
+        // Also reload to update total on sidebar
+        setTimeout(function() {
+          loadProject(currentProjectName);
+        }, 1000);
+      }
+    },
+    error: function() {
+      tutToast('Failed to log time', 'error');
+    }
+  });
+}
+
+function deleteTimeLog(name) {
+  if (!confirm('Delete this time log entry?')) return;
+  frappe.call({
+    method: 'team_update_tool.api.projects.delete_time_log',
+    args: { name: name },
+    callback: function(r) {
+      if (r.message && r.message.success) {
+        tutToast('Time log deleted', 'success');
+        loadTimeLogs(currentProjectName);
+      }
+    },
+    error: function() {
+      tutToast('Failed to delete time log', 'error');
+    }
+  });
 }
 
 // Download README function
