@@ -4,8 +4,8 @@
 **Version:** 1.0.0  
 **Compatibility:** Frappe Framework v15+ / ERPNext v15+  
 **Repository:** https://github.com/balaji-001-gif/team_update_tool.git  
-**Document Version:** 2.1  
-**Last Updated:** July 16, 2026
+**Document Version:** 2.2  
+**Last Updated:** July 21, 2026
 
 ---
 
@@ -799,10 +799,93 @@ bench --site your-site restore /path/to/backup/file
 
 ---
 
+## 23. Complete Fix Instructions (Troubleshooting Directory Rebuild)
+
+If you encounter issues where DocTypes are not showing up correctly, or if you need to completely re-sync all DocTypes, follow these steps.
+
+### 23.1 Pull Latest Changes
+```bash
+cd ~/frappe-bench-v15/apps/team_update_tool
+git pull origin main
+cd ../..
+```
+
+### 23.2 Delete All Old Doctype Records Using SQL
+
+Run the bench console:
+```bash
+bench --site [your-site-name] console
+```
+
+Then paste this and press Enter:
+```python
+frappe.db.sql("""
+DELETE FROM `tabDocType` WHERE name IN (
+    'Team', 'Team Member', 'Technology', 'Project Category', 'Project Status',
+    'Project', 'Project Update', 'Project Files', 'Project Screenshots', 'Project Technology',
+    'GitHub Repository',
+    'Project Summary Report', 'Team Activity Report', 'Completed Projects Report', 'GitHub Repository Report',
+    'New Project Uploaded', 'Project Approved', 'Project Status Updated',
+    'Team Update Tool'
+)
+""")
+frappe.db.commit()
+exit()
+```
+
+### 23.3 Migrate to Re-sync All Doctypes
+```bash
+bench --site [your-site-name] migrate
+```
+
+### 23.4 Restart
+```bash
+bench restart
+```
+
+### 23.5 Clear Browser Cache
+Press **Ctrl+Shift+R** (or **Cmd+Shift+R** on Mac) in your browser.
+
+### 23.6 Alternative: MySQL Direct Approach
+
+If the bench console approach doesn't work, try running directly in MySQL:
+
+```bash
+mysql -u root -p [your_password] [sitename]
+```
+
+Then:
+```sql
+USE [databasename];
+DELETE FROM `tabDocType` WHERE name IN (
+    'Team', 'Team Member', 'Technology', 'Project Category', 'Project Status',
+    'Project', 'Project Update', 'Project Files', 'Project Screenshots', 'Project Technology',
+    'GitHub Repository',
+    'Project Summary Report', 'Team Activity Report', 'Completed Projects Report', 'GitHub Repository Report',
+    'New Project Uploaded', 'Project Approved', 'Project Status Updated',
+    'Team Update Tool'
+);
+DELETE FROM `tabPropertySetter` WHERE doc_type IN (
+    'Team', 'Team Member', 'Technology', 'Project Category', 'Project Status',
+    'Project', 'Project Update', 'Project Files', 'Project Screenshots', 'Project Technology',
+    'GitHub Repository',
+    'Project Summary Report', 'Team Activity Report', 'Completed Projects Report', 'GitHub Repository Report',
+    'New Project Uploaded', 'Project Approved', 'Project Status Updated',
+    'Team Update Tool'
+);
+FLUSH TABLES;
+EXIT;
+```
+
+Then run `bench --site [your-site-name] migrate`.
+
+---
+
 ## Document Control
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 2.2 | July 21, 2026 | System | Added Section 23 with complete fix instructions for DocType re-sync |
 | 2.1 | July 16, 2026 | System | Added install.py details, rename_roles migration patch notes, and updated role names throughout |
 | 2.0 | July 7, 2026 | System | Complete rewrite for role-based task management workflow with 4 roles |
 | 1.0 | July 7, 2026 | System | Initial SOP document created |
