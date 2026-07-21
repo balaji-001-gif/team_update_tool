@@ -1412,7 +1412,14 @@ function loadProject(name) {
                 console.log('Project data:', data.message);
                 console.log('Files:', data.message.files);
                 console.log('GitHub:', data.message.github_repository);
-                renderProject(data.message);
+                try {
+                    renderProject(data.message);
+                } catch (e) {
+                    console.error('RENDER ERROR:', e, e.stack);
+                    document.getElementById('projectLoading').style.display = 'none';
+                    document.getElementById('projectError').style.display = 'flex';
+                    document.getElementById('errorMsg').textContent = 'Error rendering project: ' + (e.message || 'Unknown error') + '. Check console for details.';
+                }
             } else if (data.exc) {
                 document.getElementById('projectLoading').style.display = 'none';
                 document.getElementById('projectError').style.display = 'flex';
@@ -1850,20 +1857,19 @@ function renderProject(p) {
     document.getElementById('projectDetail').innerHTML = html;
     document.getElementById('projectDetail').style.display = 'block';
 
-    // Render mini Gantt chart for team timeline
-    if (p.team_projects) {
-        renderMiniGantt(p.team_projects, p.name);
+    // Post-render initializations (wrapped in try-catch for resilience)
+    try {
+        if (p.team_projects) {
+            renderMiniGantt(p.team_projects, p.name);
+        }
+        if (window._canChangeStatus) {
+            loadStatusOptions(sname);
+        }
+        loadActivity(p.name);
+        loadTimeLogs(p.name);
+    } catch (e) {
+        console.error('Post-render error:', e, e.stack);
     }
-
-    // Populate status dropdown if user can change status
-    if (window._canChangeStatus) {
-        loadStatusOptions(sname);
-    }
-
-    // Load activity feed
-    loadActivity(p.name);
-    // Load time logs
-    loadTimeLogs(p.name);
     // Set today's date on time input
     var dateInput = document.getElementById('timeDateInput');
     if (dateInput) {
