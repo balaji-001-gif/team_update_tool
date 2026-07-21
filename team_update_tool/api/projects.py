@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 import json
+from datetime import date, datetime
 
 import frappe
 from frappe import _
@@ -689,6 +690,40 @@ def get_project_detail(name):
         project.name
     )[0][0] or 0
 
+    # Team projects for mini Gantt chart
+    team_projects = []
+    if project.team:
+        try:
+            team_projects_data = frappe.get_all(
+                "Project",
+                fields=["name", "project_title", "status", "start_date", "due_date", "completion_date"],
+                filters={"team": project.team},
+                order_by="start_date asc",
+            )
+            for tp in team_projects_data:
+                tp_status_info = _get_status_info(tp.status or "")
+                is_overdue = False
+                if tp.due_date and not tp.completion_date:
+                    if isinstance(tp.due_date, str):
+                        due = datetime.strptime(tp.due_date, "%Y-%m-%d").date()
+                    else:
+                        due = tp.due_date
+                    if due < date.today():
+                        is_overdue = True
+                team_projects.append({
+                    "name": tp.name,
+                    "title": tp.project_title,
+                    "start_date": str(tp.start_date) if tp.start_date else None,
+                    "due_date": str(tp.due_date) if tp.due_date else None,
+                    "completion_date": str(tp.completion_date) if tp.completion_date else None,
+                    "status_color": tp_status_info["color"],
+                    "status_name": tp_status_info["status_name"],
+                    "is_overdue": is_overdue,
+                    "is_current": tp.name == project.name,
+                })
+        except Exception:
+            pass
+
     return {
         "name": project.name,
         "project_title": project.project_title,
@@ -714,6 +749,7 @@ def get_project_detail(name):
         "readme": readme,
         "total_hours_logged": total_hours,
         "is_owner": project.owner == user,
+        "team_projects": team_projects,
     }
 
 
@@ -1118,3 +1154,111 @@ def delete_time_log(name):
     frappe.db.commit()
 
     return {"success": True}
+
+
+# ---------------------------------------------------------------------------
+# Gantt Chart
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_gantt_data():
+    """Return project data formatted for the Gantt chart view.
+
+    Returns a dict with:
+      - projects: list of project dicts with name, title, start, end, progress, status info, team
+      - statuses: all project statuses for color coding
+      - teams: all active teams
+      - min_date: earliest start_date across projects
+      - max_date: latest due_date across projects
+    """
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    base_filters, _is_admin = _get_base_filters(user)
+
+    projects = frappe.get_all(
+        "Project",
+        fields=["name", "project_title", "status", "priority", "team", "start_date", "due_date", "completion_date", "creation"],
+        filters=base_filters,
+        order_by="start_date asc, due_date asc",
+    )
+
+    project_list = []
+    min_date = None
+    max_date = None
+    today_date = date.today()
+
+    for p in projects:
+        # Resolve status info
+        status_info = _get_status_info(p.status or "")
+
+        # Calculate progress (0-100) based on completion_date
+        progress = 0
+        is_overdue = False
+        if p.completion_date:
+            progress = 100
+        elif p.due_date:
+            if isinstance(p.due_date, str):
+                due = datetime.strptime(p.due_date, "%Y-%m-%d").date()
+            else:
+                due = p.due_date
+            if due < today_date:
+                is_overdue = True
+            # Estimate progress based on time elapsed if we have start_date
+            if p.start_date and not p.completion_date:
+                if isinstance(p.start_date, str):
+                    start = datetime.strptime(p.start_date, "%Y-%m-%d").date()
+                else:
+                    start = p.start_date
+                total_days = (due - start).days
+                if total_days > 0:
+                    elapsed = (today_date - start).days
+                    progress = min(max(round((elapsed / total_days) * 100), 5), 95)
+
+        # Resolve team name
+        team_name = ""
+        if p.team:
+            try:
+                t = frappe.get_cached_doc("Team", p.team)
+                team_name = t.team_name if hasattr(t, "team_name") else p.team
+            except Exception:
+                team_name = p.team
+
+        start_str = str(p.start_date) if p.start_date else None
+        due_str = str(p.due_date) if p.due_date else None
+
+        # Track date range
+        if start_str:
+            if min_date is None or start_str < min_date:
+                min_date = start_str
+        if due_str:
+            if max_date is None or due_str > max_date:
+                max_date = due_str
+
+        project_list.append({
+            "name": p.name,
+            "title": p.project_title,
+            "start_date": start_str,
+            "due_date": due_str,
+            "completion_date": str(p.completion_date) if p.completion_date else None,
+            "status": status_info["status_name"],
+            "status_color": status_info["color"],
+            "priority": p.priority or "Medium",
+            "team": team_name,
+            "team_raw": p.team or "",
+            "progress": progress,
+            "is_overdue": is_overdue,
+        })
+
+    # Get filter options
+    statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
+    teams = frappe.get_all("Team", fields=["name", "team_name"], filters={"is_active": 1}, order_by="team_name asc")
+
+    return {
+        "projects": project_list,
+        "statuses": [{"name": s.status_name, "color": s.color or "#6b7280"} for s in statuses],
+        "teams": [{"name": t.name, "team_name": t.team_name} for t in teams],
+        "min_date": min_date,
+        "max_date": max_date,
+    }
