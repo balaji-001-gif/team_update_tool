@@ -825,16 +825,24 @@ def get_kanban_projects():
 
 @frappe.whitelist()
 def update_project_status(project, status):
-    """Update a project's status (for Kanban drag-and-drop)."""
+    """Update a project's status (for Kanban drag-and-drop and inline status change).
+
+    Only Team Update Admin, Team Update Team Leader, and System Manager can change status.
+    """
     user = frappe.session.user
     if user == "Guest":
         frappe.throw(_("Please log in."), frappe.PermissionError)
 
     roles = frappe.get_roles(user)
+    is_admin = "System Manager" in roles or "Team Update Admin" in roles
+    is_team_leader = "Team Update Team Leader" in roles
+    is_team_member_only = "Team Update Team Member" in roles \
+        and not is_admin and not is_team_leader
     is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) \
-        and "Team Update Admin" not in roles and "Admin" not in roles and "System Manager" not in roles
-    if is_viewer:
-        frappe.throw(_("Viewers cannot update project status."), frappe.PermissionError)
+        and not is_admin
+
+    if is_viewer or is_team_member_only:
+        frappe.throw(_("You do not have permission to update project status."), frappe.PermissionError)
 
     # Validate status exists
     if not frappe.db.exists("Project Status", status):
@@ -1262,3 +1270,116 @@ def get_gantt_data():
         "min_date": min_date,
         "max_date": max_date,
     }
+
+
+# ---------------------------------------------------------------------------
+# Milestone API
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_milestones():
+    """Return all milestones for the Gantt chart view.
+
+    Returns a list of milestone dicts with:
+      - name, title, date, type, color, description, project
+    """
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    try:
+        milestones = frappe.get_all("Project Milestone",
+            fields=["name", "milestone_title", "milestone_date", "milestone_type", "color", "description", "project"],
+            order_by="milestone_date asc",
+        )
+
+        result = []
+        for m in milestones:
+            result.append({
+                "name": m.name,
+                "title": m.milestone_title,
+                "date": str(m.milestone_date) if m.milestone_date else None,
+                "type": m.milestone_type or "Milestone",
+                "color": m.color or "#f59e0b",
+                "description": m.description or "",
+                "project": m.project,
+            })
+        return result
+    except Exception:
+        # Doctype might not exist yet (before migrate), return empty
+        return []
+
+
+@frappe.whitelist()
+def add_milestone():
+    """Add a new milestone.
+
+    Expects POST data with:
+      - title (required)
+      - date (required, YYYY-MM-DD)
+      - milestone_type
+      - color
+      - description
+      - project (optional, link to a project)
+    """
+    data = frappe.local.form_dict
+
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    title = data.get("title")
+    milestone_date = data.get("date")
+
+    if not title:
+        frappe.throw(_("Milestone title is required."))
+    if not milestone_date:
+        frappe.throw(_("Milestone date is required."))
+
+    doc = frappe.get_doc({
+        "doctype": "Project Milestone",
+        "milestone_title": title.strip(),
+        "milestone_date": milestone_date,
+        "milestone_type": data.get("milestone_type") or "Milestone",
+        "color": data.get("color") or "#f59e0b",
+        "description": (data.get("description") or "").strip(),
+        "project": data.get("project") or None,
+    })
+    doc.insert(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {
+        "success": True,
+        "milestone": {
+            "name": doc.name,
+            "title": doc.milestone_title,
+            "date": str(doc.milestone_date),
+            "type": doc.milestone_type or "Milestone",
+            "color": doc.color or "#f59e0b",
+            "description": doc.description or "",
+            "project": doc.project,
+        }
+    }
+
+
+@frappe.whitelist()
+def delete_milestone(name):
+    """Delete a milestone."""
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    if not frappe.db.exists("Project Milestone", name):
+        frappe.throw(_("Milestone not found."))
+
+    roles = frappe.get_roles(user)
+    is_admin = "System Manager" in roles or "Team Update Admin" in roles
+
+    doc = frappe.get_doc("Project Milestone", name)
+    if doc.owner != user and not is_admin:
+        frappe.throw(_("You can only delete your own milestones."), frappe.PermissionError)
+
+    doc.delete(ignore_permissions=True)
+    frappe.db.commit()
+
+    return {"success": True}

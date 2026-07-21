@@ -40,9 +40,15 @@ def get_context(context):
 			context.page_error = "You do not have permission to view this project."
 			return
 
+	# Role-based permissions
+	is_admin = "System Manager" in roles or "Team Update Admin" in roles
+	is_team_leader = "Team Update Team Leader" in roles and not is_admin
+
 	context.project = project
 	context.is_logged_in = user != "Guest"
 	context.is_viewer = is_viewer
+	context.is_admin = is_admin
+	context.is_team_leader = is_team_leader
 	context.is_owner = project.owner == user
 
 	# Status info

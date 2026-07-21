@@ -184,6 +184,81 @@
 }
 .gantt-today-btn svg { width: 14px; height: 14px; }
 
+/* Export Buttons */
+.gantt-export-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid var(--gantt-border);
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: var(--gantt-transition);
+  white-space: nowrap;
+}
+.gantt-export-btn:hover {
+  border-color: var(--tut-primary);
+  background: rgba(124, 58, 237, 0.04);
+  color: var(--tut-primary);
+}
+.gantt-export-btn svg {
+  width: 16px;
+  height: 16px;
+}
+.gantt-export-btn.gantt-export-csv:hover {
+  border-color: #22c55e;
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.06);
+}
+.gantt-export-btn.gantt-export-pdf:hover {
+  border-color: #ef4444;
+  color: #b91c1c;
+  background: rgba(239, 68, 68, 0.06);
+}
+.gantt-export-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--gantt-border);
+  flex-shrink: 0;
+}
+
+/* Print Styles for PDF Export */
+@media print {
+  .gantt-header,
+  .gantt-controls,
+  .gantt-legend,
+  .gantt-summary,
+  .gantt-today-btn,
+  .gantt-export-btn,
+  .gantt-export-divider,
+  .gantt-zoom-group,
+  .gantt-search,
+  .gantt-filter-select,
+  .gantt-loading,
+  .gantt-error { display: none !important; }
+  .gantt-page {
+    position: static;
+    padding: 0;
+    min-height: auto;
+    background: #fff;
+  }
+  .gantt-chart-wrapper {
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .gantt-chart-scroll {
+    max-height: none;
+    overflow: visible;
+  }
+  .gantt-chart-wrapper { page-break-inside: avoid; }
+  @page { margin: 0.5in; }
+}
+
 /* Legend */
 .gantt-legend {
   display: flex;
@@ -507,6 +582,299 @@
 .gantt-tooltip-label { color: rgba(255,255,255,0.65); }
 .gantt-tooltip-value { color: #fff; font-weight: 600; }
 
+/* Milestone Diamond Marker */
+.gantt-milestone-marker {
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+.gantt-milestone-marker:hover {
+  transform: scale(1.3);
+}
+.gantt-milestone-diamond {
+  transform-origin: center;
+}
+.gantt-milestone-label {
+  pointer-events: none;
+}
+
+/* Milestone Panel */
+.gantt-milestones-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.5rem 1rem;
+  background: #fff;
+  border: 1px solid var(--gantt-border);
+  border-radius: 0.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: var(--gantt-transition);
+  white-space: nowrap;
+}
+.gantt-milestones-toggle:hover {
+  border-color: #f59e0b;
+  color: #b45309;
+  background: rgba(245, 158, 11, 0.06);
+}
+.gantt-milestones-toggle.active {
+  border-color: #f59e0b;
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+.gantt-milestones-toggle svg { width: 16px; height: 16px; }
+
+/* Milestone Side Panel */
+.gantt-milestone-panel {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 320px;
+  height: 100%;
+  background: #fff;
+  border-left: 1px solid var(--gantt-border);
+  box-shadow: -4px 0 20px rgba(0,0,0,0.06);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  animation: panelSlideIn 0.2s ease;
+}
+@keyframes panelSlideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+.gantt-milestone-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid var(--gantt-border);
+  background: linear-gradient(to bottom, rgba(245, 158, 11, 0.04), transparent);
+}
+.gantt-milestone-panel-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin: 0;
+}
+.gantt-milestone-panel-close {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.gantt-milestone-panel-close:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+.gantt-milestone-panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 1.25rem;
+}
+.gantt-milestone-panel-body::-webkit-scrollbar { width: 3px; }
+.gantt-milestone-panel-body::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.15); border-radius: 2px; }
+
+/* Add Milestone Form */
+.gantt-milestone-form {
+  background: rgba(245, 158, 11, 0.04);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.gantt-milestone-form-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  margin-bottom: 0.75rem;
+}
+.gantt-milestone-form-row {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.gantt-milestone-form input,
+.gantt-milestone-form select {
+  flex: 1;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--gantt-border);
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+}
+.gantt-milestone-form input:focus,
+.gantt-milestone-form select:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1);
+}
+.gantt-milestone-form input[type="date"] { min-width: 130px; }
+.gantt-milestone-form textarea {
+  width: 100%;
+  padding: 0.4rem 0.65rem;
+  border: 1px solid var(--gantt-border);
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  resize: vertical;
+  min-height: 50px;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: all 0.15s ease;
+}
+.gantt-milestone-form textarea:focus {
+  border-color: #f59e0b;
+  box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.1);
+}
+.gantt-milestone-form-btn {
+  width: 100%;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: #fff;
+  border: none;
+  border-radius: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-top: 0.25rem;
+}
+.gantt-milestone-form-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+}
+.gantt-milestone-form-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* Milestone List */
+.gantt-milestone-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.gantt-milestone-list-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--tut-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.25rem;
+}
+.gantt-milestone-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.65rem;
+  padding: 0.65rem 0.75rem;
+  background: rgba(245, 158, 11, 0.03);
+  border: 1px solid rgba(245, 158, 11, 0.1);
+  border-radius: 0.5rem;
+  transition: all 0.15s ease;
+}
+.gantt-milestone-item:hover {
+  background: rgba(245, 158, 11, 0.06);
+  border-color: rgba(245, 158, 11, 0.2);
+}
+.gantt-milestone-item-dot {
+  width: 12px;
+  height: 12px;
+  min-width: 12px;
+  border-radius: 50%;
+  margin-top: 3px;
+}
+.gantt-milestone-item-body {
+  flex: 1;
+  min-width: 0;
+}
+.gantt-milestone-item-title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e1b4b;
+  line-height: 1.3;
+}
+.gantt-milestone-item-meta {
+  font-size: 0.7rem;
+  color: var(--tut-text-muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-top: 2px;
+}
+.gantt-milestone-item-type {
+  font-size: 0.62rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.gantt-milestone-item-desc {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 0.2rem;
+  line-height: 1.4;
+}
+.gantt-milestone-item-delete {
+  width: 22px;
+  height: 22px;
+  min-width: 22px;
+  border: none;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+.gantt-milestone-item-delete:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+.gantt-milestone-empty {
+  text-align: center;
+  padding: 1.5rem;
+  color: var(--tut-text-muted);
+  font-size: 0.8rem;
+}
+.gantt-milestone-empty svg {
+  width: 32px;
+  height: 32px;
+  opacity: 0.3;
+  margin-bottom: 0.5rem;
+  color: #f59e0b;
+}
+
+/* Legend Milestone */
+.gantt-legend-milestone .gantt-legend-dot {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-bottom: 10px solid #f59e0b;
+  border-radius: 0;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .gantt-header { padding: 1.25rem 0 1rem; }
@@ -595,6 +963,36 @@
           </svg>
           Today
         </button>
+        <button class="gantt-milestones-toggle active" id="milestoneToggle" onclick="ganttToggleMilestones()" title="Toggle milestone markers">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Milestones
+        </button>
+        <button class="gantt-milestones-toggle gantt-milestones-add" onclick="ganttOpenMilestonePanel()" title="Manage milestones">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <span class="gantt-export-divider"></span>
+        <button class="gantt-export-btn gantt-export-csv" onclick="exportGanttCSV()" title="Download as CSV">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <line x1="8" y1="13" x2="16" y2="13"/>
+            <line x1="8" y1="17" x2="16" y2="17"/>
+            <polyline points="10 9 9 9 8 9"/>
+          </svg>
+          CSV
+        </button>
+        <button class="gantt-export-btn gantt-export-pdf" onclick="exportGanttPDF()" title="Save as PDF (opens print dialog)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+            <polyline points="14 2 14 8 20 8"/>
+            <path d="M16 13H8"/>
+            <path d="M16 17H8"/>
+            <path d="M10 9H8"/>
+          </svg>
+          PDF
+        </button>
       </div>
 
       <!-- Chart -->
@@ -633,6 +1031,8 @@ var ganttState = {
   filtered: [],
   statuses: [],
   teams: [],
+  milestones: [],
+  showMilestones: true,
   zoom: 'week',
   minDate: null,
   maxDate: null,
@@ -732,7 +1132,18 @@ function loadGantt() {
         }
 
         document.getElementById('ganttContent').style.display = 'block';
-        renderGantt();
+        // Load milestones
+        frappe.call({
+          method: 'team_update_tool.api.projects.get_milestones',
+          callback: function(mr) {
+            ganttState.milestones = mr.message || [];
+            renderGantt();
+          },
+          error: function() {
+            ganttState.milestones = [];
+            renderGantt();
+          }
+        });
       } else {
         document.getElementById('ganttError').style.display = 'block';
       }
@@ -799,6 +1210,10 @@ function renderLegend() {
   html += '<span class="gantt-legend-item">' +
     '<svg width="20" height="10" viewBox="0 0 20 10"><line x1="0" y1="5" x2="20" y2="5" stroke="#ef4444" stroke-width="2" stroke-dasharray="4,3"/></svg>' +
     'Today' +
+  '</span>';
+
+  html += '<span class="gantt-legend-item gantt-legend-milestone">' +
+    '<span class="gantt-legend-dot"></span>Milestone' +
   '</span>';
 
   document.getElementById('ganttLegend').innerHTML = html;
@@ -1201,6 +1616,32 @@ function drawGanttChart() {
     }
   }
 
+  // ===== Milestone Markers =====
+  if (ganttState.showMilestones && ganttState.milestones.length > 0) {
+    ganttState.milestones.forEach(function(m) {
+      if (!m.date) return;
+      var mDate = parseDate(m.date);
+      if (!mDate) return;
+      var mDayOffset = daysBetween(startDate, mDate);
+      if (mDayOffset < 0 || mDayOffset >= totalDays) return;
+
+      var mx = sidebarW + mDayOffset * dayW + pad.left + dayW / 2;
+      var mColor = m.color || '#f59e0b';
+      var diamondSize = 8;
+
+      // Diamond marker
+      svg += '<g class="gantt-milestone-marker" onclick="ganttShowMilestoneInfo(\'' + escHtml(m.name) + '\')" onmouseenter="ganttShowMilestoneTooltip(event, \'' + escHtml(m.name) + '\')" onmouseleave="ganttHideTooltip()">';
+      svg += '<rect x="' + (mx - diamondSize) + '" y="' + (gridY + 6) + '" width="' + (diamondSize * 2) + '" height="' + (diamondSize * 2) + '" rx="2" fill="' + mColor + '" transform="rotate(45 ' + mx + ' ' + (gridY + 6 + diamondSize) + ')"/>';
+      // Stem line from diamond down through chart
+      svg += '<line x1="' + mx + '" y1="' + (gridY + 6 + diamondSize * 2) + '" x2="' + mx + '" y2="' + totalHeight + '" stroke="' + mColor + '" stroke-width="1" stroke-dasharray="2,3" opacity="0.3"/>';
+      // Label above diamond
+      var titleShort = (m.title || '').substring(0, 16);
+      if (titleShort.length < (m.title || '').length) titleShort += '..';
+      svg += '<text x="' + mx + '" y="' + (gridY + 2) + '" fill="' + mColor + '" font-size="0.55rem" font-weight="700" font-family="Inter,sans-serif" text-anchor="middle" class="gantt-milestone-label">' + escHtml(titleShort) + '</text>';
+      svg += '</g>';
+    });
+  }
+
   // ===== Today Line (on top) =====
   var today = new Date();
   var todayDayOffset = daysBetween(startDate, today);
@@ -1286,8 +1727,281 @@ function ganttHideTooltip() {
   document.getElementById('ganttTooltip').className = 'gantt-tooltip';
 }
 
+// ==============================
+// Export: CSV
+// ==============================
+function exportGanttCSV() {
+  var projects = ganttState.filtered;
+  if (!projects || projects.length === 0) {
+    alert('No projects to export.');
+    return;
+  }
+
+  // Headers
+  var csv = '\uFEFF'; // BOM for Excel compatibility
+  csv += 'Project,Status,Priority,Team,Start Date,Due Date,Completion Date,Progress %,Overdue\n';
+
+  projects.forEach(function(p) {
+    var start = p.start_date || '';
+    var due = p.due_date || '';
+    var completed = p.completion_date || '';
+    var progress = p.completion_date ? '100' : (p.progress || '0');
+    var overdue = p.is_overdue ? 'Yes' : 'No';
+
+    // Escape commas/quotes in title
+    var title = (p.title || '').replace(/"/g, '""');
+    if (title.indexOf(',') !== -1 || title.indexOf('"') !== -1) {
+      title = '"' + title + '"';
+    }
+
+    csv += title + ',' +
+      (p.status || '') + ',' +
+      (p.priority || '') + ',' +
+      (p.team || '') + ',' +
+      start + ',' +
+      due + ',' +
+      completed + ',' +
+      progress + ',' +
+      overdue + '\n';
+  });
+
+  // Download
+  var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'gantt-timeline-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+
+  ganttToast('CSV exported successfully!', 'success');
+}
+
+// ==============================
+// Export: PDF (via browser print)
+// ==============================
+function exportGanttPDF() {
+  var projects = ganttState.filtered;
+  if (!projects || projects.length === 0) {
+    alert('No projects to export.');
+    return;
+  }
+  ganttToast('Opening print dialog to save as PDF...', 'info');
+  setTimeout(function() { window.print(); }, 300);
+}
+
 function ganttGoToProject(name) {
   if (name) window.location.href = '/team_update_tool/project/' + name;
+}
+
+// ==============================
+// Milestone Management
+// ==============================
+
+function ganttToggleMilestones() {
+  ganttState.showMilestones = !ganttState.showMilestones;
+  var btn = document.getElementById('milestoneToggle');
+  if (btn) btn.classList.toggle('active');
+  drawGanttChart();
+}
+
+function ganttOpenMilestonePanel() {
+  var wrapper = document.getElementById('ganttChartWrapper');
+  if (!wrapper) return;
+  // Remove existing panel
+  var old = document.getElementById('milestonePanel');
+  if (old) old.remove();
+
+  var panel = document.createElement('div');
+  panel.id = 'milestonePanel';
+  panel.className = 'gantt-milestone-panel';
+  panel.innerHTML = '' +
+    '<div class="gantt-milestone-panel-header">' +
+      '<h4 class="gantt-milestone-panel-title">Milestones</h4>' +
+      '<button class="gantt-milestone-panel-close" onclick="this.parentElement.parentElement.remove()">' +
+        '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>' +
+    '</div>' +
+    '<div class="gantt-milestone-panel-body">' +
+      // Add form
+      '<div class="gantt-milestone-form">' +
+        '<div class="gantt-milestone-form-title">Add Milestone</div>' +
+        '<div class="gantt-milestone-form-row">' +
+          '<input type="text" id="msTitle" placeholder="Milestone title*" style="flex:2;">' +
+          '<input type="date" id="msDate" style="flex:1;">' +
+        '</div>' +
+        '<div class="gantt-milestone-form-row">' +
+          '<select id="msType">' +
+            '<option value="Milestone">Milestone</option>' +
+            '<option value="Review">Review</option>' +
+            '<option value="Demo">Demo</option>' +
+            '<option value="Deadline">Deadline</option>' +
+            '<option value="Check-in">Check-in</option>' +
+            '<option value="Other">Other</option>' +
+          '</select>' +
+          '<select id="msColor">' +
+            '<option value="#f59e0b" style="background:#f59e0b;">Amber</option>' +
+            '<option value="#3b82f6" style="background:#3b82f6;">Blue</option>' +
+            '<option value="#22c55e" style="background:#22c55e;">Green</option>' +
+            '<option value="#ef4444" style="background:#ef4444;">Red</option>' +
+            '<option value="#8b5cf6" style="background:#8b5cf6;">Purple</option>' +
+            '<option value="#ec4899" style="background:#ec4899;">Pink</option>' +
+          '</select>' +
+        '</div>' +
+        '<textarea id="msDesc" placeholder="Description (optional)"></textarea>' +
+        '<button class="gantt-milestone-form-btn" onclick="ganttAddMilestone()">' +
+          '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>' +
+          'Add Milestone' +
+        '</button>' +
+      '</div>' +
+      '<div class="gantt-milestone-list">' +
+        '<div class="gantt-milestone-list-title">All Milestones</div>' +
+        '<div id="milestoneList"></div>' +
+      '</div>' +
+    '</div>';
+  wrapper.appendChild(panel);
+  renderMilestoneList();
+}
+
+function renderMilestoneList() {
+  var list = document.getElementById('milestoneList');
+  if (!list) return;
+  var ms = ganttState.milestones;
+  if (!ms || ms.length === 0) {
+    list.innerHTML = '<div class="gantt-milestone-empty"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><p>No milestones yet. Add one above!</p></div>';
+    return;
+  }
+  var html = '';
+  ms.forEach(function(m) {
+    var dateStr = m.date ? formatDateDisplay(parseDate(m.date)) : '';
+    html += '<div class="gantt-milestone-item">' +
+      '<span class="gantt-milestone-item-dot" style="background:' + (m.color || '#f59e0b') + '"></span>' +
+      '<div class="gantt-milestone-item-body">' +
+        '<div class="gantt-milestone-item-title">' + escHtml(m.title) + '</div>' +
+        '<div class="gantt-milestone-item-meta">' +
+          '<span class="gantt-milestone-item-type">' + escHtml(m.type || 'Milestone') + '</span>' +
+          '<span>' + dateStr + '</span>' +
+        '</div>' +
+        (m.description ? '<div class="gantt-milestone-item-desc">' + escHtml(m.description) + '</div>' : '') +
+      '</div>' +
+      '<button class="gantt-milestone-item-delete" onclick="ganttDeleteMilestone(\'' + escHtml(m.name) + '\')" title="Delete milestone">' +
+        '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>' +
+      '</button>' +
+    '</div>';
+  });
+  list.innerHTML = html;
+}
+
+function ganttAddMilestone() {
+  var title = document.getElementById('msTitle');
+  var date = document.getElementById('msDate');
+  var type = document.getElementById('msType');
+  var color = document.getElementById('msColor');
+  var desc = document.getElementById('msDesc');
+
+  if (!title || !title.value.trim()) {
+    title.focus();
+    title.style.borderColor = '#ef4444';
+    setTimeout(function() { title.style.borderColor = ''; }, 2000);
+    return;
+  }
+  if (!date || !date.value) {
+    date.focus();
+    date.style.borderColor = '#ef4444';
+    setTimeout(function() { date.style.borderColor = ''; }, 2000);
+    return;
+  }
+
+  var btn = document.querySelector('.gantt-milestone-form-btn');
+  if (btn) btn.disabled = true;
+
+  frappe.call({
+    method: 'team_update_tool.api.projects.add_milestone',
+    args: {
+      title: title.value.trim(),
+      date: date.value,
+      milestone_type: type ? type.value : 'Milestone',
+      color: color ? color.value : '#f59e0b',
+      description: desc ? desc.value.trim() : ''
+    },
+    callback: function(r) {
+      if (r.message && r.message.success) {
+        ganttState.milestones.push(r.message.milestone);
+        title.value = '';
+        date.value = '';
+        if (desc) desc.value = '';
+        renderMilestoneList();
+        drawGanttChart();
+        ganttToast('Milestone added!', 'success');
+      } else {
+        ganttToast('Failed to add milestone', 'error');
+      }
+      if (btn) btn.disabled = false;
+    },
+    error: function() {
+      ganttToast('Failed to add milestone', 'error');
+      if (btn) btn.disabled = false;
+    }
+  });
+}
+
+function ganttDeleteMilestone(name) {
+  if (!name) return;
+  if (!confirm('Delete this milestone?')) return;
+
+  frappe.call({
+    method: 'team_update_tool.api.projects.delete_milestone',
+    args: { name: name },
+    callback: function(r) {
+      if (r.message && r.message.success) {
+        ganttState.milestones = ganttState.milestones.filter(function(m) { return m.name !== name; });
+        renderMilestoneList();
+        drawGanttChart();
+        ganttToast('Milestone deleted.', 'info');
+      } else {
+        ganttToast('Failed to delete milestone', 'error');
+      }
+    },
+    error: function() {
+      ganttToast('Failed to delete milestone', 'error');
+    }
+  });
+}
+
+function ganttShowMilestoneInfo(name) {
+  ganttOpenMilestonePanel();
+}
+
+function ganttShowMilestoneTooltip(event, name) {
+  var m = ganttState.milestones.find(function(ms) { return ms.name === name; });
+  if (!m) return;
+
+  var tooltip = document.getElementById('ganttTooltip');
+  var dateStr = m.date ? formatDateDisplay(parseDate(m.date)) : '';
+  var html = '<div class="gantt-tooltip-title" style="color:' + (m.color || '#f59e0b') + ';">' +
+    '<svg width="12" height="12" viewBox="0 0 24 24" fill="' + (m.color || '#f59e0b') + '" style="vertical-align:middle;margin-right:4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>' +
+    escHtml(m.title) + '</div>';
+  html += '<table style="width:100%;border-collapse:collapse;">';
+  html += '<tr><td class="gantt-tooltip-label" style="padding:2px 8px 2px 0;">Date</td><td class="gantt-tooltip-value">' + dateStr + '</td></tr>';
+  html += '<tr><td class="gantt-tooltip-label" style="padding:2px 8px 2px 0;">Type</td><td class="gantt-tooltip-value">' + escHtml(m.type || 'Milestone') + '</td></tr>';
+  if (m.description) {
+    html += '<tr><td colspan="2" style="padding-top:4px;color:rgba(255,255,255,0.7);font-size:0.75rem;">' + escHtml(m.description) + '</td></tr>';
+  }
+  html += '</table>';
+  tooltip.innerHTML = html;
+  tooltip.className = 'gantt-tooltip visible';
+
+  var x = (event.clientX || 0) + window.scrollX;
+  var y = (event.clientY || 0) + window.scrollY;
+  var tw = tooltip.offsetWidth;
+  var th = tooltip.offsetHeight;
+  var left = x + 12;
+  var top = y - th - 12;
+  if (left + tw > window.innerWidth + window.scrollX - 10) left = x - tw - 12;
+  if (top < window.scrollY + 10) top = y + 12;
+  tooltip.style.left = left + 'px';
+  tooltip.style.top = top + 'px';
 }
 </script>
 {% endblock %}

@@ -238,6 +238,64 @@
     flex-shrink: 0;
 }
 
+/* Status Change Dropdown */
+.erp-status-select-wrapper {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+.erp-status-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    padding: 6px 28px 6px 14px;
+    border-radius: 50rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border: 2px solid rgba(255,255,255,0.3);
+    color: #ffffff;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s ease;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ffffff'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 10px 6px;
+    min-width: 110px;
+}
+.erp-status-select:hover {
+    border-color: rgba(255,255,255,0.6);
+}
+.erp-status-select option {
+    color: #1e293b;
+    background: #ffffff;
+    text-transform: none;
+    font-weight: 500;
+    font-size: 0.82rem;
+}
+.erp-status-select:focus {
+    box-shadow: 0 0 0 2px rgba(255,255,255,0.25);
+}
+.erp-status-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+.erp-status-dot-inline {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-right: 6px;
+    flex-shrink: 0;
+    vertical-align: middle;
+}
+.erp-status-select-loading {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
 /* Priority Badge - Royal */
 .erp-priority-badge {
     display: inline-flex;
@@ -1237,6 +1295,17 @@
 {% endblock %}
 
 {% block page_content %}
+{% if is_admin or is_team_leader %}
+<script>
+window._canChangeStatus = true;
+window._currentProjectName = '{{ project.name }}';
+</script>
+{% else %}
+<script>
+window._canChangeStatus = false;
+window._currentProjectName = '{{ project.name }}';
+</script>
+{% endif %}
 <!-- Toast Container -->
 <div class="erp-toast-container" id="toastContainer"></div>
 
@@ -1382,9 +1451,16 @@ function renderProject(p) {
     html += '<div class="erp-project-hero">' +
         '<div class="erp-project-hero-content">' +
             '<div class="erp-project-meta">' +
-                '<span class="erp-status-badge" style="background:rgba(255,255,255,0.2);color:#ffffff;">' +
-                    '<span class="erp-status-dot" style="background:#ffffff;"></span>' + sname +
-                '</span>' +
+                '<div class="erp-status-select-wrapper" id="statusWrapper">' +
+                    (window._canChangeStatus ? 
+                        '<select class="erp-status-select" id="statusSelect" onchange="updateProjectStatus(this.value)" style="background-color:' + color + ';border-color:' + color + ';">' +
+                            '<option value="" selected disabled>' + sname + '</option>' +
+                        '</select>' :
+                        '<span class="erp-status-badge" style="background:rgba(255,255,255,0.2);color:#ffffff;">' +
+                            '<span class="erp-status-dot" style="background:#ffffff;"></span>' + sname +
+                        '</span>' +
+                    ) +
+                '</div>' +
                 (p.priority ? '<span class="erp-priority-badge ' + p.priority.toLowerCase() + '">' + p.priority + '</span>' : '') +
             '</div>' +
             '<h1 class="erp-project-title">' + escHtml(p.project_title) + '</h1>' +
@@ -1777,6 +1853,11 @@ function renderProject(p) {
     // Render mini Gantt chart for team timeline
     if (p.team_projects) {
         renderMiniGantt(p.team_projects, p.name);
+    }
+
+    // Populate status dropdown if user can change status
+    if (window._canChangeStatus) {
+        loadStatusOptions(sname);
     }
 
     // Load activity feed
@@ -2241,6 +2322,90 @@ function truncateText(text, maxLen) {
     if (!text) return '';
     if (text.length <= maxLen) return text;
     return text.substring(0, maxLen - 2) + '..';
+}
+
+// ==============================
+// Status Change (Admin/Team Leader)
+// ==============================
+
+function loadStatusOptions(currentName) {
+    var sel = document.getElementById('statusSelect');
+    if (!sel) return;
+
+    frappe.call({
+        method: 'team_update_tool.api.projects.get_all_public_stats',
+        callback: function(r) {
+            if (r.message && r.message.statuses) {
+                // Clear existing options
+                sel.innerHTML = '';
+                
+                var selectedIdx = 0;
+                r.message.statuses.forEach(function(s, idx) {
+                    var opt = document.createElement('option');
+                    opt.value = s.name;
+                    opt.textContent = s.status_name;
+                    sel.appendChild(opt);
+                    
+                    // Check if this is the current status
+                    if (s.status_name === currentName) {
+                        selectedIdx = idx;
+                    }
+                });
+                
+                // Pre-select the current status
+                if (sel.options.length > 0) {
+                    sel.selectedIndex = selectedIdx;
+                }
+            }
+        },
+        error: function() {
+            console.error('Failed to load status options');
+        }
+    });
+}
+
+function updateProjectStatus(newStatus) {
+    var sel = document.getElementById('statusSelect');
+    if (!newStatus || !window._currentProjectName) return;
+
+    sel.classList.add('erp-status-select-loading');
+
+    frappe.call({
+        method: 'team_update_tool.api.projects.update_project_status',
+        args: {
+            project: window._currentProjectName,
+            status: newStatus
+        },
+        callback: function(r) {
+            sel.classList.remove('erp-status-select-loading');
+            if (r.message && r.message.success) {
+                // Update the select style with new color
+                var newColor = r.message.color || '#6b7280';
+                sel.style.backgroundColor = newColor;
+                sel.style.borderColor = newColor;
+
+                // Set selected option text to match
+                for (var i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value === newStatus) {
+                        sel.options[i].selected = true;
+                        break;
+                    }
+                }
+
+                tutToast('Status updated to ' + r.message.status_name, 'success');
+            } else {
+                tutToast('Failed to update status', 'error');
+                // Reset selection
+                sel.value = '';
+                sel.selectedIndex = 0;
+            }
+        },
+        error: function() {
+            sel.classList.remove('erp-status-select-loading');
+            tutToast('Failed to update status', 'error');
+            sel.selectedIndex = 0;
+        }
+    });
 }
 
 // Trigger mini Gantt chart after renderProject
