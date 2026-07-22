@@ -833,11 +833,27 @@ def get_kanban_projects():
     return ordered
 
 
+def _is_completion_status(status_name):
+    """Check if a status name indicates a completed/finished state.
+
+    Matches whole words to avoid false positives (e.g. 'Not Completed' won't match).
+    """
+    if not status_name:
+        return False
+    name_lower = status_name.lower().strip()
+    completion_keywords = {"completed", "approved", "done", "finished", "closed"}
+    words = set(name_lower.split())
+    return bool(words & completion_keywords)
+
+
 @frappe.whitelist()
 def update_project_status(project, status):
     """Update a project's status (for Kanban drag-and-drop and inline status change).
 
     Only Team Update Admin, Team Update Team Leader, and System Manager can change status.
+    When changing to a completion status (Completed, Approved, Done, etc.),
+    automatically sets completion_date to today. Clears completion_date when
+    moving away from a completion status.
     """
     user = frappe.session.user
     if user == "Guest":
@@ -858,14 +874,31 @@ def update_project_status(project, status):
     if not frappe.db.exists("Project Status", status):
         frappe.throw(_("Invalid status."))
 
+    # Get the new status name to check if it's a completion status
+    new_status_info = _get_status_info(status)
+    new_is_completed = _is_completion_status(new_status_info["status_name"])
+
     doc = frappe.get_doc("Project", project)
+
+    # Check if the previous status was a completion status
+    old_status_name = ""
+    if doc.status:
+        old_info = _get_status_info(doc.status)
+        old_status_name = old_info["status_name"]
+    old_is_completed = _is_completion_status(old_status_name)
+
+    # Auto-set or clear completion_date based on status change
+    if new_is_completed and not old_is_completed:
+        doc.completion_date = today()
+    elif old_is_completed and not new_is_completed:
+        doc.completion_date = None
+
     doc.status = status
     doc.save(ignore_permissions=True)
 
     frappe.db.commit()
 
-    status_info = _get_status_info(status)
-    return {"success": True, "status_name": status_info["status_name"], "color": status_info["color"]}
+    return {"success": True, "status_name": new_status_info["status_name"], "color": new_status_info["color"]}
 
 
 # ---------------------------------------------------------------------------
@@ -1514,12 +1547,27 @@ def get_member_scorecard():
         for t in um["teams"]:
             all_teams.add(t)
 
+    # Find all completion status names (Completed, Approved, Done, etc.)
+    completion_status_names = []
+    try:
+        all_statuses = frappe.get_all("Project Status", fields=["name", "status_name"])
+        for s in all_statuses:
+            if _is_completion_status(s.status_name):
+                completion_status_names.append(s.name)
+    except Exception:
+        pass
+
     # Get all completed projects for the teams in the period
+    # Two sources:
+    #   1) Projects with a completion_date set in the period
+    #   2) Projects with a completion status AND modified in the period (fallback for status-only changes)
     completed_in_period = []
     try:
         if all_teams:
             team_list = list(all_teams)
-            completed_in_period = frappe.db.sql(
+
+            # Query 1: Projects with completion_date in the period
+            by_date = frappe.db.sql(
                 """SELECT name, project_title, owner, team, completion_date
                  FROM `tabProject`
                  WHERE team IN %s
@@ -1531,6 +1579,32 @@ def get_member_scorecard():
                 [team_list, period_start, period_end],
                 as_dict=1
             )
+            completed_in_period = list(by_date)
+
+            # Query 2: Projects with a completion status but no completion_date, modified in the period
+            # Add one day to period_end for datetime comparison (modified is Datetime, not Date)
+            modified_end = period_end + timedelta(days=1)
+            if completion_status_names:
+                by_status = frappe.db.sql(
+                    """SELECT name, project_title, owner, team, completion_date
+                     FROM `tabProject`
+                     WHERE team IN %s
+                       AND status IN %s
+                       AND completion_date IS NULL
+                       AND modified >= %s
+                       AND modified < %s
+                       AND docstatus < 2
+                     ORDER BY modified DESC""",
+                    [team_list, completion_status_names, period_start, modified_end],
+                    as_dict=1
+                )
+                # Merge, avoiding duplicates (by name)
+                seen_names = {p.name for p in completed_in_period}
+                for p in by_status:
+                    if p.name not in seen_names:
+                        seen_names.add(p.name)
+                        completed_in_period.append(p)
+
     except Exception as e:
         frappe.log_error(f"Error fetching completed projects: {str(e)}", "Scorecard")
         completed_in_period = []
