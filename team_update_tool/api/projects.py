@@ -491,84 +491,93 @@ def get_projects():
     if search:
         query_filters.append(["project_title", "like", f"%{search}%"])
 
-    # Get total count with same filters
-    total = len(frappe.get_all("Project", filters=query_filters if query_filters else None, limit_page_length=0))
+    try:
+        # Get total count with same filters
+        filters_arg = query_filters if query_filters else None
+        total = frappe.db.count("Project", filters=filters_arg)
 
-    projects = frappe.get_all(
-        "Project",
-        fields=["name", "project_title", "team", "project_category", "status", "priority", "modified", "creation"],
-        filters=query_filters if query_filters else None,
-        limit=limit,
-        offset=offset,
-        order_by="modified desc",
-    )
+        projects = frappe.get_all(
+            "Project",
+            fields=["name", "project_title", "team", "project_category", "status", "priority", "modified", "creation"],
+            filters=filters_arg,
+            limit=limit,
+            start=offset,
+            order_by="modified desc",
+        )
 
-    # Enrich with status info, team name, category name, and screenshot preview
-    project_list = []
-    for p in projects:
-        # Status info
-        status_name = ""
-        status_color = "#6b7280"
-        if p.status:
+        # Enrich with status info, team name, category name, and screenshot preview
+        project_list = []
+        for p in projects:
+            # Status info
+            status_name = ""
+            status_color = "#6b7280"
+            if p.status:
+                try:
+                    s = frappe.get_cached_doc("Project Status", p.status)
+                    status_name = s.status_name
+                    status_color = s.color
+                except Exception:
+                    status_name = p.status
+
+            # Team name
+            team_name = p.team or ""
+            if p.team:
+                try:
+                    t = frappe.get_cached_doc("Team", p.team)
+                    team_name = t.team_name
+                except Exception:
+                    pass
+
+            # Category name
+            category_name = ""
+            if p.project_category:
+                try:
+                    cat = frappe.get_cached_doc("Project Category", p.project_category)
+                    category_name = cat.category_name
+                except Exception:
+                    category_name = p.project_category
+
+            # Screenshot preview (first screenshot of the project)
+            screenshot_preview = None
             try:
-                s = frappe.get_cached_doc("Project Status", p.status)
-                status_name = s.status_name
-                status_color = s.color
-            except Exception:
-                status_name = p.status
-
-        # Team name
-        team_name = p.team or ""
-        if p.team:
-            try:
-                t = frappe.get_cached_doc("Team", p.team)
-                team_name = t.team_name
+                first_ss = frappe.db.get_value("Project Screenshots",
+                    {"parent": p.name, "parenttype": "Project", "parentfield": "screenshots"},
+                    "screenshot",
+                    order_by="idx asc")
+                if first_ss:
+                    screenshot_preview = first_ss
             except Exception:
                 pass
 
-        # Category name
-        category_name = ""
-        if p.project_category:
-            try:
-                cat = frappe.get_cached_doc("Project Category", p.project_category)
-                category_name = cat.category_name
-            except Exception:
-                category_name = p.project_category
+            project_list.append({
+                "name": p.name,
+                "project_title": p.project_title,
+                "team": team_name,
+                "category_name": category_name,
+                "status": p.status,
+                "status_name": status_name,
+                "status_color": status_color,
+                "priority": p.priority,
+                "screenshot_preview": screenshot_preview,
+                "modified": str(p.modified) if p.modified else None,
+                "creation": str(p.creation) if p.creation else None,
+            })
 
-        # Screenshot preview (first screenshot of the project)
-        screenshot_preview = None
-        try:
-            first_ss = frappe.db.get_value("Project Screenshots",
-                {"parent": p.name, "parenttype": "Project", "parentfield": "screenshots"},
-                "screenshot",
-                order_by="idx asc")
-            if first_ss:
-                screenshot_preview = first_ss
-        except Exception:
-            pass
+        has_more = (offset + limit) < total
 
-        project_list.append({
-            "name": p.name,
-            "project_title": p.project_title,
-            "team": team_name,
-            "category_name": category_name,
-            "status": p.status,
-            "status_name": status_name,
-            "status_color": status_color,
-            "priority": p.priority,
-            "screenshot_preview": screenshot_preview,
-            "modified": str(p.modified) if p.modified else None,
-            "creation": str(p.creation) if p.creation else None,
-        })
+        return {
+            "projects": project_list,
+            "total": total,
+            "offset": offset,
+            "has_more": has_more,
+        }
 
-    has_more = (offset + limit) < total
-
-    return {
-        "projects": project_list,
-        "total": total,
-        "offset": offset,
-        "has_more": has_more,
-    }
+    except Exception as e:
+        frappe.log_error(
+            message=f"get_projects failed: {str(e)}\n{frappe.get_traceback()}",
+            title="Team Update Tool - get_projects Error"
+        )
+        frappe.throw(_("Failed to load projects: {0}").format(str(e)))
 
 
 # ---------------------------------------------------------------------------
