@@ -979,6 +979,8 @@ function renderScorecardGrid(scorecard) {
         html += '<span class="sc-kpi-bar-pct">' + (m.completed_projects.length > 0 ? m.completed_projects[0].completion_date : '—') + '</span>';
         html += '</div>';
         html += '<div class="sc-kpi-bar-track">';
+        html += '<div class="sc-kpi-bar-fill ' + barClass + '" style="width:100%"></div>';
+        html += '</div>';
 
         // Completed Projects
         html += '<div class="sc-projects-section">';

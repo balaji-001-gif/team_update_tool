@@ -1720,3 +1720,140 @@ def _get_team_options():
         return [{"name": t.name, "team_name": t.team_name} for t in teams]
     except Exception:
         return []
+
+
+# ---------------------------------------------------------------------------
+# Reports & Analytics
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_reports():
+    """Return comprehensive reports data for the Reports & Analytics page.
+
+    Returns:
+      - total_projects
+      - status_summary: [{status, count, color}]
+      - category_summary: [{category, count}]
+      - team_summary: [{team, count}]
+      - completed_projects: recent completed/approved projects
+      - github_repos: linked GitHub repositories
+    """
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in to view reports."), frappe.PermissionError)
+
+    try:
+        base_filters = {}
+        roles = frappe.get_roles(user)
+        is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) \
+            and "System Manager" not in roles and "Team Update Admin" not in roles
+        if is_viewer:
+            approved = frappe.db.get_value("Project Status", {"status_name": "Approved"}, "name")
+            if approved:
+                base_filters["status"] = approved
+
+        # Total projects
+        total_projects = frappe.db.count("Project", filters=base_filters or None)
+
+        # Status summary
+        status_summary = []
+        statuses = frappe.get_all("Project Status", fields=["name", "status_name", "color"], order_by="status_name asc")
+        for s in statuses:
+            filters = {**base_filters, "status": s.name} if base_filters else {"status": s.name}
+            count = frappe.db.count("Project", filters=filters)
+            if count:
+                status_summary.append({
+                    "status": s.status_name,
+                    "count": count,
+                    "color": s.color or "#6b7280",
+                })
+
+        if not status_summary:
+            status_summary = []
+
+        # Category summary
+        category_summary = []
+        categories = frappe.get_all("Project Category", fields=["name", "category_name"], order_by="category_name asc")
+        for cat in categories:
+            filters = {**base_filters, "project_category": cat.name} if base_filters else {"project_category": cat.name}
+            count = frappe.db.count("Project", filters=filters)
+            if count:
+                category_summary.append({
+                    "category": cat.category_name,
+                    "count": count,
+                })
+
+        # Team summary
+        team_summary = []
+        teams = frappe.get_all("Team", fields=["name", "team_name"], filters={"is_active": 1}, order_by="team_name asc")
+        for t in teams:
+            filters = {**base_filters, "team": t.name} if base_filters else {"team": t.name}
+            count = frappe.db.count("Project", filters=filters)
+            if count:
+                team_summary.append({
+                    "team": t.team_name,
+                    "count": count,
+                })
+
+        # Completed projects (recent 20)
+        completed_projects = []
+        completion_status_names = []
+        all_s = frappe.get_all("Project Status", fields=["name", "status_name"])
+        for s_obj in all_s:
+            if _is_completion_status(s_obj.status_name):
+                completion_status_names.append(s_obj.name)
+
+        completed_q = frappe.db.sql(
+            """SELECT name, project_title, team, status, priority, completion_date
+             FROM `tabProject`
+             WHERE status IN %s
+               AND docstatus < 2
+             ORDER BY COALESCE(completion_date, modified) DESC
+             LIMIT 20""",
+            [completion_status_names] if completion_status_names else [[""]],
+            as_dict=1
+        ) if completion_status_names else []
+
+        for p in completed_q:
+            team_name = ""
+            if p.team:
+                try:
+                    td = frappe.get_cached_doc("Team", p.team)
+                    team_name = td.team_name
+                except Exception:
+                    team_name = p.team
+            completed_projects.append({
+                "name": p.name,
+                "project_title": p.project_title,
+                "team": team_name,
+                "priority": p.priority,
+                "completion_date": str(p.completion_date) if p.completion_date else None,
+            })
+
+        # GitHub repositories
+        github_repos = []
+        try:
+            github_repos = frappe.get_all(
+                "GitHub Repository",
+                fields=["name", "repository_name", "repository_url", "default_branch", "languages", "commit_hash"],
+                order_by="creation desc",
+                limit=20,
+            )
+        except Exception:
+            github_repos = []
+
+        return {
+            "total_projects": total_projects,
+            "status_summary": status_summary,
+            "category_summary": category_summary,
+            "team_summary": team_summary,
+            "completed_projects": completed_projects,
+            "github_repos": github_repos,
+        }
+
+    except Exception as e:
+        frappe.log_error(
+            message=f"get_reports failed: {str(e)}\n{frappe.get_traceback()}",
+            title="Team Update Tool - get_reports Error"
+        )
+        frappe.throw(_("Failed to load reports: {0}").format(str(e)))
