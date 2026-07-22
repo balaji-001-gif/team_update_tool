@@ -2,11 +2,12 @@
 # For license information, please see license.txt
 
 import json
-from datetime import date, datetime
+import calendar
+from datetime import date, datetime, timedelta
 
 import frappe
 from frappe import _
-from frappe.utils import today, now_datetime
+from frappe.utils import today, now_datetime, getdate, fmt_money
 
 
 # ---------------------------------------------------------------------------
@@ -1392,3 +1393,256 @@ def delete_milestone(name):
     frappe.db.commit()
 
     return {"success": True}
+
+
+# ---------------------------------------------------------------------------
+# Team Member Scorecard (KPI Tracking)
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist()
+def get_member_scorecard():
+    """Return team member scorecard with project completion stats.
+
+    Query params:
+      - period: 'week' | 'month' | 'year' (default 'month')
+      - team: optional team filter (Team name)
+      - offset: number of periods to offset (negative = past, positive = future)
+
+    Returns scorecard data for each team member across the specified period.
+    """
+    user = frappe.session.user
+    if user == "Guest":
+        frappe.throw(_("Please log in."), frappe.PermissionError)
+
+    data = frappe.local.form_dict
+    period = data.get("period", "month").lower()
+    team_filter = data.get("team", "")
+    try:
+        offset = int(data.get("offset", 0))
+    except (ValueError, TypeError):
+        offset = 0
+
+    if period not in ("week", "month", "year"):
+        period = "month"
+
+    roles = frappe.get_roles(user)
+    is_admin = "System Manager" in roles or "Team Update Admin" in roles
+    is_viewer = ("Team Update Viewer" in roles or "View-Only User" in roles) and not is_admin
+
+    # Calculate date range for the current period
+    today_date = date.today()
+    period_start, period_end, display_label, period_key = _get_period_range(today_date, period, offset)
+
+    # Fetch all team members (active teams)
+    team_members = []
+    try:
+        if team_filter:
+            teams_data = frappe.get_all("Team",
+                fields=["name", "team_name"],
+                filters={"name": team_filter, "is_active": 1}
+            )
+        else:
+            teams_data = frappe.get_all("Team",
+                fields=["name", "team_name"],
+                filters={"is_active": 1},
+                order_by="team_name asc"
+            )
+
+        for team_doc in teams_data:
+            # Fetch members of each team via the child table
+            members = frappe.get_all("Team Member",
+                fields=["user", "role_in_team"],
+                filters={"parent": team_doc.name, "parenttype": "Team"}
+            )
+            for m in members:
+                team_members.append({
+                    "user": m.user,
+                    "role": m.role_in_team or "Member",
+                    "team_name": team_doc.team_name,
+                    "team": team_doc.name,
+                })
+    except Exception as e:
+        frappe.log_error(f"Error fetching team members: {str(e)}", "Scorecard")
+        team_members = []
+
+    # Deduplicate users across teams (a user can be in multiple teams)
+    user_map = {}
+    for tm in team_members:
+        u = tm["user"]
+        if u not in user_map:
+            user_map[u] = {
+                "user": u,
+                "full_name": "",
+                "teams": [],
+                "completed": 0,
+                "completed_projects": [],
+                "team_names": set(),
+            }
+        user_map[u]["teams"].append(tm["team"])
+        user_map[u]["team_names"].add(tm["team_name"])
+
+    if not user_map:
+        return {
+            "scorecard": [],
+            "period": period,
+            "period_label": display_label,
+            "period_start": str(period_start),
+            "period_end": str(period_end),
+            "teams": _get_team_options(),
+            "team_summary": {},
+            "total_completed": 0,
+        }
+
+    # Resolve full names for all users
+    user_emails = list(user_map.keys())
+    user_fullnames = {}
+    try:
+        user_data = frappe.db.sql(
+            """SELECT name, full_name FROM `tabUser`
+             WHERE name IN %s""",
+            [user_emails], as_dict=1
+        )
+        for ud in user_data:
+            user_fullnames[ud.name] = ud.full_name or ud.name.split("@")[0]
+    except Exception:
+        for email in user_emails:
+            user_fullnames[email] = email.split("@")[0]
+
+    # Build filters for projects in the period
+    all_teams = set()
+    for um in user_map.values():
+        for t in um["teams"]:
+            all_teams.add(t)
+
+    # Get all completed projects for the teams in the period
+    completed_in_period = []
+    try:
+        if all_teams:
+            team_list = list(all_teams)
+            completed_in_period = frappe.db.sql(
+                """SELECT name, project_title, owner, team, completion_date
+                 FROM `tabProject`
+                 WHERE team IN %s
+                   AND completion_date >= %s
+                   AND completion_date <= %s
+                   AND completion_date IS NOT NULL
+                   AND docstatus < 2
+                 ORDER BY completion_date DESC""",
+                [team_list, period_start, period_end],
+                as_dict=1
+            )
+    except Exception as e:
+        frappe.log_error(f"Error fetching completed projects: {str(e)}", "Scorecard")
+        completed_in_period = []
+
+    # Attribute projects to team members (by owner)
+    for p in completed_in_period:
+        owner = p.owner
+        if owner in user_map:
+            user_map[owner]["completed"] += 1
+            user_map[owner]["completed_projects"].append({
+                "name": p.name,
+                "title": p.project_title,
+                "completion_date": str(p.completion_date) if p.completion_date else None,
+            })
+
+    # Build team-level summary
+    team_project_counts = {}
+    for p in completed_in_period:
+        team_key = p.team or "Unknown"
+        if team_key not in team_project_counts:
+            team_project_counts[team_key] = 0
+        team_project_counts[team_key] += 1
+
+    team_summary = {}
+    for tm in team_members:
+        t = tm["team"]
+        if t not in team_summary:
+            team_summary[t] = {
+                "team_name": tm["team_name"],
+                "completed": team_project_counts.get(t, 0),
+                "member_count": 0,
+            }
+        team_summary[t]["member_count"] += 1
+
+    # Add team names to team_summary keys
+    team_summary_named = {}
+    for t_key, t_val in team_summary.items():
+        team_summary_named[t_val["team_name"]] = t_val
+
+    # Build final sorted scorecard
+    scorecard = []
+    for u, um in user_map.items():
+        full_name = user_fullnames.get(u, u.split("@")[0])
+        team_list_str = ", ".join(sorted(um["team_names"]))
+        scorecard.append({
+            "user": u,
+            "full_name": full_name,
+            "teams": team_list_str,
+            "role": um["teams"][0].get("role", "Member") if um["teams"] else "Member",
+            "completed": um["completed"],
+            "completed_projects": sorted(um["completed_projects"],
+                key=lambda x: x.get("completion_date", ""), reverse=True),
+        })
+
+    # Sort by completed count descending (top performers first)
+    scorecard.sort(key=lambda x: x["completed"], reverse=True)
+
+    total_completed = sum(s["completed"] for s in scorecard)
+
+    return {
+        "scorecard": scorecard,
+        "period": period,
+        "period_label": display_label,
+        "period_start": str(period_start),
+        "period_end": str(period_end),
+        "teams": _get_team_options(),
+        "team_summary": team_summary_named,
+        "total_completed": total_completed,
+    }
+
+
+def _get_period_range(base_date, period, offset=0):
+    """Calculate the date range for a given period type and offset."""
+    if period == "week":
+        # Monday of the offset week
+        target_date = base_date + timedelta(weeks=offset)
+        start = target_date - timedelta(days=target_date.weekday())
+        end = start + timedelta(days=6)
+        label = start.strftime("%b %d") + " - " + end.strftime("%b %d, %Y")
+        key = start.strftime("%Y-W%V")
+        return start, end, label, key
+
+    elif period == "month":
+        target_date = date(base_date.year, base_date.month, 1)
+        # Add offset months
+        month = target_date.month - 1 + offset  # zero-based
+        year = target_date.year + month // 12
+        month = month % 12 + 1
+        start = date(year, month, 1)
+        last_day = calendar.monthrange(year, month)[1]
+        end = date(year, month, last_day)
+        label = start.strftime("%B %Y")
+        key = start.strftime("%Y-%m")
+        return start, end, label, key
+
+    else:  # year
+        target_year = base_date.year + offset
+        start = date(target_year, 1, 1)
+        end = date(target_year, 12, 31)
+        label = str(target_year)
+        key = str(target_year)
+        return start, end, label, key
+
+
+def _get_team_options():
+    """Return list of active teams for filter dropdown."""
+    try:
+        teams = frappe.get_all("Team",
+            fields=["name", "team_name"],
+            filters={"is_active": 1},
+            order_by="team_name asc"
+        )
+        return [{"name": t.name, "team_name": t.team_name} for t in teams]
+    except Exception:
+        return []

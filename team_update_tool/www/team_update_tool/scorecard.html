@@ -1,0 +1,1036 @@
+{% extends "templates/web.html" %}
+
+{% block title %}Team Scorecard - Team Update Tool{% endblock %}
+
+{% block style %}
+<link rel="stylesheet" href="/assets/team_update_tool/css/team_update_tool.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* =====================================
+   SCORECARD PAGE - Royal KPI Dashboard
+   ===================================== */
+
+/* Period Navigation Bar */
+.sc-period-nav {
+    background: var(--tut-glass);
+    backdrop-filter: blur(20px);
+    border-radius: 1.25rem;
+    box-shadow: var(--tut-royal-shadow);
+    padding: 1.25rem 1.75rem;
+    margin-top: -2.5rem;
+    position: relative;
+    z-index: 10;
+    border: 1px solid var(--tut-royal-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sc-period-nav::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--tut-primary-gradient);
+    border-radius: 1.25rem 1.25rem 0 0;
+}
+
+.sc-period-tabs {
+    display: flex;
+    gap: 0.35rem;
+    background: #f1f5f9;
+    padding: 0.3rem;
+    border-radius: 0.75rem;
+}
+
+.sc-period-btn {
+    padding: 0.6rem 1.25rem;
+    border: none;
+    border-radius: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: inherit;
+}
+
+.sc-period-btn:hover {
+    color: #334155;
+    background: rgba(255,255,255,0.6);
+}
+
+.sc-period-btn.active {
+    background: #ffffff;
+    color: var(--tut-primary);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.sc-period-nav-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sc-nav-arrow {
+    width: 36px;
+    height: 36px;
+    border-radius: 0.5rem;
+    border: 1px solid var(--tut-royal-border);
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    color: #64748b;
+    font-size: 1rem;
+}
+
+.sc-nav-arrow:hover {
+    background: var(--tut-primary-light);
+    border-color: var(--tut-primary);
+    color: var(--tut-primary);
+}
+
+.sc-period-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    min-width: 180px;
+    text-align: center;
+    font-family: 'Playfair Display', serif;
+}
+
+.sc-filter-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sc-filter-select {
+    border: 2px solid var(--tut-border-light);
+    border-radius: 0.75rem;
+    padding: 0.55rem 1rem;
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #1e1b4b;
+    background: #fafafa;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    font-family: inherit;
+    min-width: 150px;
+}
+
+.sc-filter-select:focus {
+    border-color: var(--tut-primary);
+    box-shadow: 0 0 0 4px rgba(124, 58, 237, 0.1);
+    background: #fff;
+    outline: none;
+}
+
+/* Team Summary Cards */
+.sc-team-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.sc-team-card {
+    background: #ffffff;
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.sc-team-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--tut-primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.sc-team-card:hover::before {
+    transform: scaleX(1);
+}
+
+.sc-team-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--tut-shadow-md);
+}
+
+.sc-team-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sc-team-name svg {
+    width: 16px;
+    height: 16px;
+    color: var(--tut-primary);
+}
+
+.sc-team-stats {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+}
+
+.sc-team-count {
+    font-size: 1.75rem;
+    font-weight: 800;
+    color: #1e1b4b;
+    line-height: 1;
+}
+
+.sc-team-meta {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Scorecard Grid */
+.sc-scorecard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    gap: 1.5rem;
+}
+
+/* Member Card */
+.sc-member-card {
+    background: #ffffff;
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1.25rem;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+}
+
+.sc-member-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--tut-primary-gradient);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+}
+
+.sc-member-card:hover::before {
+    transform: scaleX(1);
+}
+
+.sc-member-card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--tut-royal-shadow), var(--tut-royal-glow);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.sc-member-card.top-performer {
+    border-color: var(--tut-gold);
+    box-shadow: 0 4px 20px rgba(217, 119, 6, 0.15);
+}
+
+.sc-member-card.top-performer::before {
+    background: var(--tut-gold-gradient);
+}
+
+.sc-member-header {
+    padding: 1.5rem 1.5rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+}
+
+.sc-member-avatar {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.2rem;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.sc-member-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.sc-member-name {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 0.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.sc-member-name .crown {
+    font-size: 1.1rem;
+}
+
+.sc-member-team {
+    font-size: 0.8rem;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.sc-member-team svg {
+    width: 14px;
+    height: 14px;
+    color: var(--tut-primary);
+}
+
+.sc-member-role {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.65rem;
+    background: var(--tut-primary-light);
+    color: var(--tut-primary);
+    border-radius: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* KPI Metrics Section */
+.sc-kpi-section {
+    padding: 1.25rem 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+}
+
+.sc-kpi-item {
+    text-align: center;
+}
+
+.sc-kpi-value {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e1b4b;
+    line-height: 1.1;
+}
+
+.sc-kpi-value.gold {
+    background: var(--tut-gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.sc-kpi-value.green {
+    color: #059669;
+}
+
+.sc-kpi-value.blue {
+    color: #2563eb;
+}
+
+.sc-kpi-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-top: 0.25rem;
+}
+
+/* KPI Bar */
+.sc-kpi-bar-wrap {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid rgba(139, 92, 246, 0.08);
+}
+
+.sc-kpi-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+}
+
+.sc-kpi-bar-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.sc-kpi-bar-pct {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e1b4b;
+}
+
+.sc-kpi-bar-track {
+    height: 8px;
+    background: #f1f5f9;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.sc-kpi-bar-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
+    background: var(--tut-primary-gradient);
+}
+
+.sc-kpi-bar-fill.high {
+    background: linear-gradient(135deg, #059669, #10b981);
+}
+
+.sc-kpi-bar-fill.medium {
+    background: linear-gradient(135deg, #d97706, #f59e0b);
+}
+
+.sc-kpi-bar-fill.low {
+    background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+/* Completed Projects List */
+.sc-projects-section {
+    padding: 1rem 1.5rem 1.25rem;
+}
+
+.sc-projects-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.sc-projects-title svg {
+    width: 14px;
+    height: 14px;
+}
+
+.sc-project-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.8rem;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    font-size: 0.78rem;
+    font-weight: 500;
+    color: #334155;
+    text-decoration: none;
+    margin: 0 0.35rem 0.35rem 0;
+    transition: all 0.15s ease;
+}
+
+.sc-project-chip:hover {
+    background: var(--tut-primary-light);
+    border-color: var(--tut-primary);
+    color: var(--tut-primary);
+    text-decoration: none;
+}
+
+.sc-project-chip svg {
+    width: 12px;
+    height: 12px;
+    color: #059669;
+}
+
+.sc-empty-projects {
+    font-size: 0.82rem;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Summary Bar */
+.sc-summary-bar {
+    background: var(--tut-glass);
+    backdrop-filter: blur(20px);
+    border: 1px solid var(--tut-royal-border);
+    border-radius: 1.25rem;
+    padding: 1.5rem 2rem;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.sc-summary-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.sc-summary-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+}
+
+.sc-summary-icon.blue { background: #e0f2fe; color: #0284c7; }
+.sc-summary-icon.green { background: #dcfce7; color: #16a34a; }
+.sc-summary-icon.purple { background: #f3e8ff; color: #7c3aed; }
+.sc-summary-icon.gold { background: #fef3c7; color: #d97706; }
+
+.sc-summary-num {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: #1e1b4b;
+    line-height: 1;
+}
+
+.sc-summary-label {
+    font-size: 0.8rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* Empty State */
+.sc-empty-state {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--tut-glass);
+    backdrop-filter: blur(10px);
+    border-radius: 1.25rem;
+    border: 2px dashed var(--tut-royal-border);
+}
+
+.sc-empty-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--tut-primary-gradient);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 10px 30px rgba(124, 58, 237, 0.3);
+}
+
+.sc-empty-icon svg {
+    width: 36px;
+    height: 36px;
+    color: #fff;
+}
+
+.sc-empty-state h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1e1b4b;
+    margin-bottom: 0.5rem;
+}
+
+.sc-empty-state p {
+    font-size: 0.9rem;
+    color: #6b7280;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Loading State */
+.sc-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 5rem 2rem;
+}
+
+.sc-spinner {
+    width: 48px;
+    height: 48px;
+    border: 3px solid #e2e8f0;
+    border-top-color: var(--tut-primary);
+    border-radius: 50%;
+    animation: sc-spin 0.8s linear infinite;
+}
+
+@keyframes sc-spin {
+    to { transform: rotate(360deg); }
+}
+
+.sc-loading p {
+    margin-top: 1rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .sc-period-nav {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 1rem;
+        padding: 1.25rem;
+    }
+    .sc-period-nav-controls {
+        justify-content: center;
+    }
+    .sc-period-label {
+        min-width: 140px;
+        font-size: 0.9rem;
+    }
+    .sc-scorecard-grid {
+        grid-template-columns: 1fr;
+    }
+    .sc-kpi-section {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    .sc-kpi-value {
+        font-size: 1.2rem;
+    }
+    .sc-summary-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.75rem;
+    }
+    .sc-team-summary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .sc-filter-select {
+        min-width: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .sc-team-summary {
+        grid-template-columns: 1fr;
+    }
+    .sc-member-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .sc-period-tabs {
+        width: 100%;
+    }
+    .sc-period-btn {
+        flex: 1;
+        text-align: center;
+        font-size: 0.8rem;
+        padding: 0.5rem 0.75rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block page_content %}
+<!-- Royal Hero Header -->
+<div class="erp-page-header">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+            <div>
+                <div class="erp-header-icon" style="background: rgba(251, 191, 36, 0.25);">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:28px;height:28px;">
+                        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <h1>Team Scorecard</h1>
+                <p>Track team member KPIs — project completion rates by week, month, and year</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div class="erp-reports-content">
+    <div class="container">
+
+        <!-- Period Navigation Bar -->
+        <div class="sc-period-nav">
+            <div class="sc-period-tabs">
+                <button class="sc-period-btn" data-period="week">Weekly</button>
+                <button class="sc-period-btn active" data-period="month">Monthly</button>
+                <button class="sc-period-btn" data-period="year">Yearly</button>
+            </div>
+
+            <div class="sc-period-nav-controls">
+                <button class="sc-nav-arrow" id="prevPeriod" title="Previous period">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="15 18 9 12 15 6"/></svg>
+                </button>
+                <span class="sc-period-label" id="periodLabel">July 2026</span>
+                <button class="sc-nav-arrow" id="nextPeriod" title="Next period">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16"><polyline points="9 18 15 12 9 6"/></svg>
+                </button>
+            </div>
+
+            <div class="sc-filter-group">
+                <select class="sc-filter-select" id="teamFilter">
+                    <option value="">All Teams</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Loading -->
+        <div class="sc-loading" id="scorecardLoading">
+            <div class="sc-spinner"></div>
+            <p>Loading scorecard data...</p>
+        </div>
+
+        <!-- Scorecard Content -->
+        <div id="scorecardContent" style="display:none;">
+            
+            <!-- Summary Stats Bar -->
+            <div class="sc-summary-bar" id="summaryBar">
+                <div class="sc-summary-item">
+                    <div class="sc-summary-icon blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div>
+                        <div class="sc-summary-num" id="totalMembers">0</div>
+                        <div class="sc-summary-label">Team Members</div>
+                    </div>
+                </div>
+                <div class="sc-summary-item">
+                    <div class="sc-summary-icon green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    </div>
+                    <div>
+                        <div class="sc-summary-num" id="totalCompleted">0</div>
+                        <div class="sc-summary-label">Projects Completed</div>
+                    </div>
+                </div>
+                <div class="sc-summary-item">
+                    <div class="sc-summary-icon gold">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                    </div>
+                    <div>
+                        <div class="sc-summary-num" id="topPerformer">—</div>
+                        <div class="sc-summary-label">Top Performer</div>
+                    </div>
+                </div>
+                <div class="sc-summary-item">
+                    <div class="sc-summary-icon purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <div>
+                        <div class="sc-summary-num" id="scTeamCount">0</div>
+                        <div class="sc-summary-label">Teams Active</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Summary -->
+            <div class="sc-team-summary" id="teamSummary"></div>
+
+            <!-- Scorecard Grid -->
+            <div class="sc-scorecard-grid" id="scorecardGrid"></div>
+
+            <!-- Empty State -->
+            <div class="sc-empty-state" id="scorecardEmpty" style="display:none;">
+                <div class="sc-empty-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                </div>
+                <h4>No Scorecard Data</h4>
+                <p>No completed projects found for the selected period. Try a different time period or check back after projects are completed.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+frappe.ready(function() { initScorecard(); });
+
+var scCurrentPeriod = 'month';
+var scCurrentOffset = 0;
+var scCurrentTeam = '';
+
+function initScorecard() {
+    // Bind period tab clicks
+    document.querySelectorAll('.sc-period-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            document.querySelectorAll('.sc-period-btn').forEach(function(b) { b.classList.remove('active'); });
+            this.classList.add('active');
+            scCurrentPeriod = this.getAttribute('data-period');
+            scCurrentOffset = 0;
+            loadScorecard();
+        });
+    });
+
+    // Bind navigation arrows
+    document.getElementById('prevPeriod').addEventListener('click', function() {
+        scCurrentOffset -= 1;
+        loadScorecard();
+    });
+    document.getElementById('nextPeriod').addEventListener('click', function() {
+        scCurrentOffset += 1;
+        loadScorecard();
+    });
+
+    // Bind team filter
+    document.getElementById('teamFilter').addEventListener('change', function() {
+        scCurrentTeam = this.value;
+        scCurrentOffset = 0;
+        loadScorecard();
+    });
+
+    // Initial load
+    loadScorecard();
+}
+
+function loadScorecard() {
+    document.getElementById('scorecardLoading').style.display = 'flex';
+    document.getElementById('scorecardContent').style.display = 'none';
+
+    var params = 'period=' + scCurrentPeriod + '&offset=' + scCurrentOffset;
+    if (scCurrentTeam) {
+        params += '&team=' + encodeURIComponent(scCurrentTeam);
+    }
+
+    fetch('/api/method/team_update_tool.api.projects.get_member_scorecard?' + params)
+        .then(function(r) {
+            if (!r.ok) throw new Error('API request failed');
+            return r.json();
+        })
+        .then(function(data) {
+            document.getElementById('scorecardLoading').style.display = 'none';
+            document.getElementById('scorecardContent').style.display = 'block';
+
+            if (!data.message) {
+                document.getElementById('scorecardGrid').innerHTML = '';
+                document.getElementById('scorecardEmpty').style.display = 'block';
+                return;
+            }
+
+            var d = data.message;
+
+            // Update period label
+            document.getElementById('periodLabel').textContent = d.period_label || '—';
+
+            // Populate team filter if first load
+            if (d.teams && d.teams.length && document.getElementById('teamFilter').options.length <= 1) {
+                var sel = document.getElementById('teamFilter');
+                d.teams.forEach(function(t) {
+                    var opt = document.createElement('option');
+                    opt.value = t.name;
+                    opt.textContent = t.team_name;
+                    sel.appendChild(opt);
+                });
+            }
+
+            var scorecard = d.scorecard || [];
+            var totalCompleted = d.total_completed || 0;
+
+            // Summary stats
+            document.getElementById('totalMembers').textContent = scorecard.length;
+            document.getElementById('totalCompleted').textContent = totalCompleted;
+
+            // Top performer
+            if (scorecard.length > 0) {
+                var top = scorecard[0];
+                document.getElementById('topPerformer').textContent = top.completed > 0 ? top.full_name.split(' ')[0] : '—';
+            } else {
+                document.getElementById('topPerformer').textContent = '—';
+            }
+
+            // Count active teams
+            var teamSet = {};
+            scorecard.forEach(function(s) { s.teams.split(', ').forEach(function(t) { if (t) teamSet[t] = true; }); });
+            document.getElementById('scTeamCount').textContent = Object.keys(teamSet).length;
+
+            // Team summary cards
+            renderTeamSummary(d.team_summary);
+
+            // Scorecard grid
+            if (scorecard.length === 0) {
+                document.getElementById('scorecardGrid').innerHTML = '';
+                document.getElementById('scorecardEmpty').style.display = 'block';
+                return;
+            }
+            document.getElementById('scorecardEmpty').style.display = 'none';
+            renderScorecardGrid(scorecard);
+        })
+        .catch(function(err) {
+            console.error('Scorecard error:', err);
+            document.getElementById('scorecardLoading').innerHTML = '<div class="sc-loading"><p style="color:#dc2626;">Failed to load scorecard: ' + err.message + '</p><button class="btn btn-outline-secondary mt-3" onclick="loadScorecard()"><i class="fas fa-rotate me-1"></i> Try Again</button></div>';
+        });
+}
+
+function renderTeamSummary(teamSummary) {
+    var container = document.getElementById('teamSummary');
+    if (!teamSummary || Object.keys(teamSummary).length === 0) {
+        container.innerHTML = '';
+        container.style.display = 'none';
+        return;
+    }
+    container.style.display = 'grid';
+
+    var html = '';
+    for (var teamName in teamSummary) {
+        var ts = teamSummary[teamName];
+        html += '<div class="sc-team-card">';
+        html += '<div class="sc-team-name">';
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>';
+        html += escHtml(teamName);
+        html += '</div>';
+        html += '<div class="sc-team-stats">';
+        html += '<span class="sc-team-count">' + (ts.completed || 0) + '</span>';
+        html += '<span class="sc-team-meta">projects by ' + (ts.member_count || 0) + ' members</span>';
+        html += '</div>';
+        html += '</div>';
+    }
+    container.innerHTML = html;
+}
+
+function renderScorecardGrid(scorecard) {
+    var container = document.getElementById('scorecardGrid');
+    var html = '';
+
+    scorecard.forEach(function(m, idx) {
+        var initials = getInitials(m.full_name);
+        var avatarColor = getAvatarColor(m.user);
+        var isTop = idx === 0 && m.completed > 0;
+        var barClass = 'high';
+
+        html += '<div class="sc-member-card' + (isTop ? ' top-performer' : '') + '">';
+
+        // Header
+        html += '<div class="sc-member-header">';
+        html += '<div class="sc-member-avatar" style="background:' + avatarColor + ';">' + initials + '</div>';
+        html += '<div class="sc-member-info">';
+        html += '<div class="sc-member-name">' + escHtml(m.full_name);
+        if (isTop && m.completed > 0) {
+            html += ' <span class="crown" title="Top Performer">👑</span>';
+        }
+        html += '</div>';
+        html += '<div class="sc-member-team">';
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>';
+        html += escHtml(m.teams || 'No Team');
+        html += ' · <span class="sc-member-role">' + escHtml(m.role || 'Member') + '</span>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // KPI Metrics
+        html += '<div class="sc-kpi-section">';
+        html += '<div class="sc-kpi-item">';
+        html += '<div class="sc-kpi-value blue">' + m.completed + '</div>';
+        html += '<div class="sc-kpi-label">Completed</div>';
+        html += '</div>';
+        if (isTop) {
+            html += '<div class="sc-kpi-item">';
+            html += '<div class="sc-kpi-value gold">';
+            html += '<svg viewBox="0 0 24 24" fill="currentColor" width="22" height="22"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+            html += '</div>';
+            html += '<div class="sc-kpi-label">Top Performer</div>';
+            html += '</div>';
+        } else {
+            html += '<div class="sc-kpi-item">';
+            html += '<div class="sc-kpi-value green">' + m.completed + '</div>';
+            html += '<div class="sc-kpi-label">Period Total</div>';
+            html += '</div>';
+        }
+        html += '<div class="sc-kpi-item">';
+        html += '<div class="sc-kpi-value" style="font-size:1.1rem;font-weight:600;color:#6b7280;">' + escHtml(m.teams.split(', ')[0] || '—') + '</div>';
+        html += '<div class="sc-kpi-label">Team</div>';
+        html += '</div>';
+        html += '</div>';
+
+        // Projects completed count bar
+        html += '<div class="sc-kpi-bar-wrap">';
+        html += '<div class="sc-kpi-bar-header">';
+        html += '<span class="sc-kpi-bar-label">' + m.completed + ' project' + (m.completed !== 1 ? 's' : '') + ' completed</span>';
+        html += '<span class="sc-kpi-bar-pct">' + (m.completed_projects.length > 0 ? m.completed_projects[0].completion_date : '—') + '</span>';
+        html += '</div>';
+        html += '<div class="sc-kpi-bar-track">';
+
+        // Completed Projects
+        html += '<div class="sc-projects-section">';
+        html += '<div class="sc-projects-title">';
+        html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>';
+        html += 'Completed Projects</div>';
+
+        var projects = m.completed_projects || [];
+        if (projects.length > 0) {
+            projects.slice(0, 5).forEach(function(p) {
+                html += '<a href="/team_update_tool/project/' + encodeURIComponent(p.name) + '" class="sc-project-chip" title="' + escHtml(p.title) + '">';
+                html += '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>';
+                html += escHtml(p.title.length > 35 ? p.title.substring(0, 35) + '…' : p.title);
+                html += '</a>';
+            });
+            if (projects.length > 5) {
+                html += '<span class="sc-project-chip" style="background:transparent;border-color:transparent;color:#94a3b8;">+' + (projects.length - 5) + ' more</span>';
+            }
+        } else {
+            html += '<span class="sc-empty-projects">No projects completed in this period</span>';
+        }
+        html += '</div>';
+
+        html += '</div>';
+    });
+
+    container.innerHTML = html;
+}
+
+function getInitials(name) {
+    if (!name) return '?';
+    var parts = name.trim().split(/\s+/);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+}
+
+function getAvatarColor(str) {
+    if (!str) return '#6b7280';
+    var hash = 0;
+    for (var i = 0; i < str.length; i++) {
+        hash = str.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    var colors = [
+        '#7c3aed', '#4f46e5', '#0ea5e9', '#059669', '#d97706',
+        '#dc2626', '#db2777', '#0891b2', '#65a30d', '#9333ea'
+    ];
+    return colors[Math.abs(hash) % colors.length];
+}
+
+function escHtml(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+</script>
+{% endblock %}
